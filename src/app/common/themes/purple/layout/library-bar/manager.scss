@@ -1,0 +1,7 @@
+@mixin manager() {
+    .header {
+        .toggle-sidebar {
+            color: var(--mat-sys-on-background);
+        }
+    }
+}

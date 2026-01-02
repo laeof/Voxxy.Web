@@ -1,0 +1,35 @@
+@mixin content-spacing() {
+    .content-spacing-horizontal {
+        --horizontal: 24px;
+
+        padding: 0 var(--horizontal);
+
+        &.horizontal-small {
+            --horizontal: 12px;
+        }
+
+        &.horizontal-smaller {
+            --horizontal: 8px;
+        }
+
+        &.vertical {
+            padding: 24px var(--horizontal);
+        }
+
+        &.vertical-small {
+            padding: 12px var(--horizontal);
+        }
+
+        &.vertical-smaller {
+            padding: 8px var(--horizontal);
+        }
+    }
+
+    .content-spacing-vertical {
+        padding: 24px 0;
+
+        &.vertical-small {
+            padding: 12px 0;
+        }
+    }
+}

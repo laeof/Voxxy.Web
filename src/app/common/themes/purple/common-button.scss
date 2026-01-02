@@ -1,0 +1,9 @@
+@mixin common-button() {
+    .common-button {
+        color: var(--mat-sys-on-background);
+        background-color: var(--mat-sys-surface-container);
+        &:hover {
+            background-color: var(--mat-sys-inverse-on-surface) !important;
+        }
+    }
+}

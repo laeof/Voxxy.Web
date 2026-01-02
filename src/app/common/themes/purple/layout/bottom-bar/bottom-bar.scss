@@ -1,0 +1,35 @@
+@mixin bottom-bar() {
+    preview-hint {
+        background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+        .title {
+            color: #fff;
+        }
+
+        .subcolor {
+            color: var(--mat-sys-on-background);
+        }
+
+        .common-button {
+            background-color: var(--mat-sys-on-background) !important;
+            color: var(--default-black-color) !important;
+
+            &:hover {
+                background-color: var(--secondary-font-color) !important;
+            }
+        }
+    }
+
+    layout-playerbar {
+        .wrap {
+            .player {
+                .play-button {
+                    background-color: white !important;
+
+                    mat-icon {
+                        color: var(--default-black-color);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+@use '@angular/material';
+@use './purple-palette' as palette;
+@use './common-button' as common-button;
+@use './wrapped-icon-hover' as wrapped-icon;
+@use './common-font' as common-font;
+@use './layout/layout' as layout;
+@use './track-list/table' as table;
+@use './playlist/playlist' as playlist;
+@use './logo/logo' as logo;
+@use './material/material.overrides' as mat-overrides;
+@use './common/resizer' as resizer;
+@use './auth/auth' as auth;
+
+@include common-button.common-button();
+@include wrapped-icon.wrapped-icon-hover();
+@include common-font.common-font();
+@include layout.layout();
+@include playlist.playlist();
+@include table.table();
+@include logo.logo();
+@include mat-overrides.material-overrides();
+@include resizer.resizer();
+@include auth.auth();
+
+@mixin theme() {
+    $slim-slider-tokens: (
+        active-track-height: 2px,
+        inactive-track-height: 2px,
+
+        handle-width: 10px,
+        handle-height: 10px,
+
+        value-indicator-opacity: 0,
+    );
+
+    @include material.theme(
+        (
+            color: (
+                seed: palette.$purple-base,
+            ),
+        )
+    );
+
+    body {
+        color-scheme: dark;
+        background-color: rgb(0, 0, 0) !important;
+    }
+
+    --theme-primary: #{palette.$purple-dark};
+    --logo-color: var(--theme-primary);
+
+    --theme-secondary: #3b8fde;
+    --mat-table-background-color: transparent;
+    --secondary-font-color: #b3b3b3;
+    --table-header-border-color: #ffffff1a;
+    --primary-container-color: #121212;
+    --overlay-color: rgba(#121212, 0.7);
+    --resizer-color: var(--secondary-font-color);
+    --default-black-color: #000000;
+}

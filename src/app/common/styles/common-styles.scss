@@ -1,0 +1,33 @@
+@use './common-button' as common-button;
+
+@mixin common-styles() {
+    --base-font-size: 1rem;
+    --smaller-font-size: 0.875rem;
+    --smallest-font-size: 0.75rem;
+    --corner-extra-large: 24px;
+    --corner-full: 50%;
+
+    @include common-button.common-button();
+
+    button {
+        cursor: pointer;
+        outline: none;
+        border: none;
+        background: none;
+    }
+
+    input {
+        outline: none;
+        border: none;
+        background: none;
+        font-size: var(--base-font-size);
+        transition: background-color 0.3s ease;
+    }
+
+    .hover-scale {
+        &:hover {
+            cursor: pointer;
+            transform: scale(1.05);
+        }
+    }
+}

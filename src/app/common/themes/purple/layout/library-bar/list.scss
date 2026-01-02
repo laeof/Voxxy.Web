@@ -1,0 +1,20 @@
+@mixin list() {
+    .item-card {
+        background-color: var(--mat-sys-surface-container);
+        color: var(--mat-sys-on-background);
+
+        &:hover {
+            background-color: var(--mat-sys-surface-container);
+        }
+
+        &.active {
+            background-color: var(--mat-sys-inverse-on-surface) !important;
+        }
+
+        .image-wrapper {
+            .play-overlay {
+                background-color: rgba(#121212, 0.7) !important;
+            }
+        }
+    }
+}

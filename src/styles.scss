@@ -1,1 +1,20 @@
-/* You can add global styles to this file, and also import other style files */
+@use './app/common/themes/purple/purple-theme.scss' as purple-theme;
+@use './app/common/styles/reset.scss' as reset;
+@use './app/common/styles/common-styles.scss' as common;
+@use './app/common/styles/content-spacing.scss' as content-spacing;
+
+@include reset.reset();
+@include content-spacing.content-spacing();
+
+:root {
+    @include common.common-styles();
+    @include purple-theme.theme();
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+
+    font-family: 'Nunito', sans-serif;
+}

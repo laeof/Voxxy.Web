@@ -1,0 +1,9 @@
+@mixin common-font() {
+    .titlecolor {
+        color: var(--mat-sys-on-background);
+    }
+
+    .subcolor {
+        color: var(--secondary-font-color);
+    }
+}

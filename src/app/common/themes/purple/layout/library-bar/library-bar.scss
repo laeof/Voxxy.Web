@@ -1,0 +1,9 @@
+@use './manager' as manager;
+@use './list' as list;
+@use './anonymous' as anonymous;
+
+@mixin library-bar() {
+    @include manager.manager();
+    @include list.list();
+    @include anonymous.anonymous();
+}

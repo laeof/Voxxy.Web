@@ -1,0 +1,22 @@
+@mixin manager() {
+    .manager-wrapper {
+        .album-details {
+            .album-cover-wrapper {
+                box-shadow: 0 0 20px var(--mat-sys-surface-container);
+            }
+
+            .album-info-wrapper {
+                color: var(--mat-sys-on-background);
+            }
+        }
+
+        .album-actions {
+            .play-button {
+                background-color: var(--theme-primary);
+                mat-icon {
+                    color: var(--mat-sys-on-primary) !important;
+                }
+            }
+        }
+    }
+}

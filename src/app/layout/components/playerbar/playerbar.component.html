@@ -1,0 +1,71 @@
+<div class="wrap">
+    <div class="song section">
+        <div class="wrap-img">
+            <img src="{{ (currentTrack$ | async)?.imageUrl }}" alt="Playing song" class="img" />
+        </div>
+        <div class="info">
+            <span class="title titlecolor">{{ (currentTrack$ | async)?.name }}</span>
+            <span class="artist subcolor">{{ (currentTrack$ | async)?.artist?.name }}</span>
+        </div>
+        <div class="actions">
+            <mat-icon svgIcon="favorite" class="hover-scale"></mat-icon>
+        </div>
+    </div>
+    <div class="player section">
+        <div class="top">
+            <button (click)="toggleShuffle()" class="wrapped-icon-hover">
+                <mat-icon svgIcon="shuffle" class="hover-scale"></mat-icon>
+            </button>
+            <button (click)="togglePrev()" class="wrapped-icon-hover">
+                <mat-icon svgIcon="previous" class="hover-scale"></mat-icon>
+            </button>
+            <button class="play-button hover-scale wrapped-icon-hover" (click)="togglePlayPause()">
+                @if(this.isPlaying$ | async) {
+                <mat-icon svgIcon="pause"></mat-icon>
+                } @else {
+                <mat-icon svgIcon="play" style="margin-left: 3px"></mat-icon>
+                }
+            </button>
+            <button (click)="toggleNext()" class="wrapped-icon-hover">
+                <mat-icon svgIcon="next" class="hover-scale"></mat-icon>
+            </button>
+            <button (click)="toggleRepeat()" class="wrapped-icon-hover">
+                @switch (repeatState$ | async) { @case (RepeatMode.None) {
+                <mat-icon svgIcon="repeat" class="hover-scale"></mat-icon>
+                } @case (RepeatMode.All) {
+                <mat-icon svgIcon="repeat" class="hover-scale" style="color: var(--theme-primary)"></mat-icon>
+                } @case (RepeatMode.One) {
+                <mat-icon svgIcon="repeat" class="hover-scale" style="color: green"></mat-icon>
+                } }
+            </button>
+        </div>
+        <div class="bottom-wrap">
+            <div class="bottom">
+                <span class="time subcolor">{{ currentTime$ | async | durationTranslate }}</span>
+                <mat-slider
+                    class="song-slider"
+                    [min]="0"
+                    [max]="(currentTrack$ | async)?.duration"
+                    [step]="1"
+                    (input)="trackPositionChange($event)"
+                >
+                    <input matSliderThumb #slider [value]="currentTime$ | async" />
+                </mat-slider>
+                <span class="time subcolor">{{
+                    (currentTrack$ | async)?.duration | durationTranslate
+                }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="additional section">
+        <mat-icon svgIcon="lyrics"></mat-icon>
+        <mat-icon svgIcon="queue"></mat-icon>
+        <div class="volume wrapped-icon-hover">
+            <mat-icon svgIcon="volume"></mat-icon>
+            <mat-slider [min]="0" [max]="100" [step]="1" (input)="volumeChange($event)">
+                <input matSliderThumb #volume [value]="currentVolume$ | async" />
+            </mat-slider>
+        </div>
+        <mat-icon class="fullscreen" svgIcon="enter_fullscreen"></mat-icon>
+    </div>
+</div>

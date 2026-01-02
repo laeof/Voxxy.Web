@@ -1,0 +1,11 @@
+@mixin wrapped-icon-hover() {
+    .wrapped-icon-hover {
+        &:hover {
+            cursor: pointer;
+            background-color: var(--mat-sys-inverse-on-surface) !important;
+            mat-icon {
+                color: var(--mat-sys-on-background);
+            }
+        }
+    }
+}

@@ -1,0 +1,29 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+
+    .hint {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 10px;
+        border-radius: var(--mat-sys-corner-medium);
+
+        .title {
+            font-size: var(--base-font-size);
+        }
+
+        .description {
+            font-size: var(--smaller-font-size);
+            text-wrap: wrap;
+        }
+
+        .common-button {
+            font-size: var(--smaller-font-size);
+            font-weight: 600;
+        }
+    }
+}

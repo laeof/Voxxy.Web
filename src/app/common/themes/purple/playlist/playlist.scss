@@ -1,0 +1,5 @@
+@use './manager' as manager;
+
+@mixin playlist() {
+    @include manager.manager();
+}

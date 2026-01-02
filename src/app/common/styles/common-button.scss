@@ -1,0 +1,10 @@
+@mixin common-button() {
+    .common-button {
+        padding: 8px 16px;
+        border-radius: var(--corner-extra-large);
+        user-select: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: var(--base-font-size);
+    }
+}

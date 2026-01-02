@@ -1,0 +1,9 @@
+@mixin table() {
+    table {
+        .mat-mdc-row {
+            &:hover {
+                background-color: var(--mat-sys-inverse-on-surface);
+            }
+        }
+    }
+}

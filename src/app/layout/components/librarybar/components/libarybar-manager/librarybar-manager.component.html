@@ -1,0 +1,22 @@
+<div class="header content-spacing-horizontal vertical-small horizontal-small">
+    <div class="toggle-sidebar">
+        <ng-container *authorize>
+            <mat-icon class="hidden-left" svgIcon="sidebar_open"></mat-icon>
+            {{ 'MANAGER.MY_LIBRARY' | translate }}
+        </ng-container>
+        <ng-container *anonymous>
+            {{ 'MANAGER.YOUR_LIBRARY' | translate }}
+        </ng-container>
+    </div>
+    <span class="create-button common-button wrapped-icon-hover">
+        <mat-icon svgIcon="create"></mat-icon>
+        {{ 'MANAGER.CREATE' | translate }}
+    </span>
+</div>
+<ng-container *authorize>
+    <div class="filters content-spacing-horizontal horizontal-small">
+        <span class="common-button">{{ 'FILTERS.PLAYLISTS' | translate }}</span>
+        <span class="common-button">{{ 'FILTERS.ARTISTS' | translate }}</span>
+        <span class="common-button">{{ 'FILTERS.ALBUMS' | translate }}</span>
+    </div>
+</ng-container>

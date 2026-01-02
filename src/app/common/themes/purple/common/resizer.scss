@@ -1,0 +1,9 @@
+@mixin resizer() {
+    app-resizer {
+        &:hover {
+            .resizer {
+                background-color: var(--resizer-color) !important;
+            }
+        }
+    }
+}

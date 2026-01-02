@@ -1,0 +1,68 @@
+@use '@angular/material' as mat;
+
+@mixin material-overrides() {
+    .mat-icon {
+        color: var(--secondary-font-color);
+        transition: color 0.3s ease;
+
+        &:hover {
+            cursor: pointer;
+            color: var(--mat-sys-on-background);
+        }
+
+        &.active {
+            color: var(--mat-sys-on-background);
+        }
+    }
+
+    .mat-icon svg {
+        fill: currentColor;
+    }
+
+    .mat-mdc-header-cell {
+        border-bottom-color: var(--table-header-border-color) !important;
+    }
+
+    :root {
+        --mat-slider-inactive-track-color: var(--mat-sys-on-background);
+        --mat-slider-active-track-color: var(--theme-primary);
+        --mat-slider-handle-color: var(--theme-primary);
+        --mat-slider-focus-handle-color: var(--theme-primary);
+
+        --mat-slider-handle-width: 10px;
+        --mat-slider-handle-height: 10px;
+
+        .mat-mdc-slider {
+            height: 24px;
+
+            .mdc-slider__input {
+                height: 24px;
+            }
+
+            .mdc-slider__thumb {
+                width: 20px;
+                height: 20px;
+                left: -12px;
+                top: 2px;
+                display: none;
+
+                .mat-ripple {
+                    display: none;
+                }
+            }
+
+            &:hover {
+                .mdc-slider__thumb {
+                    display: flex;
+                }
+            }
+        }
+
+        @include mat.progress-bar-overrides(
+            (
+                active-indicator-color: var(--theme-primary),
+                track-color: transparent,
+            )
+        );
+    }
+}

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 200 200"
+    width="25" height="25"
+    role="img" aria-label="Voxxy O with equalizer">
+    <defs>
+        <style>
+            @keyframes equalizer {
+                0% {
+                    transform: scaleY(0.8);
+                }
+                25% {
+                    transform: scaleY(0.5);
+                }
+                50% {
+                    transform: scaleY(1);
+                }
+                75% {
+                    transform: scaleY(0.9);
+                }
+                100% {
+                    transform: scaleY(0.8);
+                }
+            }
+            svg {
+                rect {
+                    transform-origin: center;
+                    transform-box: fill-box;
+                }
+
+                rect:nth-child(1) {
+                    animation-delay: 0s;
+                }
+
+                rect:nth-child(2) {
+                    animation-delay: 0.15s;
+                }
+                rect:nth-child(3) {
+                    animation-delay: 0.3s;
+                }
+
+                rect:nth-child(4) {
+                    animation-delay: 0.05s;
+                }
+
+                rect:nth-child(5) {
+                    animation-delay: 0.35s;
+                }
+
+                rect:nth-child(6) {
+                    animation-delay: 0.2s;
+                }
+
+                rect:nth-child(7) {
+                    animation-delay: 0.1s;
+                }
+            }
+        </style>
+    </defs>
+
+    <circle cx="100" cy="100" r="78"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="20"
+        stroke-linecap="round"
+        stroke-linejoin="round" />
+
+    <g transform="translate(100,100)" fill="currentColor" aria-hidden="true">
+        <rect x="-61" y="-15" width="12" height="30" rx="3" />
+        <rect x="-43" y="-36" width="12" height="72" rx="3" />
+        <rect x="-24.5" y="-52" width="12" height="104" rx="3" />
+        <rect x="-6" y="-28" width="12" height="56" rx="3" />
+        <rect x="12.55" y="-52" width="12" height="104" rx="3" />
+        <rect x="31" y="-36" width="12" height="72" rx="3" />
+        <rect x="49" y="-15" width="12" height="30" rx="3" />
+    </g>
+</svg>

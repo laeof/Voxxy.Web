@@ -1,0 +1,25 @@
+:host {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--mat-sys-corner-small);
+    padding: 8px 0;
+
+    .info {
+        display: flex;
+        flex-direction: column;
+        font-weight: 700;
+        font-size: var(--smaller-font-size);
+        padding-left: 5px;
+        .subcolor {
+            font-size: var(--base-font-size);
+            font-weight: 500;
+        }
+    }
+
+    .common-button {
+        font-weight: 700;
+        padding: 14px 28px;
+        margin-right: 5px;
+    }
+}

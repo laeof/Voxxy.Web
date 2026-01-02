@@ -1,0 +1,27 @@
+@mixin table-columns($columns) {
+    .mat-column- {
+        @each $colName, $props in $columns {
+            $width: map-get($props, 'width');
+            $min-width: map-get($props, 'min-width');
+            $max-width: map-get($props, 'max-width');
+
+            &#{$colName} {
+                flex: $width;
+                min-width: $width;
+
+                @if $min-width {
+                    min-width: $min-width;
+                }
+
+                @if $max-width {
+                    max-width: $max-width;
+                }
+
+                .mat-form-field {
+                    width: $width;
+                    min-width: $min-width;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,79 @@
+.skeleton {
+    pointer-events: none;
+}
+
+.skeleton-box,
+.skeleton-circle {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.08) 25%,
+        rgba(255, 255, 255, 0.16) 37%,
+        rgba(255, 255, 255, 0.08) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 3s ease infinite;
+    border-radius: 6px;
+}
+
+.skeleton-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+
+    &.small {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+.cover {
+    width: 180px;
+    height: 180px;
+    border-radius: 12px;
+}
+
+.type {
+    width: 120px;
+    height: 14px;
+    margin-bottom: 8px;
+}
+
+.title {
+    width: 260px;
+    height: 26px;
+    margin-bottom: 12px;
+}
+
+.avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.text-short {
+    width: 120px;
+    height: 14px;
+    margin-left: 8px;
+}
+
+.text-tiny {
+    width: 60px;
+    height: 12px;
+}
+
+.skeleton-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 6px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -150% 0;
+    }
+}

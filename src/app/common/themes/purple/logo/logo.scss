@@ -1,0 +1,9 @@
+@mixin logo() {
+    .logo-icon {
+        color: var(--logo-color) !important;
+    }
+
+    .logo-text {
+        color: var(--logo-color);
+    }
+}

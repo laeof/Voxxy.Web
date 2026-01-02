@@ -1,0 +1,29 @@
+<mat-nav-list>
+    @for (item of dataSource$ | async; track item) {
+    <button
+        class="item-card"
+        mat-list-item
+        (click)="navigate(item)"
+        [ngClass]="{ active: (this.libraryBarService.onEntitySelected$ | async) === item.id }"
+    >
+        <div class="image-wrapper">
+            <div class="play-overlay">
+                <mat-icon svgIcon="play"></mat-icon>
+            </div>
+            <img [src]="item.imageUrl" alt="{{ item.name }}" class="image" />
+        </div>
+        <div class="info">
+            <span class="name">{{ item.name }}</span>
+            <span class="details">
+                <span class="subcolor">
+                    {{ 'LIST.' + (item.followType | playlistTypeTranslate) | translate }}
+                </span>
+                @if (item.followType !== FollowType.Artist) {
+                <span class="subcolor" style="font-size: 0.7rem">•</span>
+                <span class="subcolor">{{ item.artist.name }}</span>
+                }
+            </span>
+        </div>
+    </button>
+    }
+</mat-nav-list>

@@ -1,42 +1,28 @@
 {
-  // For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "type": "npm",
-      "script": "start",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
-          }
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Launch Backend",
+            "type": "shell",
+            "command": "dotnet run --project ../Voxxy/Voxxy.Web.Api",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Launch Web App",
+            "type": "shell",
+            "command": "ng serve --poll=2500 --host=0.0.0.0",
+            "problemMatcher": []
+        },
+        {
+            "label": "Launch All",
+            "dependsOn": ["Launch Backend", "Launch Web App"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "ng test",
+            "problemMatcher": []
         }
-      }
-    },
-    {
-      "type": "npm",
-      "script": "test",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
-          }
-        }
-      }
-    }
-  ]
+    ]
 }

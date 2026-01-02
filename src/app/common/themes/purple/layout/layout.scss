@@ -1,0 +1,13 @@
+@use './library-bar/library-bar' as library-bar;
+@use './top-bar/top-bar' as top-bar;
+@use './bottom-bar/bottom-bar' as bottom-bar;
+
+@mixin layout() {
+    @include library-bar.library-bar();
+    @include top-bar.top-bar();
+    @include bottom-bar.bottom-bar();
+
+    .component {
+        background-color: var(--primary-container-color) !important;
+    }
+}

@@ -1,0 +1,15 @@
+@mixin anonymous() {
+    librarybar-anonymous {
+        .hint {
+            background-color: var(--mat-sys-surface-container);
+
+            .common-button {
+                background-color: var(--mat-sys-on-background) !important;
+                color: var(--default-black-color) !important;
+                &:hover {
+                    background-color: var(--secondary-font-color) !important;
+                }
+            }
+        }
+    }
+}

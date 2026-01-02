@@ -1,0 +1,16 @@
+:host {
+    cursor: ew-resize;
+    min-width: 10px;
+    max-width: 10px;
+    width: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.resizer {
+    width: 2px;
+    height: calc(100% - 14px);
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
