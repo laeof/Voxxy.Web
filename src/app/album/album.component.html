@@ -1,0 +1,7 @@
+@if (currentOpenedAlbum$ | async; as album) {
+<album-manager [style.--color]="album?.primaryColor" [album]="album"></album-manager>
+<album-track-list [albumId]="album.id"></album-track-list>
+} @else {
+<manager-skeleton></manager-skeleton>
+<app-track-list-skeleton></app-track-list-skeleton>
+}

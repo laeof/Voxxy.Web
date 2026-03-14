@@ -2,7 +2,31 @@
     table {
         .mat-mdc-row {
             &:hover {
-                background-color: var(--mat-sys-inverse-on-surface);
+                td {
+                    background-color: var(--mat-sys-surface-container);
+                }
+            }
+
+            &.selected {
+                td {
+                    background-color: var(--mat-sys-inverse-on-surface);
+                }
+            }
+
+            &.playing {
+                .play-button {
+                    .number {
+                        color: var(--theme-primary);
+                    }
+                }
+
+                .song-details {
+                    .song-info {
+                        .song-name {
+                            color: var(--theme-primary);
+                        }
+                    }
+                }
             }
         }
     }

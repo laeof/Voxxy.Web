@@ -1,0 +1,40 @@
+<div class="content-spacing-horizontal skeleton">
+    <table>
+        <thead>
+            <tr>
+                <th class="col-number"></th>
+                <th class="col-name"></th>
+                <th class="col-album"></th>
+                <th class="col-duration"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @for(row of rows; track $index) {
+            <tr>
+                <td>
+                    <div class="skeleton-circle"></div>
+                </td>
+
+                <td>
+                    <div class="song-details">
+                        <div class="skeleton-cover"></div>
+                        <div class="song-info">
+                            <div class="skeleton-line short"></div>
+                            <div class="skeleton-line smaller"></div>
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="skeleton-line medium"></div>
+                </td>
+
+                <td>
+                    <div class="skeleton-line tiny"></div>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

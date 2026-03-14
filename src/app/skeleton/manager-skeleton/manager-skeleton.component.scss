@@ -1,18 +1,12 @@
+@use 'shimmer' as shimmer;
+
 .skeleton {
     pointer-events: none;
 }
 
 .skeleton-box,
 .skeleton-circle {
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.08) 25%,
-        rgba(255, 255, 255, 0.16) 37%,
-        rgba(255, 255, 255, 0.08) 63%
-    );
-    background-size: 400% 100%;
-    animation: shimmer 3s ease infinite;
-    border-radius: 6px;
+    @include shimmer.shimmer();
 }
 
 .skeleton-circle {
@@ -24,12 +18,6 @@
         width: 36px;
         height: 36px;
     }
-}
-
-.cover {
-    width: 180px;
-    height: 180px;
-    border-radius: 12px;
 }
 
 .type {

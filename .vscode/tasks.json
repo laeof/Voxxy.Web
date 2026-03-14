@@ -4,7 +4,7 @@
         {
             "label": "Launch Backend",
             "type": "shell",
-            "command": "dotnet run --project ../Voxxy/Voxxy.Web.Api",
+            "command": "dotnet run --project ../Voxxy/src/Web.Api",
             "problemMatcher": "$msCompile"
         },
         {

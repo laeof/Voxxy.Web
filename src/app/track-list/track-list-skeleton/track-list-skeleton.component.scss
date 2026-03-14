@@ -1,0 +1,76 @@
+@use 'shimmer' as shimmer;
+
+.skeleton {
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    tr {
+        height: 56px;
+        border-radius: var(--mat-sys-corner-small);
+    }
+
+    td,
+    th {
+        padding: 0 16px;
+    }
+
+    .skeleton-line,
+    .skeleton-circle,
+    .skeleton-cover {
+        @include shimmer.shimmer();
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 100% 0;
+        }
+        100% {
+            background-position: -100% 0;
+        }
+    }
+
+    /* ---------- shapes ---------- */
+
+    .skeleton-circle {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .skeleton-cover {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--mat-sys-corner-small);
+    }
+
+    .skeleton-line {
+        height: 14px;
+        border-radius: 6px;
+
+        &.short {
+            width: 140px;
+        }
+
+        &.medium {
+            width: 120px;
+        }
+
+        &.smaller {
+            width: 90px;
+            margin-top: 6px;
+        }
+
+        &.tiny {
+            width: 40px;
+        }
+    }
+
+    .song-details {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}

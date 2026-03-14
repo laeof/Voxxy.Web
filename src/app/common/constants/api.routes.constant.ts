@@ -5,6 +5,12 @@ export class ApiRoutes {
 
     public static readonly Playlists = {
         getById: '/playlists/:id',
+        getTracks: '/playlists/:id/tracks',
+    }
+
+    public static readonly Albums = {
+        getById: '/albums/:id',
+        getTracks: '/albums/:id/tracks',
     }
 
     public static readonly Auth = {

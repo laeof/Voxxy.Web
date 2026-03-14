@@ -25,7 +25,7 @@ export const routes: Routes = [
             {
                 path: AppRoutes.album,
                 loadComponent: () =>
-                    import('./playlist/playlist.component').then((x) => x.PlaylistComponent),
+                    import('./album/album.component').then((x) => x.AlbumComponent),
             },
             {
                 path: AppRoutes.artist,

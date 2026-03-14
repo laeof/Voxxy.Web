@@ -1,19 +1,14 @@
 <div class="content-spacing-horizontal">
-    <table mat-table [dataSource]="(dataSource$ | async) || []">
+    <table mat-table [dataSource]="this.tracks || []">
         <ng-container matColumnDef="Number">
             <th mat-header-cell *matHeaderCellDef>{{ 'TRACK_LIST.NUMBER' | translate }}</th>
             <td mat-cell *matCellDef="let element" class="play-button">
                 <button (click)="togglePlayButton(element)">
-                    @if(this.isPlaying$ | async) {
-                    <mat-icon class="play" svgIcon="pause"></mat-icon>
-                    } @else {
+                    <mat-icon class="pause" svgIcon="pause"></mat-icon>
                     <mat-icon class="play" svgIcon="play"></mat-icon>
-
-                    @if((this.selected$ | async) === element.id) {
                     <span class="number">
-                        {{ ((dataSource$ | async) || []).indexOf(element) + 1 }}
+                        {{ (this.tracks?.indexOf(element) ?? -1) + 1 }}
                     </span>
-                    } }
                 </button>
             </td>
         </ng-container>
@@ -35,7 +30,14 @@
 
         <ng-container matColumnDef="Album">
             <th mat-header-cell *matHeaderCellDef>{{ 'TRACK_LIST.ALBUM' | translate }}</th>
-            <td mat-cell *matCellDef="let element">{{ element.album.name }}</td>
+            <td
+                (click)="navigateAlbum(element.album.id)"
+                (keydown.enter)="navigateAlbum(element.album.id)"
+                mat-cell
+                *matCellDef="let element"
+            >
+                <span class="album">{{ element.album.name }}</span>
+            </td>
         </ng-container>
 
         <ng-container matColumnDef="Duration">
@@ -44,6 +46,16 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr
+            [ngClass]="{
+                selected: (selected$ | async) === row.id,
+                playing: (currentTrack$ | async)?.id === row.id,
+                paused: (currentTrack$ | async)?.id === row.id && !(isPlaying$ | async)
+            }"
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            (click)="onSelect(row)"
+            (keydown.enter)="onSelect(row)"
+        ></tr>
     </table>
 </div>

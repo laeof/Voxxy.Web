@@ -1,25 +1,32 @@
+@use 'sass:map';
+
 @mixin table-columns($columns) {
     .mat-column- {
         @each $colName, $props in $columns {
-            $width: map-get($props, 'width');
-            $min-width: map-get($props, 'min-width');
-            $max-width: map-get($props, 'max-width');
+            $width: map.get($props, 'width');
+            $max-width: map.get($props, 'max-width');
+            $padding: map.get($props, 'padding');
+            $text-align: map.get($props, 'text-align');
 
             &#{$colName} {
                 flex: $width;
-                min-width: $width;
+                width: $width;
 
-                @if $min-width {
-                    min-width: $min-width;
+                @if $padding {
+                    padding: $padding;
                 }
 
                 @if $max-width {
                     max-width: $max-width;
                 }
 
+                @if $text-align {
+                    text-align: $text-align;
+                }
+
                 .mat-form-field {
                     width: $width;
-                    min-width: $min-width;
+                    min-width: $width;
                 }
             }
         }

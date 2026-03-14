@@ -12,6 +12,10 @@ export class EntityManagerService<T extends BaseEntity> {
     readonly onEntitySelected$ = this.onEntitySelected.asObservable();
     readonly filter = new BaseFilter();
 
+    set onEntitySelectedId(id: string | undefined | null) {
+        this.onEntitySelected.next(id);
+    }
+
     constructor(filter: BaseFilter) {
         this.filter = filter;
     }

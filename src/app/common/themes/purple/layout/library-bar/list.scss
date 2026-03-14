@@ -4,11 +4,19 @@
         color: var(--mat-sys-on-background);
 
         &:hover {
-            background-color: var(--mat-sys-surface-container);
+            background-color: var(--mat-sys-surface-container) !important;
         }
 
         &.active {
             background-color: var(--mat-sys-inverse-on-surface) !important;
+        }
+
+        &.playing {
+            .info {
+                .name {
+                    color: var(--theme-primary);
+                }
+            }
         }
 
         .image-wrapper {

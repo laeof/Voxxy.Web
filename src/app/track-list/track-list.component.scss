@@ -3,8 +3,10 @@
 @include table-columns.table-columns(
     (
         'Number': (
-            width: 50px,
-            max-width: 50px,
+            width: 30px,
+            max-width: 30px,
+            padding: 0 0 0 16px,
+            text-align: center,
         ),
     )
 );
@@ -28,19 +30,61 @@
             }
 
             .play-button {
-                width: 20px;
-                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
 
-                .play {
+                .number {
+                    display: flex;
+                }
+                .play,
+                .pause {
                     width: 16px;
                     height: 16px;
+                    display: none;
+                }
+            }
+
+            &.selected {
+                .play-button {
+                    .number {
+                        display: block;
+                    }
                 }
             }
 
             &:hover {
                 .play-button {
-                    .number {
+                    .number,
+                    .pause {
                         display: none;
+                    }
+                    .play {
+                        display: block;
+                    }
+                }
+
+                &.playing {
+                    .play-button {
+                        .play,
+                        .number {
+                            display: none;
+                        }
+                        .pause {
+                            display: block;
+                        }
+                    }
+                }
+
+                &.paused {
+                    .play-button {
+                        .number,
+                        .pause {
+                            display: none;
+                        }
+                        .play {
+                            display: block;
+                        }
                     }
                 }
             }
@@ -49,6 +93,13 @@
         td {
             border: none;
             height: 56px;
+
+            .album {
+                cursor: pointer;
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
 
             .song-details {
                 display: flex;

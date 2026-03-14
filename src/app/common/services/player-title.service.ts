@@ -19,7 +19,7 @@ export class PlayerTitleService implements OnDestroy {
     }
 
     private init() {
-        this.playerState.track$.pipe(takeUntil(this.destroy$)).subscribe((track) => {
+        this.playerState.currentTrack$.pipe(takeUntil(this.destroy$)).subscribe((track) => {
             if (!track) {
                 this.title.setTitle(this.appTitle);
                 return;

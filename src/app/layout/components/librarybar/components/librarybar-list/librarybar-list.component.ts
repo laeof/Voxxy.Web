@@ -12,6 +12,7 @@ import { startWith, Subject, Subscription, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppRoutes } from '../../../../../common/constants/app.routes.constant';
 import { FollowType } from '../../enums/follow-type-enum';
+import { MediaPlayerStateService } from '../../../../../common/services/media-player-state.service';
 
 @Component({
     selector: 'librarybar-list',
@@ -24,7 +25,6 @@ import { FollowType } from '../../enums/follow-type-enum';
 export class LibraryBarListComponent
     extends ListEntitiesFacade<LibraryDto>
     implements OnInit, OnDestroy
-
 {
     private readonly destroy$ = new Subject<void>();
 
@@ -40,7 +40,8 @@ export class LibraryBarListComponent
         public readonly libraryBarService: LibraryBarService,
         private readonly navigationService: NavigationService,
         private readonly route: ActivatedRoute,
-        private readonly router: Router
+        private readonly router: Router,
+        public readonly mediaPlayerStateService: MediaPlayerStateService
     ) {
         super(libraryBarService);
 
@@ -76,5 +77,16 @@ export class LibraryBarListComponent
 
             this.libraryBarService.onSelect(id);
         });
+    }
+
+    togglePlayButton(playlist: LibraryDto) {
+        if (this.mediaPlayerStateService.current?.fromPlaylist === playlist?.id) {
+            this.mediaPlayerStateService.playing
+                ? this.mediaPlayerStateService.pause()
+                : this.mediaPlayerStateService.play();
+            return;
+        }
+
+        this.mediaPlayerStateService.playQueue(playlist.tracks || [], 0);
     }
 }

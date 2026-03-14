@@ -8,5 +8,6 @@ export interface Track extends BaseEntity {
     duration: number;
     imageUrl: string;
     artist: Artist;
-    audioUrl: string;
+    audioKey: string;
+    fromPlaylist?: string;
 }

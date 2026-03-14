@@ -1,14 +1,30 @@
 <mat-nav-list>
     @for (item of dataSource$ | async; track item) {
     <button
-        class="item-card"
+        class="item-card wrapped-icon-hover"
         mat-list-item
         (click)="navigate(item)"
-        [ngClass]="{ active: (this.libraryBarService.onEntitySelected$ | async) === item.id }"
+        [ngClass]="{
+            active: (this.libraryBarService.onEntitySelected$ | async) === item.id,
+            playing: (this.mediaPlayerStateService.currentTrack$ | async)?.fromPlaylist === item.id
+        }"
     >
         <div class="image-wrapper">
-            <div class="play-overlay">
-                <mat-icon svgIcon="play"></mat-icon>
+            <div
+                class="play-overlay"
+                (click)="togglePlayButton(item)"
+                (keydown.enter)="togglePlayButton(item)"
+                [ngClass]="{
+                    playing:
+                        (this.mediaPlayerStateService.currentTrack$ | async)?.fromPlaylist ===
+                        item.id,
+                    paused:
+                        (this.mediaPlayerStateService.currentTrack$ | async)?.fromPlaylist ===
+                            item.id && !(this.mediaPlayerStateService.playingObs$ | async)
+                }"
+            >
+                <mat-icon class="pause hover-scale" svgIcon="pause"></mat-icon>
+                <mat-icon class="play hover-scale" svgIcon="play"></mat-icon>
             </div>
             <img [src]="item.imageUrl" alt="{{ item.name }}" class="image" />
         </div>

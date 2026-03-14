@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { TrackListComponent } from './components/track-list/track-list.component';
 import { PlaylistManagerComponent } from './components/manager/playlist-manager.component';
 import { Playlist } from './models/playlist';
 import { PlaylistService } from './services/playlist.service';
@@ -10,14 +9,22 @@ import { locale as russian } from './i18n/ru';
 import { locale as ukrainian } from './i18n/ua';
 import { TranslationLoaderService } from '../common/services/translation-loader.service';
 import { AsyncPipe } from '@angular/common';
-import { PlaylistManagerSkeleton } from './components/manager-skeleton/playlist-manager-skeleton.component';
+import { TrackListSkeletonComponent } from '../track-list/track-list-skeleton/track-list-skeleton.component';
+import { PlaylistTrackListComponent } from './components/playlist-track-list/playlist-track-list.component';
+import { ManagerSkeletonComponent } from '../skeleton/manager-skeleton/manager-skeleton.component';
 
 @Component({
     selector: 'app-playlist',
     standalone: true,
     templateUrl: './playlist.component.html',
     styleUrl: './playlist.component.scss',
-    imports: [TrackListComponent, PlaylistManagerComponent, PlaylistManagerSkeleton, AsyncPipe],
+    imports: [
+        PlaylistManagerComponent,
+        ManagerSkeletonComponent,
+        AsyncPipe,
+        TrackListSkeletonComponent,
+        PlaylistTrackListComponent,
+    ],
     providers: [PlaylistService, TranslationLoaderService],
 })
 export class PlaylistComponent implements OnInit, OnDestroy {
@@ -43,10 +50,7 @@ export class PlaylistComponent implements OnInit, OnDestroy {
         this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
             this.playlistId = params.get('id');
             if (this.playlistId != null) {
-                this.playlistService
-                    .getPlaylistById(this.playlistId)
-                    .pipe(takeUntil(this.destroy$))
-                    .subscribe();
+                this.playlistService.getPlaylistById(this.playlistId);
             }
         });
     }

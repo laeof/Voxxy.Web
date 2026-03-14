@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { TrackService } from '../../../track/services/TrackService';
+import { TrackService } from '../../../track/services/track.service';
 import { AsyncPipe } from '@angular/common';
 import { Track } from '../../../track/models/track';
-import { PlaylistType } from '../../../playlist/enums/playlist-type';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
 import { DurationTranslatePipe } from '../../../common/pipes/duration-translation.pipe';
 import { MediaPlayerStateService } from '../../../common/services/media-player-state.service';
@@ -20,11 +19,11 @@ import { RepeatMode } from '../../../common/enums/repeat-mode.enum';
 })
 export class PlayerBarComponent {
     constructor(private readonly mediaPlayerStateService: MediaPlayerStateService) {
-        this.currentTime$ = this.mediaPlayerStateService.position$;
+        this.currentTime$ = this.mediaPlayerStateService.positionObs$;
         this.currentVolume$ = this.mediaPlayerStateService.volumeObs$;
-        this.currentTrack$ = this.mediaPlayerStateService.track$;
-        this.isPlaying$ = this.mediaPlayerStateService.playing$;
-        this.repeatState$ = this.mediaPlayerStateService.repeatModeObs$;
+        this.currentTrack$ = this.mediaPlayerStateService.currentTrack$;
+        this.isPlaying$ = this.mediaPlayerStateService.playingObs$;
+        this.repeatState$ = this.mediaPlayerStateService.repeatObs$;
     }
 
     protected readonly RepeatMode = RepeatMode;
@@ -46,7 +45,7 @@ export class PlayerBarComponent {
     }
 
     togglePlayPause() {
-        if (this.mediaPlayerStateService.isPlayingSync) {
+        if (this.mediaPlayerStateService.playing) {
             this.mediaPlayerStateService.pause();
         } else {
             this.mediaPlayerStateService.play();
@@ -58,7 +57,7 @@ export class PlayerBarComponent {
             none: RepeatMode.All,
             all: RepeatMode.One,
             one: RepeatMode.None,
-        }[this.mediaPlayerStateService.repeatSync];
+        }[this.mediaPlayerStateService.repeat];
 
         this.mediaPlayerStateService.setRepeat(next);
     }
@@ -72,6 +71,6 @@ export class PlayerBarComponent {
     }
 
     toggleShuffle() {
-        this.mediaPlayerStateService.shuffle();
+        // this.mediaPlayerStateService.shuffle();
     }
 }

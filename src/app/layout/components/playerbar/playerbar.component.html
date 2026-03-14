@@ -1,4 +1,7 @@
 <div class="wrap">
+    @if (!(currentTrack$ | async)) {
+    <div class="overlay"></div>
+    }
     <div class="song section">
         <div class="wrap-img">
             <img src="{{ (currentTrack$ | async)?.imageUrl }}" alt="Playing song" class="img" />
@@ -33,7 +36,11 @@
                 @switch (repeatState$ | async) { @case (RepeatMode.None) {
                 <mat-icon svgIcon="repeat" class="hover-scale"></mat-icon>
                 } @case (RepeatMode.All) {
-                <mat-icon svgIcon="repeat" class="hover-scale" style="color: var(--theme-primary)"></mat-icon>
+                <mat-icon
+                    svgIcon="repeat"
+                    class="hover-scale"
+                    style="color: var(--theme-primary)"
+                ></mat-icon>
                 } @case (RepeatMode.One) {
                 <mat-icon svgIcon="repeat" class="hover-scale" style="color: green"></mat-icon>
                 } }

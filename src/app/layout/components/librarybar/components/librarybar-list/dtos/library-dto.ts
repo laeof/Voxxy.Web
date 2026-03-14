@@ -9,6 +9,7 @@ export class LibraryDto implements BaseEntity {
     artist: Artist = {
         name: '',
         id: '',
+        imageUrl: '',
     };
     followType: FollowType = null!;
     primaryColor: string = '';
