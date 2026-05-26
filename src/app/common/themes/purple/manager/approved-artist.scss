@@ -1,0 +1,5 @@
+@mixin approved-artist() {
+    .approved-icon {
+        color: var(--logo-color) !important;
+    }
+}

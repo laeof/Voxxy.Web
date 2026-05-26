@@ -1,4 +1,8 @@
 @mixin table() {
+    .table-title {
+        color: var(--mat-sys-on-background);
+    }
+
     table {
         .mat-mdc-row {
             &:hover {
@@ -13,7 +17,7 @@
                 }
             }
 
-            &.playing {
+            &.playing.same_playlist {
                 .play-button {
                     .number {
                         color: var(--theme-primary);

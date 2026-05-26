@@ -1,0 +1,12 @@
+@mixin follow-button() {
+    .action-follow-button {
+        background-color: transparent;
+        border: 1px solid var(--secondary-font-color);
+        color: var(--mat-sys-on-background);
+
+        &:hover {
+            border: 1px solid var(--mat-sys-on-background);
+            background-color: transparent !important;
+        }
+    }
+}

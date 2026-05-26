@@ -1,0 +1,20 @@
+<app-manager [subjectImageUrl]="album?.imageUrl" [subjectName]="album?.name">
+    <manager-subject-type
+        subject-additional-info
+        [playlistType]="album?.playlistType"
+    ></manager-subject-type>
+    <manager-subject-name subject-additional-info [name]="album?.name"></manager-subject-name>
+    <album-manager-common
+        subject-additional-info
+        [albumImageUrl]="album?.imageUrl"
+        [artistName]="album?.createdBy?.name"
+        [artistId]="album?.createdBy?.id"
+        [tracksAmount]="album?.tracks?.length || 0"
+    ></album-manager-common>
+    <action-play-button
+        manager-action-button
+        [trackList]="album?.tracks"
+        [trackListId]="album?.id"
+    ></action-play-button>
+    <action-shuffle-button manager-action-button></action-shuffle-button>
+</app-manager>

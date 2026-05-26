@@ -1,5 +1,5 @@
 import { Component, HostListener, Input } from '@angular/core';
-import { ResizablePaneDirective } from '../../directives/resizablepane.directive';
+import { ResizablePaneDirective } from '@common/directives/resizablepane.directive';
 
 @Component({
     selector: 'app-resizer',

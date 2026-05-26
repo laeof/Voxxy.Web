@@ -1,0 +1,8 @@
+@mixin shuffle-button() {
+    .shuffle-button {
+        background-color: var(--theme-primary);
+        mat-icon {
+            color: var(--mat-sys-on-primary) !important;
+        }
+    }
+}

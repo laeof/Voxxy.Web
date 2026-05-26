@@ -1,0 +1,37 @@
+.subject-name {
+    font-weight: 700;
+    font-size: 6rem;
+    line-height: 6rem;
+    min-width: 236px;
+}
+
+:host {
+    @container wrapper (width < 1150px) {
+        .subject-name {
+            font-size: 5rem;
+            line-height: 5rem;
+        }
+    }
+
+    @container wrapper (width < 850px) {
+        gap: 2px;
+        .subject-name {
+            font-size: 3.5rem;
+            line-height: 3.5rem;
+        }
+    }
+
+    @container wrapper (width < 550px) {
+        .subject-name {
+            font-size: 2rem;
+            line-height: 2rem;
+        }
+    }
+
+    @container wrapper (width < 550px) {
+        .subject-name {
+            font-size: 1.5rem;
+            line-height: 1.5rem;
+        }
+    }
+}

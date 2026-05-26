@@ -1,0 +1,150 @@
+@use 'table-columns' as table-columns;
+
+@include table-columns.table-columns(
+    (
+        'Number': (
+            width: 50px,
+            max-width: 50px,
+            text-align: center,
+        ),
+        'Duration': (
+            width: 65px,
+            max-width: 65px,
+        ),
+    )
+);
+
+:host {
+    z-index: 1;
+    position: relative;
+
+    .table-title {
+        font-weight: 800;
+        font-size: 1.25rem;
+        margin: 16px 0px 8px;
+    }
+
+    table {
+        .mat-mdc-row {
+            transform: translateY(10px);
+
+            .mat-mdc-cell:first-child {
+                border-top-left-radius: var(--mat-sys-corner-small);
+                border-bottom-left-radius: var(--mat-sys-corner-small);
+            }
+
+            .mat-mdc-cell:last-child {
+                border-top-right-radius: var(--mat-sys-corner-small);
+                border-bottom-right-radius: var(--mat-sys-corner-small);
+            }
+
+            .play-button {
+                .number {
+                    display: flex;
+                }
+                .play,
+                .pause {
+                    width: 16px;
+                    height: 16px;
+                    display: none;
+                }
+            }
+
+            &.selected {
+                .play-button {
+                    .number {
+                        display: block;
+                    }
+                }
+            }
+
+            &:hover {
+                .play-button {
+                    .number,
+                    .pause {
+                        display: none;
+                    }
+                    .play {
+                        display: block;
+                    }
+                }
+
+                &.playing.same_playlist {
+                    .play-button {
+                        .play,
+                        .number {
+                            display: none;
+                        }
+                        .pause {
+                            display: block;
+                        }
+                    }
+                }
+
+                &.paused.same_playlist {
+                    .play-button {
+                        .number,
+                        .pause {
+                            display: none;
+                        }
+                        .play {
+                            display: block;
+                        }
+                    }
+                }
+            }
+        }
+
+        td {
+            border: none;
+            height: 56px;
+
+            .album {
+                cursor: pointer;
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            .song-details {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                .song-cover {
+                    width: 40px;
+                    height: 40px;
+
+                    .song-img {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: var(--mat-sys-corner-small);
+                    }
+                }
+
+                .song-info {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    .song-name {
+                        font-size: var(--base-font-size);
+                    }
+
+                    .song-artist {
+                        font-size: var(--smaller-font-size);
+                        cursor: pointer;
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+        }
+
+        th,
+        td {
+            padding: 0px !important;
+        }
+    }
+}

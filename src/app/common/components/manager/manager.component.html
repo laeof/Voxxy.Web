@@ -1,0 +1,19 @@
+<div class="manager-wrapper">
+    <div class="subject-details content-spacing-horizontal vertical">
+        <div class="subject-cover-wrapper hover-scale" [style.border-radius]="subjectImageRadius">
+            <img
+                [src]="subjectImageUrl"
+                [alt]="subjectName"
+                [style.border-radius]="subjectImageRadius"
+                class="subject-cover"
+            />
+        </div>
+        <div class="subject-info-wrapper">
+            <ng-content select="[subject-additional-info]"></ng-content>
+        </div>
+    </div>
+    <div class="haze"></div>
+    <div class="subject-actions content-spacing-horizontal vertical-small">
+        <ng-content select="[manager-action-button]"></ng-content>
+    </div>
+</div>

@@ -10,6 +10,9 @@
 @use './material/material.overrides' as mat-overrides;
 @use './common/resizer' as resizer;
 @use './auth/auth' as auth;
+@use './manager/manager' as manager;
+@use './action-buttons/action-buttons' as action-buttons;
+@use './manager/approved-artist' as approved-artist;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();
@@ -21,7 +24,9 @@
 @include mat-overrides.material-overrides();
 @include resizer.resizer();
 @include auth.auth();
-
+@include manager.manager();
+@include action-buttons.action-buttons();
+@include approved-artist.approved-artist();
 @mixin theme() {
     $slim-slider-tokens: (
         active-track-height: 2px,
@@ -47,6 +52,7 @@
     }
 
     --theme-primary: #{palette.$purple-dark};
+    --theme-darker: color-mix(in srgb, var(--theme-primary) 50%, black);
     --logo-color: var(--theme-primary);
 
     --theme-secondary: #3b8fde;

@@ -1,0 +1,7 @@
+@use 'play-button' as play-button;
+@use 'follow-button' as follow-button;
+
+@mixin action-buttons() {
+    @include play-button.play-button();
+    @include follow-button.follow-button();
+}

@@ -1,0 +1,8 @@
+@mixin play-button() {
+    .action-play-button {
+        background-color: var(--theme-primary);
+        mat-icon {
+            color: var(--mat-sys-on-primary) !important;
+        }
+    }
+}

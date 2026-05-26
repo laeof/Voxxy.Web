@@ -3,10 +3,10 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
-import { authInterceptor } from './auth/interceptors/auth.interceptor';
-import { credentialsInterceptor } from './auth/interceptors/credential.interceptor';
-import { provideAuthInitializer } from './auth/initializers/auth.initializer';
 import { loaderInterceptor } from './common/interceptors/loader.interceptor';
+import { provideAuthInitializer } from '@features/auth/initializers/auth.initializer';
+import { authInterceptor } from '@features/auth/interceptors/auth.interceptor';
+import { credentialsInterceptor } from '@features/auth/interceptors/credential.interceptor';
 
 export const appConfig: ApplicationConfig = {
     providers: [

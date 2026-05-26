@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { distinctUntilChanged, Observable } from 'rxjs';
-import { LoaderService } from '../../services/loader.service';
+import { LoaderService } from '@common/services/loader.service';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { AsyncPipe } from '@angular/common';
 
