@@ -1,0 +1,45 @@
+<mat-nav-list>
+    @for (item of dataSource$ | async; track item) {
+    <button
+        class="item-card wrapped-icon-hover"
+        mat-list-item
+        (click)="navigate(item)"
+        [ngClass]="{
+            active: (this.libraryBarService.onEntitySelected$ | async) === item.id,
+            playing: (this.mediaPlayerStateService.currentTrackObs$ | async)?.fromPlaylist === item.id
+        }"
+    >
+        <div class="image-wrapper">
+            <div
+                class="play-overlay"
+                (click)="togglePlayButton(item)"
+                (keydown.enter)="togglePlayButton(item)"
+                [ngClass]="{
+                    playing:
+                        (this.mediaPlayerStateService.currentTrackObs$ | async)?.fromPlaylist ===
+                        item.id,
+                    paused:
+                        (this.mediaPlayerStateService.currentTrackObs$ | async)?.fromPlaylist ===
+                            item.id && !(this.mediaPlayerStateService.playingObs$ | async)
+                }"
+            >
+                <mat-icon class="pause hover-scale" svgIcon="pause"></mat-icon>
+                <mat-icon class="play hover-scale" svgIcon="play"></mat-icon>
+            </div>
+            <img [src]="item.imageUrl" alt="{{ item.name }}" class="image" />
+        </div>
+        <div class="info">
+            <span class="name">{{ item.name }}</span>
+            <span class="details">
+                <span class="subcolor">
+                    {{ 'LIST.' + (item.followType | playlistTypeTranslate) | translate }}
+                </span>
+                @if (item.followType !== FollowType.Artist) {
+                <span class="subcolor" style="font-size: 0.7rem">•</span>
+                <span class="subcolor">{{ item.artist.name }}</span>
+                }
+            </span>
+        </div>
+    </button>
+    }
+</mat-nav-list>

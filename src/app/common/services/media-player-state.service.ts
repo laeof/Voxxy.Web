@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Track } from '../../track/models/track';
+import { Track } from '../../features/track/models/track';
 import { RepeatMode } from '../enums/repeat-mode.enum';
 
 @Injectable({ providedIn: 'root' })
@@ -11,7 +11,7 @@ export class MediaPlayerStateService {
 
     private readonly queue$ = new BehaviorSubject<Track[]>([]);
     private readonly index$ = new BehaviorSubject<number>(-1);
-    private readonly current$ = new BehaviorSubject<Track | null>(null);
+    private readonly currentTrack$ = new BehaviorSubject<Track | null>(null);
     private readonly repeat$ = new BehaviorSubject<RepeatMode>(RepeatMode.None);
 
     readonly playingObs$ = this.playing$.asObservable();
@@ -19,7 +19,7 @@ export class MediaPlayerStateService {
     readonly volumeObs$ = this.volume$.asObservable();
     readonly queueObs$ = this.queue$.asObservable();
     readonly indexObs$ = this.index$.asObservable();
-    readonly currentTrack$ = this.current$.asObservable();
+    readonly currentTrackObs$ = this.currentTrack$.asObservable();
     readonly repeatObs$ = this.repeat$.asObservable();
 
     get playing() {
@@ -31,8 +31,8 @@ export class MediaPlayerStateService {
     get index() {
         return this.index$.value;
     }
-    get current() {
-        return this.current$.value;
+    get currentTrack() {
+        return this.currentTrack$.value;
     }
     get repeat() {
         return this.repeat$.value;
@@ -48,7 +48,7 @@ export class MediaPlayerStateService {
     playQueue(queue: Track[], index = 0) {
         this.queue$.next(queue);
         this.index$.next(index);
-        this.current$.next(queue[index] ?? null);
+        this.currentTrack$.next(queue[index] ?? null);
         this.playing$.next(true);
     }
 
@@ -65,14 +65,14 @@ export class MediaPlayerStateService {
         }
 
         this.index$.next(i);
-        this.current$.next(this.queue[i]);
+        this.currentTrack$.next(this.queue[i]);
     }
 
     prev() {
         if (this.index <= 0) return;
         const i = this.index - 1;
         this.index$.next(i);
-        this.current$.next(this.queue[i]);
+        this.currentTrack$.next(this.queue[i]);
     }
 
     setPosition(sec: number) {

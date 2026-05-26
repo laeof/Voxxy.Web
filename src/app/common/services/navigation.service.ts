@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppRoutes } from '../constants/app.routes.constant';
 import { UrlHelper } from '../helpers/url.helper';
-import { LibraryDto } from '../../layout/components/librarybar/components/librarybar-list/dtos/library-dto';
-import { FollowType } from '../../layout/components/librarybar/enums/follow-type-enum';
+import { LibraryDto } from '@common/layout/components/librarybar/components/librarybar-list/dtos/library-dto';
+import { FollowType } from '@common/layout/components/librarybar/enums/follow-type-enum';
 
 @Injectable({
     providedIn: 'root',

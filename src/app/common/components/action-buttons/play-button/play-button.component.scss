@@ -1,0 +1,23 @@
+.action-play-button {
+    padding: 16px;
+    border-radius: var(--corner-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 55px;
+
+    &:hover {
+        cursor: pointer;
+        filter: brightness(1.05);
+    }
+
+    .play {
+        margin-left: 5px;
+        width: 25px;
+
+        &.pause {
+            margin-left: 0;
+        }
+    }
+}

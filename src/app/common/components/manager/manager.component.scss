@@ -1,0 +1,61 @@
+.manager-wrapper {
+    container-name: wrapper;
+    container-type: inline-size;
+    position: relative;
+
+    --color-dark: color-mix(in srgb, var(--color) 40%, var(--primary-container-color));
+
+    .haze {
+        position: absolute;
+        --color-darker: color-mix(in srgb, var(--color-dark) 80%, var(--primary-container-color));
+        background: linear-gradient(to bottom, var(--color-darker), var(--primary-container-color));
+        height: 175px;
+        width: 100%;
+        z-index: 0;
+    }
+
+    .subject-details {
+        display: flex;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--color), var(--color-dark));
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        transition: background-color 0.2s ease;
+        gap: 20px;
+
+        .subject-cover-wrapper {
+            max-width: 235px;
+            min-height: 128px;
+            min-width: 128px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+            border-radius: var(--mat-sys-corner-small);
+
+            .subject-cover {
+                border-radius: var(--mat-sys-corner-small);
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+
+        .subject-info-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            gap: 6px;
+            width: 100%;
+        }
+    }
+
+    .subject-actions {
+        display: flex;
+        align-items: center;
+        z-index: 1;
+        position: relative;
+        gap: 20px;
+    }
+}

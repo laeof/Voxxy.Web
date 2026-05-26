@@ -1,0 +1,8 @@
+@if (currentOpenedArtist$ | async; as artist) {
+    <app-artist-manager
+        [style.--color]="'#6F400A'"
+        [artist]="artist"
+    ></app-artist-manager>
+} @else {
+    <app-manager-skeleton></app-manager-skeleton>
+}

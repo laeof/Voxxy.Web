@@ -1,0 +1,10 @@
+.action-follow-button {
+    display: inline-block;
+    padding: 8px 20px !important;
+    transition:
+        border-color 0.1s ease-in-out,
+        transform 0.1s ease-in-out;
+    &:hover {
+        transform: scale(1.05) !important;
+    }
+}

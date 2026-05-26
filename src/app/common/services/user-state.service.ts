@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { UserClaim } from '../../auth/models/user-claim';
+import { UserClaim } from '@features/auth/models/user-claim';
 import { BehaviorSubject } from 'rxjs';
-import { User } from '../../auth/models/user';
+import { User } from '@features/auth/models/user';
 
 @Injectable({
     providedIn: 'root',

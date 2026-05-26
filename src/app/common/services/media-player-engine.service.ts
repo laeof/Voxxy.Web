@@ -1,12 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, distinctUntilChanged, takeUntil, combineLatest } from 'rxjs';
-import { Track } from '../../track/models/track';
+import { Track } from '../../features/track/models/track';
 import { MediaPlayerStateService } from './media-player-state.service';
 import { environment } from '../../../environments/environment';
 import { UrlHelper } from '../helpers/url.helper';
 import { ApiRoutes } from '../constants/api.routes.constant';
-import { RepeatMode } from '../enums/repeat-mode.enum';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerEngineService implements OnDestroy {
@@ -63,7 +62,7 @@ export class MediaPlayerEngineService implements OnDestroy {
             )
             .pipe(takeUntil(this.destroy$))
             .subscribe((url) => {
-                if (this.state.current?.audioKey !== track.audioKey) return;
+                if (this.state.currentTrack?.audioKey !== track.audioKey) return;
 
                 this.audio.src = url;
                 this.audio.currentTime = 0;

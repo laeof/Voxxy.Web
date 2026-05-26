@@ -1,0 +1,12 @@
+<span class="artist-name">
+    <img [src]="albumImageUrl" [alt]="artistName" class="user-image" />
+    <span
+        (click)="redirectToArtist(artistId)"
+        (keydown.enter)="redirectToArtist(artistId)"
+        >{{ artistName }}</span
+    >
+</span>
+<span class="subcolor" style="font-size: 0.5rem">•</span>
+<span class="subcolor">
+    {{ tracksAmount }} {{ 'MANAGER.TRACKS_AMOUNT' | translate }}
+</span>

@@ -116,5 +116,9 @@ export class MatIconsService {
             'favorite',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/favorite.svg')
         );
+        this.matIconRegistry.addSvgIcon(
+            'approved-artist',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/approved-artist.svg')
+        );
     }
 }

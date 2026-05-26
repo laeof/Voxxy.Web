@@ -1,0 +1,11 @@
+@defer (when currentOpenedPlaylist$ | async) {
+<playlist-manager
+    [style.--color]="(currentOpenedPlaylist$ | async)?.primaryColor"
+    [playlist]="currentOpenedPlaylist$ | async"
+></playlist-manager>
+<playlist-track-list [playlistId]="(currentOpenedPlaylist$ | async)!.id"></playlist-track-list>
+}
+@placeholder {
+    <app-manager-skeleton></app-manager-skeleton>
+    <app-track-list-skeleton></app-track-list-skeleton>
+}

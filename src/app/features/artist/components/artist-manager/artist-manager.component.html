@@ -1,0 +1,20 @@
+<app-manager
+    [subjectImageUrl]="artist?.imageUrl"
+    [subjectName]="artist?.name"
+    [subjectImageRadius]="'50%'"
+>
+    <manager-subject-name subject-additional-info [name]="artist?.name"></manager-subject-name>
+    <artist-manager-common-approved subject-additional-info></artist-manager-common-approved>
+    <artist-manager-common-listeners
+        subject-additional-info
+        [listenersPerMonth]="0"
+    ></artist-manager-common-listeners>
+    <action-play-button
+        manager-action-button
+        [trackList]="dataSource"
+        [trackListId]="playlistId"
+    ></action-play-button>
+    <action-shuffle-button manager-action-button></action-shuffle-button>
+    <action-follow-button manager-action-button></action-follow-button>
+</app-manager>
+<artist-popular-track-list [dataSource]="dataSource"></artist-popular-track-list>

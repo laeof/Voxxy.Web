@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Track } from '../../track/models/track';
+import { Track } from '@features/track/models/track';
 
 export class ManagerFacade {
     isPlaying$: Observable<boolean>;

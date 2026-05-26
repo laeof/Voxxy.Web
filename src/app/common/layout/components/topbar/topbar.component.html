@@ -1,0 +1,87 @@
+<app-snow [count]="50"></app-snow>
+<div class="start-section">
+    <layout-logo></layout-logo>
+</div>
+<div class="middle-section">
+    <div class="button-wrapper">
+        <button class="icon-wrapper hover-scale wrapped-icon-hover" (click)="navigateHome()">
+            @if(isHome) {
+            <mat-icon svgIcon="filled_home" class="active"></mat-icon>
+            } @else {
+            <mat-icon svgIcon="home"></mat-icon>
+            }
+        </button>
+    </div>
+    <div class="search-wrapper">
+        <mat-icon svgIcon="search" class="search-icon"></mat-icon>
+        <input
+            class="search-input"
+            type="text"
+            placeholder="{{ 'SEARCH.PLACEHOLDER' | translate }}"
+        />
+    </div>
+</div>
+<div class="end-section">
+    <ng-container *authorize>
+        <mat-icon svgIcon="notifications"></mat-icon>
+        <button class="avatar-wrapper hover-scale" matIconButton [matMenuTriggerFor]="userMenu">
+            <img
+                class="avatar-image"
+                [src]="userStateService.value()?.imageUrl"
+                [alt]="userStateService.value()?.fullName"
+            />
+        </button>
+        <mat-menu
+            #userMenu="matMenu"
+            class="user-menu content-spacing-horizontal horizontal-smaller"
+            [overlapTrigger]="false"
+        >
+            <button
+                class="wrapped-icon-hover menu-item"
+                mat-menu-item
+                (click)="navigateUserProfile()"
+            >
+                <mat-icon svgIcon="account"></mat-icon>
+                <span>{{ 'MENU.ACCOUNT' | translate }}</span>
+            </button>
+            <button
+                class="wrapped-icon-hover menu-item"
+                mat-menu-item
+                (click)="navigateUserProfile()"
+            >
+                <mat-icon svgIcon="profile"></mat-icon>
+                <span>{{ 'MENU.PROFILE' | translate }}</span>
+            </button>
+            <button
+                class="wrapped-icon-hover menu-item"
+                mat-menu-item
+                (click)="navigateUserProfile()"
+            >
+                <mat-icon svgIcon="settings"></mat-icon>
+                <span>{{ 'MENU.SETTINGS' | translate }}</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button class="wrapped-icon-hover menu-item" mat-menu-item (click)="logout()">
+                <mat-icon svgIcon="logout"></mat-icon>
+                <span>{{ 'MENU.LOGOUT' | translate }}</span>
+            </button>
+            <mat-divider></mat-divider>
+            <div class="updates">
+                <span class="title titlecolor">{{ 'UPDATES.TITLE' | translate }}</span>
+                <div class="info content-spacing-vertical vertical-small">
+                    <mat-icon svgIcon="check"></mat-icon>
+                    <span class="default titlecolor">{{ 'UPDATES.DEFAULT' | translate }}</span>
+                    <span class="subtitle subcolor">{{ 'UPDATES.SUBTITLE' | translate }}</span>
+                </div>
+            </div>
+        </mat-menu>
+    </ng-container>
+    <ng-container *anonymous>
+        <button class="common-button register hover-scale" (click)="navigateRegister()">
+            {{ 'ANONYMOUS_MODE.REGISTER_BUTTON' | translate }}
+        </button>
+        <button class="common-button login hover-scale" (click)="navigateLogin()">
+            {{ 'ANONYMOUS_MODE.LOGIN_BUTTON' | translate }}
+        </button>
+    </ng-container>
+</div>

@@ -1,0 +1,13 @@
+@mixin manager() {
+    .manager-wrapper {
+        .subject-details {
+            .subject-cover-wrapper {
+                box-shadow: 0 0 20px var(--mat-sys-surface-container);
+            }
+
+            .subject-info-wrapper {
+                color: var(--mat-sys-on-background);
+            }
+        }
+    }
+}
