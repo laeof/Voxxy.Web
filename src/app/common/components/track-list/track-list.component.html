@@ -1,7 +1,4 @@
 <div class="content-spacing-horizontal">
-    @if (title) {
-        <h2 class="table-title">{{ title }}</h2>
-    }
     <table mat-table [dataSource]="this.tracks || []">
         <ng-container matColumnDef="Number">
             <th mat-header-cell *matHeaderCellDef>{{ 'TRACK_LIST.NUMBER' | translate }}</th>

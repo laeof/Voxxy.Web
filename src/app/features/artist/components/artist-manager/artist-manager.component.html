@@ -11,10 +11,9 @@
     ></artist-manager-common-listeners>
     <action-play-button
         manager-action-button
-        [trackList]="dataSource"
-        [trackListId]="playlistId"
+        [trackList]="(entity$ | async)?.tracks"
+        [trackListId]="(entity$ | async)?.id"
     ></action-play-button>
     <action-shuffle-button manager-action-button></action-shuffle-button>
     <action-follow-button manager-action-button></action-follow-button>
 </app-manager>
-<artist-popular-track-list [dataSource]="dataSource"></artist-popular-track-list>

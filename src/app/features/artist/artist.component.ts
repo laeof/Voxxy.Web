@@ -1,27 +1,41 @@
-import { ListEntitiesFacade } from '@common/facades/list-entities.facade';
 import { Artist } from './models/artist';
 import { ArtistService } from './services/artist.service';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
 import { locale as english } from './i18n/en';
 import { locale as russian } from './i18n/ru';
-import { Component, OnInit } from '@angular/core';
-import { first, map, Observable, Subject, takeUntil } from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { map, Observable, Subject, takeUntil } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ArtistManagerComponent } from "./components/artist-manager/artist-manager.component";
+import { ArtistManagerComponent } from './components/artist-manager/artist-manager.component';
 import { ManagerSkeletonComponent } from '@common/components/manager/manager-skeleton/manager-skeleton.component';
+import { Track } from '@features/track/models/track';
+import { Album } from '@features/album/models/album';
+import { ArtistPopularTrackListComponent } from './components/artist-popular-track-list/artist-popular-track-list.component';
+import { TitleSectionComponent } from '@common/components/title-section/title-section.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ArtistPopularTrackService } from './services/artist-popular-track.service';
+import { SingleEntityFacade } from '@common/facades/single-entity.facade';
 
 @Component({
     selector: 'app-artist',
     standalone: true,
     templateUrl: './artist.component.html',
-    providers: [ArtistService],
-    imports: [AsyncPipe, ArtistManagerComponent, ManagerSkeletonComponent],
+    providers: [ArtistService, ArtistPopularTrackService],
+    imports: [
+        AsyncPipe,
+        ArtistManagerComponent,
+        ManagerSkeletonComponent,
+        ArtistPopularTrackListComponent,
+        TitleSectionComponent,
+        TranslatePipe,
+    ],
 })
-export class ArtistComponent extends ListEntitiesFacade<Artist> implements OnInit {
+export class ArtistComponent extends SingleEntityFacade<Artist> implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
 
-    public readonly currentOpenedArtist$: Observable<Artist | undefined>;
+    dataSource: Track[] = [];
+    playlistId: string | undefined = undefined;
 
     constructor(
         private readonly artistService: ArtistService,
@@ -31,10 +45,11 @@ export class ArtistComponent extends ListEntitiesFacade<Artist> implements OnIni
         super(artistService);
 
         this.translationLoaderService.loadTranslations(english, russian);
+    }
 
-        this.currentOpenedArtist$ = this.artistService.onEntitiesChanged$.pipe(
-            map((artists) => (artists.length > 0 ? artists[0] : undefined)),
-        );
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     ngOnInit(): void {
@@ -44,9 +59,19 @@ export class ArtistComponent extends ListEntitiesFacade<Artist> implements OnIni
                 this.artistService.getArtistById(id);
             }
         });
-    }
 
-    logartist() {
-        this.artistService.onEntitiesChanged$.pipe(first()).subscribe((v) => console.log(v));
+        this.entity$.pipe(takeUntil(this.destroy$)).subscribe((artist) => {
+            //fixme temporary solution, need to be fixed after backend changes
+            this.dataSource = artist?.albums
+                ?.filter((album) => album.tracks.length !== 0)
+                ?.flatMap((album: Album) => {
+                    this.playlistId = album.id;
+                    album.tracks.forEach((track) => {
+                        track.fromPlaylist = album.id;
+                        track.artist = artist!;
+                    });
+                    return album.tracks;
+                })!;
+        });
     }
 }

@@ -1,8 +1,8 @@
-@if (currentOpenedArtist$ | async; as artist) {
-    <app-artist-manager
-        [style.--color]="'#6F400A'"
-        [artist]="artist"
-    ></app-artist-manager>
+@if (entity$ | async; as artist) {
+    <app-artist-manager [style.--color]="'#6F400A'" [artist]="artist"></app-artist-manager>
+    <app-title-section [title]="'TITLE_SECTION.POPULAR_TRACKS' | translate">
+        <artist-popular-track-list [artist]="artist"></artist-popular-track-list>
+    </app-title-section>
 } @else {
     <app-manager-skeleton></app-manager-skeleton>
 }

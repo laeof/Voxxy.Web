@@ -93,6 +93,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
     }
 
     navigateUserProfile() {
-        throw new Error('Method not implemented.');
+        this.navigationService.navigateUserProfileById(this.userStateService.value()?.id ?? '');
     }
 }

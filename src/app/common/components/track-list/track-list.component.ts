@@ -22,7 +22,6 @@ import { Track } from '@features/track/models/track';
 export class TrackListComponent extends ListEntitiesFacade<Track> implements OnDestroy {
     private readonly _unsubscribeAll = new Subject<void>();
     @Input() tracks: Track[] | undefined | null = [];
-    @Input() title: string | undefined | null = '';
     @Input() allowHeader: boolean = true;
     @Input() showArtist: boolean = true;
     

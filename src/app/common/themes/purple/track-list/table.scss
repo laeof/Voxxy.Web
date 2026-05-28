@@ -1,8 +1,4 @@
 @mixin table() {
-    .table-title {
-        color: var(--mat-sys-on-background);
-    }
-
     table {
         .mat-mdc-row {
             &:hover {

@@ -21,6 +21,7 @@ export class ApiRoutes {
 
     public static readonly Users = {
         me: '/users/me',
+        getById: '/users/:id',
     };
 
     public static readonly Track = {

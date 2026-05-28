@@ -6,4 +6,5 @@ export class AppRoutes {
     public static readonly album = 'album/:id';
     public static readonly user = 'user/:id';
     public static readonly auth = 'auth';
+    public static readonly userProfile = 'user/:id';
 }

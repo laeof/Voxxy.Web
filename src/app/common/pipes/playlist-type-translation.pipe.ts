@@ -19,6 +19,8 @@ export class PlaylistTypeTranslatePipe implements PipeTransform {
                 return 'PLAYLIST_TYPE_ARTIST';
             case 5:
                 return 'PLAYLIST_TYPE_PLAYLIST';
+            case 6:
+                return 'PLAYLIST_TYPE_USER';
             default:
                 return '';
         }
