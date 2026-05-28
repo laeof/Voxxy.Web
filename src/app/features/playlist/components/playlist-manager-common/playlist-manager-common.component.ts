@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { NavigationService } from '@common/services/navigation.service';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -13,7 +14,11 @@ export class PlaylistManagerCommonComponent {
     @Input() authorId: string | undefined = undefined;
     @Input() tracksAmount: number | undefined = undefined;
 
+    constructor(private readonly navigationService: NavigationService) {}
+
     redirectToAuthor(authorId: string | undefined): void {
         if (!authorId) return;
+
+        this.navigationService.navigateUserProfileById(authorId);
     }
 }

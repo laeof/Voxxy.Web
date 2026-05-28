@@ -1,0 +1,9 @@
+.title-section-wrapper {
+    position: relative;
+    z-index: 1;
+    .title-section-title {
+        position: relative;
+        font-weight: 800;
+        font-size: 1.25rem;
+    }
+}

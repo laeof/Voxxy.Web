@@ -45,6 +45,10 @@ export class NavigationService {
         this.router.navigate([UrlHelper.transform(AppRoutes.album, ':id', id)]);
     }
 
+    navigateUserProfileById(id: string): void {
+        this.router.navigate([UrlHelper.transform(AppRoutes.userProfile, ':id', id)]);
+    }
+
     navigateHome(): void {
         this.router.navigate([AppRoutes.home]);
     }

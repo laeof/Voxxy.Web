@@ -1,6 +1,10 @@
-<span class="artist-name">
+<span
+    class="artist-name"
+    (click)="redirectToAuthor(authorId)"
+    (keydown.enter)="redirectToAuthor(authorId)"
+>
     <img [src]="authorImageUrl" [alt]="authorName" class="user-image" />
-    {{ authorName }}
+    <span>{{ authorName }}</span>
 </span>
 <span class="subcolor" style="font-size: 0.5rem">•</span>
 <span class="subcolor"> {{ tracksAmount }} {{ 'MANAGER.TRACKS_AMOUNT' | translate }} </span>

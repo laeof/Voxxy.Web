@@ -7,7 +7,7 @@ export const locale = {
             FOLLOW: 'Follow',
             UNFOLLOW: 'Unfollow',
         },
-        TRACK_LIST: {
+        TITLE_SECTION: {
             POPULAR_TRACKS: 'Popular tracks',
         }
     },

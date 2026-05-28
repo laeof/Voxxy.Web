@@ -1,0 +1,6 @@
+@if (entity$ | async; as user) {
+    <app-user-profile-manager [style.--color]="'#6F400A'" [user]="user"></app-user-profile-manager>
+    
+} @else {
+    <app-manager-skeleton></app-manager-skeleton>
+}

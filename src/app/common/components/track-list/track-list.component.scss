@@ -13,17 +13,9 @@
         ),
     )
 );
-
 :host {
-    z-index: 1;
     position: relative;
-
-    .table-title {
-        font-weight: 800;
-        font-size: 1.25rem;
-        margin: 16px 0px 8px;
-    }
-
+    z-index: 1;
     table {
         .mat-mdc-row {
             transform: translateY(10px);

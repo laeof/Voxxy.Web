@@ -13,6 +13,7 @@
 @use './manager/manager' as manager;
 @use './action-buttons/action-buttons' as action-buttons;
 @use './manager/approved-artist' as approved-artist;
+@use './common/title-section' as title-section;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();
@@ -20,6 +21,7 @@
 @include layout.layout();
 @include playlist.playlist();
 @include table.table();
+@include title-section.title-section();
 @include logo.logo();
 @include mat-overrides.material-overrides();
 @include resizer.resizer();
