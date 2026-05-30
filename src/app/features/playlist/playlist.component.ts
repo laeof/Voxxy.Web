@@ -12,6 +12,7 @@ import { ManagerSkeletonComponent } from '@common/components/manager/manager-ske
 import { TrackListSkeletonComponent } from '@common/components/track-list/track-list-skeleton/track-list-skeleton.component';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
 import { PlaylistTrackListComponent } from './components/playlist-track-list/playlist-track-list.component';
+import { SingleEntityFacade } from '@common/facades/single-entity.facade';
 
 @Component({
     selector: 'app-playlist',
@@ -26,10 +27,8 @@ import { PlaylistTrackListComponent } from './components/playlist-track-list/pla
     ],
     providers: [PlaylistService, TranslationLoaderService],
 })
-export class PlaylistComponent implements OnInit, OnDestroy {
+export class PlaylistComponent extends SingleEntityFacade<Playlist> implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
-
-    currentOpenedPlaylist$: Observable<Playlist | undefined>;
 
     private playlistId: string | null = null;
 
@@ -38,11 +37,8 @@ export class PlaylistComponent implements OnInit, OnDestroy {
         private readonly playlistService: PlaylistService,
         private readonly translationLoaderService: TranslationLoaderService
     ) {
+        super(playlistService);
         this.translationLoaderService.loadTranslations(english, russian, ukrainian);
-
-        this.currentOpenedPlaylist$ = this.playlistService.onEntitiesChanged$.pipe(
-            map((playlists) => (playlists.length > 0 ? playlists[0] : undefined))
-        );
     }
 
     ngOnInit(): void {

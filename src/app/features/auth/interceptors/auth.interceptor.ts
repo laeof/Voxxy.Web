@@ -16,8 +16,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             if (error.status === 401 && !req.url.endsWith(ApiRoutes.Auth.logout)) {
                 console.log('token expired, refreshing token...');
                 return auth.refreshToken().pipe(
-                    switchMap(() => {
+                    switchMap((value) => {
                         console.log('refresh token created');
+                        userStateService.set(value);
                         return next(req);
                     }),
                     catchError((refreshError) => {

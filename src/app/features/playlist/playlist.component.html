@@ -1,9 +1,9 @@
-@defer (when currentOpenedPlaylist$ | async) {
+@defer (when entity$ | async) {
 <playlist-manager
-    [style.--color]="(currentOpenedPlaylist$ | async)?.primaryColor"
-    [playlist]="currentOpenedPlaylist$ | async"
+    [style.--color]="(entity$ | async)?.primaryColor"
+    [playlist]="entity$ | async"
 ></playlist-manager>
-<playlist-track-list [playlistId]="(currentOpenedPlaylist$ | async)!.id"></playlist-track-list>
+<playlist-track-list [playlistId]="(entity$ | async)!.id"></playlist-track-list>
 }
 @placeholder {
     <app-manager-skeleton></app-manager-skeleton>

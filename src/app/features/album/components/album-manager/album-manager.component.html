@@ -17,4 +17,9 @@
         [trackListId]="album?.id"
     ></action-play-button>
     <action-shuffle-button manager-action-button></action-shuffle-button>
+    <action-follow-button
+        [followeeId]="album?.id"
+        [type]="2"
+        manager-action-button
+    ></action-follow-button>
 </app-manager>

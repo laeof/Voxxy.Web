@@ -6,6 +6,8 @@ export const locale = {
             PLAYLIST_TYPE_ALBUM: 'Album',
             PLAYLIST_TYPE_SINGLE: 'Single',
             TRACKS_AMOUNT: 'tracks',
+            FOLLOW: 'Follow',
+            UNFOLLOW: 'Unfollow',
         },
         TRACK_LIST: {
             NUMBER: '#',

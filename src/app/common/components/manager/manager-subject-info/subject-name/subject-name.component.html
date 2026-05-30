@@ -1,1 +1,11 @@
-<span class="subject-name">{{ name }}</span>
+<span
+    class="subject-name"
+    [appAutoSubjectNameSize]="name"
+    [rootSelector]="rootSelector"
+    [rootImageSelector]="rootImageSelector"
+    [rootNameSelector]="rootNameSelector"
+    [maxFontSize]="maxFontSize"
+    [minFontSize]="minFontSize"
+    [maxLines]="maxLines"
+    >{{ name }}</span
+>

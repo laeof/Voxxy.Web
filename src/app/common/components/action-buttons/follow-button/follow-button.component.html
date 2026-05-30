@@ -1,1 +1,12 @@
-<span class="common-button action-follow-button">{{ 'MANAGER.FOLLOW' | translate }}</span>
+@if (!(isFollowed$ | async)) {
+    <span class="common-button action-follow-button" (click)="follow()" (keydown)="follow()">{{
+        'MANAGER.FOLLOW' | translate
+    }}</span>
+} @else {
+    <span
+        class="common-button action-follow-button"
+        (click)="unfollow()"
+        (keydown.enter)="unfollow()"
+        >{{ 'MANAGER.UNFOLLOW' | translate }}</span
+    >
+}
