@@ -3,10 +3,13 @@
     [subjectName]="user?.fullName"
     [subjectImageRadius]="'50%'"
 >
-    <manager-subject-type
-        subject-additional-info
-        [playlistType]="6"
-    ></manager-subject-type>
+    <manager-subject-type subject-additional-info [playlistType]="6"></manager-subject-type>
     <manager-subject-name subject-additional-info [name]="user?.fullName"></manager-subject-name>
-    <action-follow-button manager-action-button></action-follow-button>
+    @if (user?.id != userStateService.value()?.id) {
+        <action-follow-button
+            [followeeId]="user?.id"
+            [type]="6"
+            manager-action-button
+        ></action-follow-button>
+    }
 </app-manager>

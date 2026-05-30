@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, OnDestroy, OnInit } from '@angular/core';
 import { MatNavList } from '@angular/material/list';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LibraryDto } from './dtos/library-dto';
@@ -13,19 +13,27 @@ import { ListEntitiesFacade } from '@common/facades/list-entities.facade';
 import { PlaylistTypeTranslatePipe } from '@common/pipes/playlist-type-translation.pipe';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { NavigationService } from '@common/services/navigation.service';
+import { FollowService } from '@common/services/follow-service';
+import { AutoSubjectNameSizeDirective } from '@common/directives/fix-text-height.directive';
+import { ManagerSubjectNameComponent } from '@common/components/manager/manager-subject-info/subject-name/subject-name.component';
 
 @Component({
     selector: 'librarybar-list',
     standalone: true,
     templateUrl: './librarybar-list.component.html',
     styleUrl: './librarybar-list.component.scss',
-    imports: [TranslatePipe, PlaylistTypeTranslatePipe, MatNavList, AsyncPipe, NgClass, MatIcon],
+    imports: [
+        TranslatePipe,
+        PlaylistTypeTranslatePipe,
+        MatNavList,
+        AsyncPipe,
+        NgClass,
+        MatIcon,
+        ManagerSubjectNameComponent,
+    ],
     providers: [LibraryBarService],
 })
-export class LibraryBarListComponent
-    extends ListEntitiesFacade<LibraryDto>
-    implements OnInit, OnDestroy
-{
+export class LibraryBarListComponent extends ListEntitiesFacade<LibraryDto> implements OnDestroy {
     private readonly destroy$ = new Subject<void>();
 
     protected readonly FollowType = FollowType;
@@ -41,15 +49,16 @@ export class LibraryBarListComponent
         private readonly navigationService: NavigationService,
         private readonly route: ActivatedRoute,
         private readonly router: Router,
-        public readonly mediaPlayerStateService: MediaPlayerStateService
+        public readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly followService: FollowService,
     ) {
         super(libraryBarService);
 
         this.subscriptions.push(this.subscribeRouteParams());
-    }
 
-    ngOnInit(): void {
-        this.libraryBarService.getLibrary().pipe(takeUntil(this.destroy$)).subscribe();
+        this.followService.onEntitiesChanged$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => this.libraryBarService.getLibrary());
     }
 
     ngOnDestroy(): void {

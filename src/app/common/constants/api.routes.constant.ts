@@ -1,6 +1,8 @@
 export class ApiRoutes {
     public static readonly Follows = {
         getByUser: '/followees',
+        follow: '/followees',
+        unfollow: '/followees',
     };
 
     public static readonly Playlists = {

@@ -23,15 +23,18 @@
         transition: background-color 0.2s ease;
         gap: 20px;
 
+        min-width: 0;
+
         .subject-cover-wrapper {
             max-width: 235px;
-            min-height: 128px;
             min-width: 128px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: transform 0.3s;
             border-radius: var(--mat-sys-corner-small);
+            aspect-ratio: 1/1;
+            height: 100%;
 
             .subject-cover {
                 border-radius: var(--mat-sys-corner-small);
@@ -47,7 +50,11 @@
             justify-content: flex-end;
             align-items: flex-start;
             gap: 6px;
-            width: 100%;
+
+            min-width: 0;
+            flex: 1;
+
+            overflow: hidden;
         }
     }
 

@@ -28,6 +28,9 @@ export class NavigationService {
             case FollowType.LovedSongs:
                 this.navigatePlaylistById(libraryDto.id);
                 break;
+            case FollowType.User:
+                this.navigateUserProfileById(libraryDto.id);
+                break;
             default:
                 console.warn(`NavigationService: Unknown library type '${libraryDto.followType}'`);
         }

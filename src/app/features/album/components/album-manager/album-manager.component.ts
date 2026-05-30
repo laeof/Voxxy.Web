@@ -6,6 +6,7 @@ import { ShuffleButtonComponent } from '@common/components/action-buttons/shuffl
 import { ManagerSubjectTypeComponent } from '@common/components/manager/manager-subject-info/subject-type/subject-type.component';
 import { ManagerSubjectNameComponent } from '@common/components/manager/manager-subject-info/subject-name/subject-name.component';
 import { AlbumManagerCommonComponent } from '../album-manager-common/album-manager-common.component';
+import { FollowButtonComponent } from '@common/components/action-buttons/follow-button/follow-button.component';
 
 @Component({
     selector: 'album-manager',
@@ -18,6 +19,7 @@ import { AlbumManagerCommonComponent } from '../album-manager-common/album-manag
         ManagerSubjectTypeComponent,
         ManagerSubjectNameComponent,
         AlbumManagerCommonComponent,
+        FollowButtonComponent,
     ],
 })
 export class AlbumManagerComponent {

@@ -15,5 +15,5 @@
         [trackListId]="(entity$ | async)?.id"
     ></action-play-button>
     <action-shuffle-button manager-action-button></action-shuffle-button>
-    <action-follow-button manager-action-button></action-follow-button>
+    <action-follow-button [followeeId]="artist?.id" [type]="4" manager-action-button></action-follow-button>
 </app-manager>

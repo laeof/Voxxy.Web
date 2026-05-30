@@ -6,6 +6,7 @@ import { PlayButtonComponent } from '@common/components/action-buttons/play-butt
 import { ManagerSubjectNameComponent } from '@common/components/manager/manager-subject-info/subject-name/subject-name.component';
 import { ManagerSubjectTypeComponent } from '@common/components/manager/manager-subject-info/subject-type/subject-type.component';
 import { PlaylistManagerCommonComponent } from '../playlist-manager-common/playlist-manager-common.component';
+import { FollowButtonComponent } from '@common/components/action-buttons/follow-button/follow-button.component';
 
 @Component({
     selector: 'playlist-manager',
@@ -18,6 +19,7 @@ import { PlaylistManagerCommonComponent } from '../playlist-manager-common/playl
         PlayButtonComponent,
         ShuffleButtonComponent,
         PlaylistManagerCommonComponent,
+        FollowButtonComponent
     ],
 })
 export class PlaylistManagerComponent {

@@ -4,7 +4,7 @@ import { TranslationLoaderService } from '@common/services/translation-loader.se
 import { locale as english } from './i18n/en';
 import { locale as russian } from './i18n/ru';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ArtistManagerComponent } from './components/artist-manager/artist-manager.component';
@@ -16,6 +16,7 @@ import { TitleSectionComponent } from '@common/components/title-section/title-se
 import { TranslatePipe } from '@ngx-translate/core';
 import { ArtistPopularTrackService } from './services/artist-popular-track.service';
 import { SingleEntityFacade } from '@common/facades/single-entity.facade';
+import { TrackListSkeletonComponent } from '@common/components/track-list/track-list-skeleton/track-list-skeleton.component';
 
 @Component({
     selector: 'app-artist',
@@ -29,6 +30,7 @@ import { SingleEntityFacade } from '@common/facades/single-entity.facade';
         ArtistPopularTrackListComponent,
         TitleSectionComponent,
         TranslatePipe,
+        TrackListSkeletonComponent,
     ],
 })
 export class ArtistComponent extends SingleEntityFacade<Artist> implements OnInit, OnDestroy {

@@ -11,6 +11,7 @@ export const locale = {
             PLAYLIST_TYPE_ALBUM: 'Album',
             PLAYLIST_TYPE_SINGLE: 'Single',
             PLAYLIST_TYPE_ARTIST: 'Artist',
+            PLAYLIST_TYPE_USER: 'User',
             TRACKS_AMOUNT: 'tracks',
         },
         FILTERS: {
