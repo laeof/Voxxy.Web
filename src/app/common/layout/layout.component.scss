@@ -1,7 +1,16 @@
 :host {
     display: flex;
     flex-direction: column;
+    position: relative;
     height: 100%;
+
+    layout-librarybar {
+        min-width: 65px;
+    }
+
+    layout-queuebar {
+        display: none;
+    }
 
     .content {
         display: flex;
@@ -9,12 +18,34 @@
         height: 100%;
         padding: 10px 10px 0;
         overflow: hidden;
+
+        app-resizer {
+            &.hided {
+                visibility: hidden;
+            }
+        }
+
+        &.now-playing-bar-without-padding {
+            padding-right: 0 !important;
+            layout-nowplayingbar {
+                transition: ease 0.3s min-width;
+                min-width: 40px;
+                &:hover {
+                    width: 50px;
+                    min-width: 50px;
+                }
+            }
+        }
     }
 
     .component {
+        position: relative;
         border-radius: var(--mat-sys-corner-small);
-        min-width: 250px;
         overflow: auto;
+
+        &.expanded {
+            min-width: 250px;
+        }
 
         &.content-pane {
             flex: 1;

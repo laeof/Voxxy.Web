@@ -1,0 +1,10 @@
+@mixin nowplayingbar-overlay() {
+    nowplayingbar-overlay {
+        .wrapped-icon-hover {
+            background-color: var(--primary-container-color) !important;
+            &:hover {
+                background-color: var(--primary-container-color) !important;
+            }
+        }
+    }
+}

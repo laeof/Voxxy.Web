@@ -1,15 +1,20 @@
 <app-progress-bar></app-progress-bar>
 <layout-topbar></layout-topbar>
 
-<div class="content">
+<div class="content" [ngClass]="{ 'now-playing-bar-without-padding': !nowPlayingBarExpanded }">
     <layout-librarybar
+        [ngClass]="{ expanded: libraryBarExpanded }"
         [maxWidth]="400"
         resizablePane
         #firstPane="resizablePane"
         class="component"
     ></layout-librarybar>
 
-    <app-resizer [left]="firstPane" [right]="secondPane"></app-resizer>
+    <app-resizer
+        (resizeFinished)="toggleBarService.resizeLibraryBar(firstPane.width)"
+        [left]="firstPane"
+        [right]="secondPane"
+    ></app-resizer>
 
     <layout-content
         resizablePane
@@ -18,34 +23,47 @@
     ></layout-content>
 
     <ng-container *authorize>
-        @if (toggleBarService.isQueueBarToggled || toggleBarService.isNowPlayingBarToggled) { @if
-        (toggleBarService.isQueueBarToggled) {
         <ng-container>
-            <app-resizer [left]="secondPane" [right]="thirdPane"></app-resizer>
+            <app-resizer
+                style="display: none"
+                [ngClass]="{ hided: !queueBarExpanded }"
+                [left]="secondPane"
+                [right]="thirdPane"
+            ></app-resizer>
             <layout-queuebar
+                [ngClass]="{ expanded: queueBarExpanded }"
                 [maxWidth]="400"
                 resizablePane
                 #thirdPane="resizablePane"
                 class="component"
             ></layout-queuebar>
         </ng-container>
-        } @if (toggleBarService.isNowPlayingBarToggled) {
         <ng-container>
-            <app-resizer [left]="secondPane" [right]="thirdPane"></app-resizer>
+            <app-resizer
+                [ngClass]="{ hided: !nowPlayingBarExpanded }"
+                (resizeFinished)="toggleBarService.resizeNowPlayingBar(fourthPane.width)"
+                [left]="secondPane"
+                [right]="fourthPane"
+            ></app-resizer>
             <layout-nowplayingbar
+                [ngClass]="{ expanded: nowPlayingBarExpanded }"
                 [maxWidth]="400"
                 resizablePane
-                #thirdPane="resizablePane"
+                #fourthPane="resizablePane"
                 class="component"
             ></layout-nowplayingbar>
         </ng-container>
-        } }
     </ng-container>
 </div>
 
 <ng-container *authorize>
-    <layout-playerbar class="bottom-bar content-spacing-horizontal horizontal-small vertical-smaller"></layout-playerbar>
+    <layout-playerbar
+        class="bottom-bar content-spacing-horizontal horizontal-small vertical-smaller"
+    ></layout-playerbar>
 </ng-container>
 <ng-container *anonymous>
-    <preview-hint style="margin: 8px" class="bottom-bar content-spacing-horizontal horizontal-small"></preview-hint>
+    <preview-hint
+        style="margin: 8px"
+        class="bottom-bar content-spacing-horizontal horizontal-small"
+    ></preview-hint>
 </ng-container>
