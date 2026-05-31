@@ -22,6 +22,32 @@
         }
     }
 
+    &.hidden {
+        gap: 1rem;
+        flex-direction: column;
+        padding-bottom: 0;
+
+        .toggle-sidebar {
+            transform: rotate(180deg);
+
+            .hidden-left {
+                transform: translateX(0px);
+                opacity: 1;
+                width: 20px;
+            }
+        }
+
+        .create-button {
+            gap: 0;
+            border-radius: var(--mat-sys-corner-full);
+            padding: 12px;
+        }
+
+        p {
+            display: none;
+        }
+    }
+
     .toggle-sidebar {
         display: flex;
         align-items: center;
@@ -33,7 +59,10 @@
             height: 20px;
             width: 0;
             opacity: 0;
-            transition: transform 0.3s ease, width 0.3s, opacity 0.3s ease;
+            transition:
+                transform 0.3s ease,
+                width 0.3s,
+                opacity 0.3s ease;
         }
         font-weight: 700;
     }

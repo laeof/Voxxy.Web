@@ -1,4 +1,4 @@
-import { Component, HostListener, Input } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { ResizablePaneDirective } from '@common/directives/resizablepane.directive';
 
 @Component({
@@ -11,6 +11,8 @@ import { ResizablePaneDirective } from '@common/directives/resizablepane.directi
 export class ResizerComponent {
     @Input() left!: ResizablePaneDirective;
     @Input() right!: ResizablePaneDirective;
+
+    @Output() resizeFinished = new EventEmitter<void>();
 
     private isResizing = false;
     private startX = 0;
@@ -35,11 +37,9 @@ export class ResizerComponent {
 
         let deltaX = event.clientX - this.startX;
 
-        const maxGrowLeft =
-            this.startRightWidth - this.right.minWidth;
+        const maxGrowLeft = this.startRightWidth - this.right.minWidth;
 
-        const maxGrowRight =
-            this.startLeftWidth - this.left.minWidth;
+        const maxGrowRight = this.startLeftWidth - this.left.minWidth;
 
         deltaX = Math.min(deltaX, maxGrowLeft);
         deltaX = Math.max(deltaX, -maxGrowRight);
@@ -56,6 +56,9 @@ export class ResizerComponent {
 
     @HostListener('document:mouseup')
     onMouseUp() {
-        this.isResizing = false;
+        if (this.isResizing) {
+            this.resizeFinished.emit();
+            this.isResizing = false;
+        }
     }
 }

@@ -1,0 +1,27 @@
+<div class="wrapper" [ngClass]="{'expanded': nowPlayingBarExpanded}">
+    <div
+        class="header content-spacing-horizontal vertical-small horizontal-small"
+        [ngClass]="{ hidden: !nowPlayingBarExpanded }"
+    >
+        <div
+            class="toggle-sidebar"
+            (click)="toggleNowPlayingBar()"
+            (keydown.enter)="toggleNowPlayingBar()"
+        >
+            <ng-container>
+                <div class="icon-wrapper">
+                    <mat-icon class="hidden-left" svgIcon="sidebar_open"></mat-icon>
+                </div>
+                <p>{{ (currentTrack$ | async)?.name }}</p>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="cover-wrapper">
+        <img
+            [src]="(currentTrack$ | async)?.imageUrl"
+            [alt]="(currentTrack$ | async)?.name"
+            class="cover"
+        />
+    </div>
+</div>

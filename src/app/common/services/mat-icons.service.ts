@@ -120,5 +120,9 @@ export class MatIconsService {
             'approved-artist',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/approved-artist.svg')
         );
+        this.matIconRegistry.addSvgIcon(
+            'arrow',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/arrow.svg')
+        );
     }
 }
