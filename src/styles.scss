@@ -9,6 +9,10 @@
 :root {
     @include common.common-styles();
     @include purple-theme.theme();
+
+    mat-icon[hidden] {
+        visibility: hidden;
+    }
 }
 
 html,

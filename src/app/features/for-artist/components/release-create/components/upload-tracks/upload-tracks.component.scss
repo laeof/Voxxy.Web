@@ -1,0 +1,10 @@
+:host {
+    flex: 1;
+    .track-upload {
+        display: flex;
+        flex-direction: column;
+        app-file-drag-drop {
+            margin: 10px 0;
+        }
+    }
+}

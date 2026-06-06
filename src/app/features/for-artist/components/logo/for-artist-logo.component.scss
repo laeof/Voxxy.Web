@@ -1,0 +1,31 @@
+:host {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin: 10px 0 0 15px;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    .logo-icon {
+        width: 45px;
+        height: 45px;
+    }
+    div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .logo-text {
+            font-size: 2rem;
+            font-weight: bold;
+            user-select: none;
+        }
+        .logo-subtext {
+            margin-top: -13px;
+            font-size: 0.75rem;
+            font-weight: 400;
+            user-select: none;
+        }
+    }
+}

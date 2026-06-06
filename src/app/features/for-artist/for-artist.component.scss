@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    height: 100%;
+    .left-sidebar {
+        display: flex;
+        flex-direction: column;
+        min-width: 250px;
+        max-width: 300px;
+
+        layout-logo {
+            padding: 10px 0;
+        }
+
+        app-navigation {
+            margin-top: 20px;
+        }
+    }
+
+    .content {
+        flex: 1;
+    }
+}

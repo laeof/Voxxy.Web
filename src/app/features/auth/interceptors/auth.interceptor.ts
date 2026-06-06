@@ -2,13 +2,11 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
 import { inject } from '@angular/core';
 import { catchError, throwError, switchMap, first } from 'rxjs';
-import { NavigationService } from '@common/services/navigation.service';
 import { UserStateService } from '@common/services/user-state.service';
 import { ApiRoutes } from '@common/constants/api.routes.constant';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const auth = inject(AuthService);
-    const navigation = inject(NavigationService);
     const userStateService = inject(UserStateService);
 
     return next(req).pipe(
@@ -25,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                         //refresh token failed => error 403
                         if (userStateService.value() !== null) {
                             auth.logout().pipe(first()).subscribe();
-                            navigation.navigateLogin();
+                            globalThis.location.reload();
                         }
 
                         return throwError(() => refreshError);

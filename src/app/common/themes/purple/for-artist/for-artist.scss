@@ -1,0 +1,25 @@
+@use './release-create.scss' as release-create;
+
+@mixin for-artist() {
+    @include release-create.release-create();
+    
+    app-for-artist {
+        .content {
+            background: var(--primary-container-color);
+        }
+    }
+
+    for-artist-profile-artist-card {
+        .artist-card {
+            &:hover {
+                background-color: var(--primary-color) !important;
+            }
+
+            &.selecting {
+                &:hover {
+                    background-color: var(--table-header-border-color) !important;
+                }
+            }
+        }
+    }
+}

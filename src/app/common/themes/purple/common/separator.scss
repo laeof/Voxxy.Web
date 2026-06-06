@@ -1,0 +1,7 @@
+@mixin separator() {
+    app-separator {
+        .separator {
+            background-color: var(--separator-color);
+        }
+    }
+}

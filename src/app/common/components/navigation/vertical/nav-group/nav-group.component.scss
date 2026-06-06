@@ -1,0 +1,44 @@
+:host {
+    display: block;
+
+    .group-title {
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .arrow {
+            transform: rotate(270deg);
+            transition: transform 300ms ease;
+            margin-left: auto;
+            width: 10px;
+        }
+
+        &.expanded {
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    }
+
+    .group-list {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 300ms ease, transform 300ms ease;
+
+        .group-list-content {
+            min-height: 0;
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        &.expanded {
+            grid-template-rows: 1fr;
+            transform: translateY(10px);
+        }
+    }
+}

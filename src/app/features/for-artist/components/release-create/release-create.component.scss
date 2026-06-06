@@ -1,0 +1,83 @@
+:host {
+    padding: 20px;
+    display: block;
+    .header {
+        display: flex;
+        align-items: center;
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .buttons {
+            display: flex;
+            margin-left: auto;
+            gap: 10px;
+            .common-button {
+                padding: 6px 20px;
+                border-radius: 12px;
+                &.primary {
+                    background-color: var(--theme-primary);
+                }
+            }
+        }
+    }
+    .create-flow {
+        display: flex;
+        align-items: center;
+        .flow-card {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+
+            .number {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                border: 2px solid;
+
+                mat-icon {
+                    display: none;
+                    width: 20px;
+                    height: 20px;
+                }
+
+                &.completed {
+                    mat-icon {
+                        display: block;
+                    }
+                    p {
+                        display: none;
+                    }
+                }
+            }
+
+            .flow-card-title {
+                font-size: 14px;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .create-release-content {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+
+        .right-column {
+            margin-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            > * {
+                padding: 10px;
+                border: 1px solid;
+                border-radius: 6px;
+            }
+        }
+    }
+}

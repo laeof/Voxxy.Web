@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class MatIconsService {
     constructor(
         private readonly matIconRegistry: MatIconRegistry,
-        private readonly domSanitizer: DomSanitizer
+        private readonly domSanitizer: DomSanitizer,
     ) {
         this.registerIcons();
     }
@@ -16,113 +16,137 @@ export class MatIconsService {
     private registerIcons(): void {
         this.matIconRegistry.addSvgIcon(
             'home',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/home.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/home.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'filled_home',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/filled_home.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/filled_home.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'search',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/search.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/search.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'notifications',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/notifications.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/notifications.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'logo',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/logo.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/logo.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'play',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/play.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/play.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'pause',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/pause.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/pause.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'shuffle',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/shuffle.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/shuffle.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'sidebar_open',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/sidebar_open.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/sidebar_open.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'create',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/create.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/create.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'logout',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/logout.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/logout.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'profile',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/profile.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/profile.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'check',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/check.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/check.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'settings',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/settings.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/settings.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'account',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/account.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/account.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'enter_fullscreen',
             this.domSanitizer.bypassSecurityTrustResourceUrl(
-                'public/icons/svg/enter_fullscreen.svg'
-            )
+                'public/icons/svg/enter_fullscreen.svg',
+            ),
         );
         this.matIconRegistry.addSvgIcon(
             'exit_fullscreen',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/exit_fullscreen.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl(
+                'public/icons/svg/exit_fullscreen.svg',
+            ),
         );
         this.matIconRegistry.addSvgIcon(
             'mute',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/mute.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/mute.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'volume',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/volume.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/volume.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'queue',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/queue.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/queue.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'lyrics',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/lyrics.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/lyrics.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'repeat',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/repeat.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/repeat.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'next',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/next.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/next.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'previous',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/previous.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/previous.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'favorite',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/favorite.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/favorite.svg'),
         );
         this.matIconRegistry.addSvgIcon(
             'approved-artist',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/approved-artist.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl(
+                'public/icons/svg/approved-artist.svg',
+            ),
         );
         this.matIconRegistry.addSvgIcon(
             'arrow',
-            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/arrow.svg')
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/arrow.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'dashboard',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/dashboard.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'playlist',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/playlist.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'analytics',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/analytics.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'settings',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/settings.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'upload',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/upload.svg'),
         );
     }
 }

@@ -4,6 +4,10 @@ import { AppRoutes } from '../constants/app.routes.constant';
 import { UrlHelper } from '../helpers/url.helper';
 import { LibraryDto } from '@common/layout/components/librarybar/components/librarybar-list/dtos/library-dto';
 import { FollowType } from '@common/layout/components/librarybar/enums/follow-type-enum';
+import { ForArtistNavigationGroups } from '@common/enums/for-artist-navigation-groups.enum';
+import { ForArtistNavigationGroupReleases } from '@common/enums/for-artist-navigation-groups-items.enum';
+import { AppNavigation, AppNavigationGroup } from '@common/interfaces/navigation.interface';
+import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
 
 @Injectable({
     providedIn: 'root',
@@ -62,5 +66,46 @@ export class NavigationService {
 
     navigateRegister(): void {
         this.router.navigate([AppRoutes.auth]);
+    }
+
+    navigateForArtist(groupTitle: string): void {
+        if (groupTitle === AppRoutes.forArtist) {
+            this.router.navigate([AppRoutes.forArtist]);
+            return;
+        }
+
+        const navigation = this.findNavigationPath(
+            forArtistNavigation.navigationGroups,
+            groupTitle,
+            [AppRoutes.forArtist],
+        );
+
+        if (!navigation) {
+            return;
+        }
+
+        this.router.navigate(navigation);
+    }
+
+    private findNavigationPath(
+        groups: AppNavigationGroup[],
+        groupTitle: string,
+        parentPath: string[],
+    ): string[] | null {
+        for (const group of groups) {
+            const currentPath = group.route ? [...parentPath, group.route] : parentPath;
+
+            if (group.groupTitle === groupTitle) {
+                return currentPath;
+            }
+
+            const childPath = this.findNavigationPath(group.groupItems, groupTitle, currentPath);
+
+            if (childPath) {
+                return childPath;
+            }
+        }
+
+        return null;
     }
 }
