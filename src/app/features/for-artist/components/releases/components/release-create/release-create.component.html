@@ -1,0 +1,41 @@
+<div class="header">
+    <span class="title">{{ 'RELEASE_CREATE.TITLE' | translate }}</span>
+    <div class="buttons">
+        <span class="common-button" (click)="decreaseStage()" (keydown.enter)="decreaseStage()">{{
+            'RELEASE_CREATE.BACK_BUTTON' | translate
+        }}</span>
+        <span
+            class="common-button primary"
+            (click)="increaseStage()"
+            (keydown.enter)="increaseStage()"
+            >{{ 'RELEASE_CREATE.NEXT_BUTTON' | translate }}</span
+        >
+    </div>
+</div>
+<app-separator class="content-spacing-vertical"></app-separator>
+<div class="create-flow">
+    @for (stage of flow; track stage) {
+        <for-artist-release-create-flow-card
+            [flowCard]="stage"
+        ></for-artist-release-create-flow-card>
+        @if (stage !== flow[flow.length - 1]) {
+            <app-separator style="width: 150px" class="content-spacing-vertical"></app-separator>
+        }
+    }
+</div>
+<app-separator class="content-spacing-vertical"></app-separator>
+<div class="create-release-content">
+    <router-outlet></router-outlet>
+    <div class="right-column">
+        <for-artist-release-create-progress
+            [total]="total"
+            [current]="current"
+            [message]="progressMessage"
+        ></for-artist-release-create-progress>
+        <div class="release-progress">
+            <span class="progress-release-title titlecolor">{{
+                'RELEASE_CREATE.WHATS_NEXT.TITLE' | translate
+            }}</span>
+        </div>
+    </div>
+</div>

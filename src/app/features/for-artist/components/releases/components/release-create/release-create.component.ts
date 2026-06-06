@@ -1,12 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SeparatorComponent } from '@common/components/separator/separator.component';
-import { NgClass } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { ReleaseCreateService } from './release-create.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ReleaseProgressComponent } from './components/release-progress/release-progress.component';
-import { MatIcon } from '@angular/material/icon';
+import { FlowCard, ForArtistReleaseCreateFlowCardComponent } from './components/flow-card/flow-card.component';
 
 @Component({
     selector: 'for-artist-release-create',
@@ -17,14 +16,19 @@ import { MatIcon } from '@angular/material/icon';
         TranslatePipe,
         SeparatorComponent,
         RouterOutlet,
-        NgClass,
         ReleaseProgressComponent,
-        MatIcon
+        ForArtistReleaseCreateFlowCardComponent
     ],
     providers: [ReleaseCreateService],
 })
 export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
+
+    flow: FlowCard[] = [
+        { title: 'RELEASE_CREATE.FLOW.FIRST', stage: 0 },
+        { title: 'RELEASE_CREATE.FLOW.SECOND', stage: 1 },
+        { title: 'RELEASE_CREATE.FLOW.THIRD', stage: 2 },
+    ];
 
     constructor(private readonly releaseCreateService: ReleaseCreateService) {}
 
@@ -55,9 +59,11 @@ export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    navigateTo(path: string): void {
-        this.releaseCreateService.router.navigate([path], {
-            relativeTo: this.releaseCreateService.activatedRoute,
-        });
+    increaseStage(): void {
+        this.releaseCreateService.increaseStage();
+    }
+
+    decreaseStage(): void {
+        this.releaseCreateService.decreaseStage();
     }
 }

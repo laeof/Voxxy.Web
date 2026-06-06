@@ -8,17 +8,25 @@ export class ReleaseCreateService {
     private readonly createState: BehaviorSubject<number> = new BehaviorSubject(0);
     public createState$: Observable<number> = this.createState.asObservable();
 
-
-    //todo make router private
     constructor(
-        public readonly router: Router,
-        public readonly activatedRoute: ActivatedRoute,
+        private readonly router: Router,
+        private readonly activatedRoute: ActivatedRoute,
     ) {
         this.upadteFlowState();
 
         this.router.events
             .pipe(filter((event) => event instanceof NavigationEnd))
             .subscribe(() => this.upadteFlowState());
+    }
+
+    increaseStage(): void {
+        this.createState.next(this.createState.value + 1);
+        this.navigateTo(this.stepByProgress);
+    }
+
+    decreaseStage(): void {
+        this.createState.next(this.createState.value - 1);
+        this.navigateTo(this.stepByProgress);
     }
 
     private upadteFlowState(): void {
@@ -44,5 +52,24 @@ export class ReleaseCreateService {
             default:
                 return 0;
         }
+    }
+
+    get stepByProgress(): string {
+        switch (this.createState.value) {
+            case 0:
+                return AppRoutes.forArtistReleasesCreateAddReleaseInformation;
+            case 1:
+                return AppRoutes.forArtistReleasesCreateUploadTracks;
+            case 2:
+                return AppRoutes.forArtistReleasesCreatePublish;
+            default:
+                return '';
+        }
+    }
+
+    private navigateTo(path: string): void {
+        this.router.navigate([path], {
+            relativeTo: this.activatedRoute,
+        });
     }
 }

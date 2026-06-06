@@ -49,4 +49,18 @@
             }
         }
     }
+
+    for-artist-release-create-add-information {
+        .information {
+            .hero {
+                .cover-wrapper {
+                    border-color: var(--secondary-container-color) !important;
+
+                    .cover-overlay {
+                        background-color: var(--primary-container-color);
+                    }
+                }
+            }
+        }
+    }
 }

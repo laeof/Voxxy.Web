@@ -19,6 +19,8 @@
 @use './for-artist/for-artist' as for-artist;
 @use './common/file-drag-drop' as file-drag-drop;
 @use './common/state-progress' as state-progress;
+@use './common/subject-input' as subject-input;
+@use './common/subject-textarea' as subject-textarea;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();
@@ -39,6 +41,8 @@
 @include separator.separator();
 @include file-drag-drop.file-drag-drop();
 @include state-progress.state-progress();
+@include subject-input.subject-input();
+@include subject-textarea.subject-textarea();
 
 @mixin theme() {
     $slim-slider-tokens: (
@@ -71,13 +75,15 @@
 
     --theme-secondary: #3b8fde;
     --mat-table-background-color: transparent;
-    --secondary-font-color: #b3b3b3;
     --table-header-border-color: #ffffff1a;
     --primary-container-color: #121212;
     --secondary-container-color: #2a2a2a;
     --overlay-color: rgba(#121212, 0.7);
     --secondary-font-color: #b3b3b3;
+    --primary-font-color: var(--mat-sys-on-background);
+    --placeholder-color: #646464;
     --separator-color: rgba(255, 255, 255, 0.1);
     --resizer-color: var(--secondary-font-color);
     --default-black-color: #000000;
+    --mandatory-color: #cd2f2f;
 }

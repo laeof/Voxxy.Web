@@ -14,8 +14,8 @@ export const locale = {
         },
         RELEASE_CREATE: {
             TITLE: 'Create new release',
-            SAVE_BUTTON: 'Save',
             NEXT_BUTTON: 'Next',
+            BACK_BUTTON: 'Back',
             TRACK_UPLOAD_TITLE: 'Upload your tracks',
             TRACK_UPLOAD_DESCRIPTION: 'Drag and drop your tracks here or click to browse',
             FLOW: {
@@ -38,8 +38,28 @@ export const locale = {
             },
             WHATS_NEXT: {
                 TITLE: "What's next?",
-            }
+            },
+            ADD_INFORMATION: {
+                MAIN_INFORMATION: {
+                    TITLE: 'Add main information',
+                    RELEASE_TITLE: 'Release title',
+                    PLACEHOLDER_RELEASE_TITLE: 'Enter release title',
+                    ARTIST_NAME: 'Artist name',
+                    RELEASE_TYPE: 'Release type',
+                    GENRE: 'Genre',
+                    RELEASE_DATE: 'Release date',
+                    COVER: {
+                        TITLE: 'Add cover image',
+                        SUBTITLE: 'Upload your cover image here',
+                    },
+                },
+                ADDITIONAL_INFORMATION: {
+                    TITLE: 'Add additional information',
+                    SUBTITLE:
+                        'Add any additional information about your release that you want to share with your fans.',
+                    PLACEHOLDER: 'Enter additional information',
+                },
+            },
         },
-
     },
 };

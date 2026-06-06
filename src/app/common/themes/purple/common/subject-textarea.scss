@@ -1,0 +1,23 @@
+@mixin subject-textarea() {
+    app-subject-textarea {
+        .textarea {
+            background-color: var(--primary-container-color) !important;
+            border-color: var(--secondary-container-color) !important;
+            color: var(--primary-font-color);
+
+            &::placeholder {
+                color: var(--placeholder-color);
+            }
+        }
+
+        .label {
+            color: var(--secondary-font-color);
+        }
+
+        &.mandatory {
+            .label::after {
+                color: var(--mandatory-color);
+            }
+        }
+    }
+}

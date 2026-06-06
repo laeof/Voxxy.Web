@@ -1,0 +1,36 @@
+<div class="information">
+    <span class="title titlecolor">{{
+        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.TITLE' | translate
+    }}</span>
+    <div class="hero">
+        <app-subject-image-upload
+            [titleText]="'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.TITLE' | translate"
+            [subtitleText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.SUBTITLE' | translate
+            "
+        >
+        </app-subject-image-upload>
+        <app-subject-input
+            class="mandatory"
+            [labelText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE_TITLE' | translate
+            "
+            [placeholder]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.PLACEHOLDER_RELEASE_TITLE'
+                    | translate
+            "
+        ></app-subject-input>
+    </div>
+</div>
+<app-separator class="content-spacing-vertical"></app-separator>
+<div class="information">
+    <span class="title titlecolor">{{
+        'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.TITLE' | translate
+    }}</span>
+    <app-subject-textarea
+        [labelText]="'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.SUBTITLE' | translate"
+        [placeholder]="
+            'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.PLACEHOLDER' | translate
+        "
+    ></app-subject-textarea>
+</div>

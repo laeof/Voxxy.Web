@@ -148,5 +148,9 @@ export class MatIconsService {
             'upload',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/upload.svg'),
         );
+        this.matIconRegistry.addSvgIcon(
+            'image',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/image.svg'),
+        );
     }
 }

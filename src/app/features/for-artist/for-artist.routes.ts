@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { AppRoutes } from '@common/constants/app.routes.constant';
-import { forArtistReleaseCreateRoutes } from './components/release-create/release-create.routes';
+import { forArtistReleaseCreateRoutes } from './components/releases/components/release-create/release-create.routes';
 
 export const forArtistRoutes: Route[] = [
     {
@@ -28,4 +28,8 @@ export const forArtistRoutes: Route[] = [
             ...forArtistReleaseCreateRoutes,
         ],
     },
+    {
+        path: '**',
+        redirectTo: AppRoutes.forArtistDashboard,
+    }
 ];

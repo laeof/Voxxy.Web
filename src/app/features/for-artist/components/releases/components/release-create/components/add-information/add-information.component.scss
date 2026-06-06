@@ -1,0 +1,17 @@
+:host {
+    flex: 1;
+    .information {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .hero {
+            display: flex;
+            gap: 10px;
+
+            app-subject-input {
+                flex: 1;
+            }
+        }
+    }
+}

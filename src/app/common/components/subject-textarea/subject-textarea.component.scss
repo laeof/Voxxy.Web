@@ -1,0 +1,26 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .textarea {
+        padding: 14px 10px;
+        border-radius: 6px;
+        border: 1px solid;
+        font-size: 14px;
+        outline: none;
+        resize: none;
+        height: 150px;
+    }
+
+    .label {
+        font-size: 14px;
+    }
+
+    &.mandatory {
+        .label::after {
+            content: '*';
+            font-size: 14px;
+        }
+    }
+}
