@@ -32,5 +32,6 @@ export class ApiRoutes {
 
     public static readonly Artists = {
         getById: '/artists/:id',
+        getArtistsOnAccount: '/artists/on-account',
     };
 }

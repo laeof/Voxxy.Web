@@ -1,0 +1,17 @@
+@mixin state-progress() {
+    app-state-progress {
+        .state-progress {
+            .progress-next {
+                stroke: var(--theme-darker) !important;
+            }
+
+            .progress {
+                stroke: var(--theme-primary) !important;
+            }
+
+            .label {
+                color: white;
+            }
+        }
+    }
+}

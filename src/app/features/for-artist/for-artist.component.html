@@ -1,0 +1,12 @@
+<div class="left-sidebar" #appLeftSidebar="resizablePane" resizablePane [maxWidth]="300">
+    <for-artist-logo></for-artist-logo>
+    <app-navigation [navigationGroups]="navigationGroups"> </app-navigation>
+    <app-separator style="margin: 5px 5px;"></app-separator>
+    <app-separator style="margin: 5px 5px; margin-top: auto"></app-separator>
+    <for-artist-profile [artistOnAccount]="artists$ | async"></for-artist-profile>
+    <app-separator style="margin: 5px 5px;"></app-separator>
+</div>
+<app-resizer [left]="appLeftSidebar" [right]="appContent"></app-resizer>
+<div class="content" #appContent="resizablePane" resizablePane>
+    <router-outlet></router-outlet>
+</div>

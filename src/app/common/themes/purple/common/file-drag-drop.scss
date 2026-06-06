@@ -1,0 +1,73 @@
+@mixin file-drag-drop() {
+    app-file-drag-drop {
+        .dropzone {
+            border-color: var(--secondary-container-color) !important;
+
+            background: var(--primary-container-color);
+
+            .dropzone-content {
+                .icon-wrapper {
+                    background-color: var(--primary-container-color);
+                    border-color: var(--secondary-container-color) !important;
+                }
+            }
+
+            &:hover {
+                border-color: rgba(255, 255, 255, 0.35) !important;
+                box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+                background: var(--secondary-container-color);
+
+                .icon-wrapper {
+                    background-color: var(--secondary-container-color) !important;
+                }
+            }
+
+            &.dragging {
+                border-color: var(--theme-primary, #8b5cf6) !important;
+                background-color: color-mix(
+                    in srgb,
+                    var(--theme-primary, #8b5cf6) 14%,
+                    transparent
+                );
+                box-shadow: 0 0 0 6px
+                    color-mix(in srgb, var(--theme-primary, #8b5cf6) 16%, transparent);
+
+                .icon-wrapper {
+                    background-color: color-mix(
+                        in srgb,
+                        var(--theme-primary, #8b5cf6) 14%,
+                        transparent
+                    ) !important;
+                    border-color: var(--theme-primary, #8b5cf6) !important;
+
+                    mat-icon {
+                        color: var(--theme-primary) !important;
+                    }
+                }
+            }
+        }
+
+        .file-item {
+            color: white;
+            .file-name {
+                color: white;
+            }
+
+            .file-meta {
+                color: white;
+            }
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .remove-button {
+            background: rgba(255, 255, 255, 0.08);
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.16);
+            }
+        }
+    }
+}

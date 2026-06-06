@@ -1,0 +1,51 @@
+@mixin navigation-theme {
+    navigation-group {
+        .group-title {
+            color: var(--secondary-font-color);
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: white;
+
+                .group-title-icon {
+                    color: white;
+                }
+            }
+
+            &.expanded {
+                color: white;
+
+                .group-title-icon {
+                    color: white;
+                }
+            }
+
+            &.selected {
+                color: var(--theme-primary);
+
+                .group-title-icon {
+                    color: var(--theme-primary);
+                }
+            }
+        }
+    }
+
+    navigation-item {
+        .item-title {
+            color: var(--secondary-font-color);
+            transition: color 0.2s ease;
+        }
+
+        &:hover {
+            .item-title {
+                color: white;
+            }
+        }
+
+        &.active {
+            .item-title {
+                color: var(--theme-primary);
+            }
+        }
+    }
+}

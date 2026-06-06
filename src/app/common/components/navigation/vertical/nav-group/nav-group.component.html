@@ -1,0 +1,21 @@
+<div
+    class="group-title"
+    [ngClass]="{ expanded: isExpanded, selected: isSelected }"
+    (click)="toggleGroupExpanded()"
+    (keydown.enter)="toggleGroupExpanded()"
+>
+    <mat-icon [svgIcon]="navigationGroup?.groupIcon || ''" class="group-title-icon"></mat-icon>
+    {{ navigationGroup?.groupTitle | translate }}
+    <mat-icon
+        svgIcon="arrow"
+        class="arrow"
+        [hidden]="!isExpandAllowed"
+    ></mat-icon>
+</div>
+<div class="group-list" [ngClass]="{ expanded: isExpanded }">
+    <div class="group-list-content">
+        @for (item of navigationGroup?.groupItems; track item) {
+            <navigation-group [navigationGroup]="item"></navigation-group>
+        }
+    </div>
+</div>

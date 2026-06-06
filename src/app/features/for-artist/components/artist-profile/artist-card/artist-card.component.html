@@ -1,0 +1,19 @@
+<div
+    class="artist-card wrapped-icon-hover"
+    (click)="toggleExpanded()"
+    (keydown.enter)="toggleExpanded()"
+    [ngClass]="{ expandable: artists?.length! > 1, selecting: isSelecting }"
+>
+    <div class="cover-wrapper">
+        <img [src]="workingArtist?.imageUrl" [alt]="workingArtist?.name" class="cover" />
+    </div>
+    <div class="artist-info-wrapper">
+        <span class="artist-name titlecolor">{{ workingArtist?.name }}</span>
+        <span class="artist-role subcolor">{{ 'FOR_ARTIST_NAVIGATION.ARTIST' | translate }}</span>
+    </div>
+    @if (showExpandIcon) {
+        <div class="artist-select">
+            <mat-icon svgIcon="arrow" class="arrow" [ngClass]="{ expanded: isExpanded }"></mat-icon>
+        </div>
+    }
+</div>

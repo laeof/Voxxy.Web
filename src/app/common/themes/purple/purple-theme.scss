@@ -14,6 +14,11 @@
 @use './action-buttons/action-buttons' as action-buttons;
 @use './manager/approved-artist' as approved-artist;
 @use './common/title-section' as title-section;
+@use './common/navigation' as navigation;
+@use './common/separator' as separator;
+@use './for-artist/for-artist' as for-artist;
+@use './common/file-drag-drop' as file-drag-drop;
+@use './common/state-progress' as state-progress;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();
@@ -29,6 +34,12 @@
 @include manager.manager();
 @include action-buttons.action-buttons();
 @include approved-artist.approved-artist();
+@include navigation.navigation-theme();
+@include for-artist.for-artist();
+@include separator.separator();
+@include file-drag-drop.file-drag-drop();
+@include state-progress.state-progress();
+
 @mixin theme() {
     $slim-slider-tokens: (
         active-track-height: 2px,
@@ -55,6 +66,7 @@
 
     --theme-primary: #{palette.$purple-dark};
     --theme-darker: color-mix(in srgb, var(--theme-primary) 50%, black);
+    --theme-lower-darker: color-mix(in srgb, var(--theme-primary) 70%, black);
     --logo-color: var(--theme-primary);
 
     --theme-secondary: #3b8fde;
@@ -62,7 +74,10 @@
     --secondary-font-color: #b3b3b3;
     --table-header-border-color: #ffffff1a;
     --primary-container-color: #121212;
+    --secondary-container-color: #2a2a2a;
     --overlay-color: rgba(#121212, 0.7);
+    --secondary-font-color: #b3b3b3;
+    --separator-color: rgba(255, 255, 255, 0.1);
     --resizer-color: var(--secondary-font-color);
     --default-black-color: #000000;
 }

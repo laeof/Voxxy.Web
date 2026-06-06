@@ -1,0 +1,68 @@
+:host {
+    display: block;
+    .artist-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: default;
+        padding: 20px;
+        min-width: 250px;
+
+        &.selecting {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        &.expandable {
+            cursor: pointer;
+        }
+
+        .cover-wrapper {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+            min-height: 50px;
+            min-width: 50px;
+
+            .cover {
+                object-fit: cover;
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+            }
+        }
+        .artist-info-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            .artist-name {
+                font-size: 1rem;
+                font-weight: 500;
+                display: -webkit-box;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 1;
+                line-clamp: 1;
+            }
+            .artist-role {
+                font-size: 0.75rem;
+                font-weight: 400;
+            }
+        }
+        .artist-select {
+            margin-left: auto;
+            .arrow {
+                transform: rotate(270deg);
+                transition: transform 300ms ease;
+                margin-left: auto;
+                width: 10px;
+            }
+
+            &.expanded {
+                .arrow {
+                    transform: rotate(90deg);
+                }
+            }
+        }
+    }
+}

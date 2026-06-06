@@ -3,7 +3,7 @@ import { PlaylistManagerComponent } from './components/playlist-manager/playlist
 import { Playlist } from './models/playlist';
 import { PlaylistService } from './services/playlist.service';
 import { ActivatedRoute } from '@angular/router';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { locale as english } from './i18n/en';
 import { locale as russian } from './i18n/ru';
 import { locale as ukrainian } from './i18n/ua';

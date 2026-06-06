@@ -5,10 +5,10 @@
 <div class="middle-section">
     <div class="button-wrapper">
         <button class="icon-wrapper hover-scale wrapped-icon-hover" (click)="navigateHome()">
-            @if(isHome) {
-            <mat-icon svgIcon="filled_home" class="active"></mat-icon>
+            @if (isHome) {
+                <mat-icon svgIcon="filled_home" class="active"></mat-icon>
             } @else {
-            <mat-icon svgIcon="home"></mat-icon>
+                <mat-icon svgIcon="home"></mat-icon>
             }
         </button>
     </div>
@@ -51,6 +51,14 @@
             >
                 <mat-icon svgIcon="profile"></mat-icon>
                 <span>{{ 'MENU.PROFILE' | translate }}</span>
+            </button>
+            <button
+                class="wrapped-icon-hover menu-item"
+                mat-menu-item
+                (click)="navigateForArtist()"
+            >
+                <mat-icon svgIcon="account"></mat-icon>
+                <span>{{ 'MENU.FOR_ARTIST' | translate }}</span>
             </button>
             <button
                 class="wrapped-icon-hover menu-item"

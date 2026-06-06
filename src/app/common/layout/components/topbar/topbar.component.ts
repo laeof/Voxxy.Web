@@ -95,4 +95,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
     navigateUserProfile() {
         this.navigationService.navigateUserProfileById(this.userStateService.value()?.id ?? '');
     }
+
+    navigateForArtist(): void {
+        this.navigationService.navigateForArtist(AppRoutes.forArtist);
+    }
 }

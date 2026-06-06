@@ -12,6 +12,7 @@ export const locale = {
             ACCOUNT: 'Account',
             PROFILE: 'Profile',
             SETTINGS: 'Settings',
+            FOR_ARTIST: 'For Artist',
             LOGOUT: 'Logout',
         },
         UPDATES: {

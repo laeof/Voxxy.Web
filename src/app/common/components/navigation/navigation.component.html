@@ -1,0 +1,5 @@
+@if (navigationStyle === 'vertical') {
+    @for (group of navigationGroups; track group) {
+        <navigation-group [navigationGroup]="group"></navigation-group>
+    }
+}

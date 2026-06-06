@@ -1,0 +1,52 @@
+@mixin release-create() {
+    for-artist-release-create {
+        .header {
+            color: white;
+            .common-button {
+                &.primary {
+                    background-color: var(--theme-lower-darker) !important;
+
+                    &:hover {
+                        background-color: var(--theme-primary) !important;
+                    }
+                }
+            }
+        }
+
+        .create-flow {
+            .flow-card {
+                .number {
+                    color: white;
+                    background-color: transparent;
+                    border-color: white;
+                    mat-icon {
+                        color: var(--secondary-container-color);
+                    }
+
+                    &.active {
+                        color: var(--theme-primary);
+                        border-color: var(--theme-primary);
+                    }
+
+                    &.completed {
+                        color: var(--primary-container-color);
+                        border-color: var(--theme-primary);
+                        background-color: var(--theme-primary);
+                    }
+                }
+
+                .flow-card-title {
+                    color: white;
+                }
+            }
+        }
+
+        .create-release-content {
+            .right-column {
+                > * {
+                    border-color: var(--secondary-container-color) !important;
+                }
+            }
+        }
+    }
+}

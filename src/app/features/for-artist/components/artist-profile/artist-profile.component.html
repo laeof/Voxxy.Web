@@ -1,0 +1,18 @@
+<for-artist-profile-artist-card
+    [matMenuTriggerFor]="artistOnAccount && artistOnAccount.length > 1 ? menu : null"
+    [workingArtist]="workingArtist"
+    [artists]="artistOnAccount"
+    [showExpandIcon]="artistOnAccount && artistOnAccount.length > 1 || false"
+></for-artist-profile-artist-card>
+<mat-menu #menu="matMenu" [overlapTrigger]="false">
+    @for (artist of artistOnAccount; track artist.id) {
+        <for-artist-profile-artist-card
+            (click)="selectArtist(artist)"
+            (keydown.enter)="selectArtist(artist)"
+            [workingArtist]="artist"
+            [artists]="artistOnAccount"
+            [showExpandIcon]="false"
+            [isSelecting]="true"
+        ></for-artist-profile-artist-card>
+    }
+</mat-menu>

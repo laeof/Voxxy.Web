@@ -1,0 +1,22 @@
+.release-progress {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .progress-release-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .content {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    app-state-progress {
+        height: 70px;
+        width: 70px;
+    }
+}

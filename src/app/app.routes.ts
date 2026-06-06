@@ -1,53 +1,37 @@
 import { Routes } from '@angular/router';
 import { AppRoutes } from './common/constants/app.routes.constant';
 import { anonymousGuard } from './features/auth/guards/anonymous.guard';
+import { artistGuard } from '@features/auth/guards/artist.guard';
+import { forArtistRoutes } from '@features/for-artist/for-artist.routes';
+import { layoutRoutes } from '@common/layout/layout.routes';
+import { authGuard } from '@features/auth/guards/auth.guard';
 
 export const routes: Routes = [
+    {
+        path: '',
+        redirectTo: AppRoutes.layout,
+        pathMatch: 'prefix',
+    },
     {
         path: AppRoutes.layout,
         loadComponent: () =>
             import('./common/layout/layout.component').then((x) => x.LayoutComponent),
-        children: [
-            {
-                path: AppRoutes.layout,
-                pathMatch: 'full',
-                redirectTo: AppRoutes.home,
-            },
-            {
-                path: AppRoutes.home,
-                loadComponent: () =>
-                    import('./features/home/home.component').then((x) => x.HomeComponent),
-                data: { page: AppRoutes.home },
-            },
-            {
-                path: AppRoutes.playlist,
-                loadComponent: () =>
-                    import('./features/playlist/playlist.component').then(
-                        (x) => x.PlaylistComponent,
-                    ),
-            },
-            {
-                path: AppRoutes.album,
-                loadComponent: () =>
-                    import('./features/album/album.component').then((x) => x.AlbumComponent),
-            },
-            {
-                path: AppRoutes.artist,
-                loadComponent: () =>
-                    import('./features/artist/artist.component').then((x) => x.ArtistComponent),
-            },
-            {
-                path: AppRoutes.userProfile,
-                loadComponent: () =>
-                    import('./features/user/components/user-profile/user-profile.component').then(
-                        (x) => x.UserProfileComponent,
-                    ),
-            },
-        ],
+        children: layoutRoutes,
     },
     {
         path: AppRoutes.auth,
         loadComponent: () => import('./features/auth/auth.component').then((x) => x.AuthComponent),
         canActivate: [anonymousGuard],
     },
+    {
+        path: AppRoutes.forArtist,
+        loadComponent: () =>
+            import('./features/for-artist/for-artist.component').then((x) => x.ForArtistComponent),
+        children: [
+            { path: '', redirectTo: AppRoutes.forArtistDashboard, pathMatch: 'full' },
+            ...forArtistRoutes,
+        ],
+        canActivate: [authGuard, artistGuard],
+    },
+    { path: '**', redirectTo: AppRoutes.layout },
 ];
