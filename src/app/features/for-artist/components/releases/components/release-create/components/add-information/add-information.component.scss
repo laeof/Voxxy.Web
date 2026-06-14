@@ -1,5 +1,6 @@
 :host {
     flex: 1;
+
     .information {
         display: flex;
         flex-direction: column;
@@ -9,7 +10,10 @@
             display: flex;
             gap: 10px;
 
-            app-subject-input {
+            .hero-inputs {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
                 flex: 1;
             }
         }

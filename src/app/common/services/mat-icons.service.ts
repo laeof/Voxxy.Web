@@ -152,5 +152,13 @@ export class MatIconsService {
             'image',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/image.svg'),
         );
+        this.matIconRegistry.addSvgIcon(
+            'close',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/close.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'calendar',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/calendar.svg'),
+        );
     }
 }

@@ -1,4 +1,4 @@
-<div class="cover-wrapper" (click)="imageInput.click()" (keydown.enter)="imageInput.click()">
+<div class="cover-wrapper" (click)="!disabled &&imageInput.click()" (keydown.enter)="!disabled && imageInput.click()">
     <input type="file" hidden #imageInput accept="image/*" (change)="onInputChange($event)" />
     <img [src]="file?.objectUrl" [alt]="file?.name" [hidden]="!file" />
     @if (!file) {

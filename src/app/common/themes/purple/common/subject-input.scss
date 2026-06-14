@@ -12,11 +12,11 @@
 
         .label {
             color: var(--secondary-font-color);
-        }
 
-        &.mandatory {
-            .label::after {
-                color: var(--mandatory-color);
+            &.mandatory {
+                &::after {
+                    color: var(--mandatory-color);
+                }
             }
         }
     }

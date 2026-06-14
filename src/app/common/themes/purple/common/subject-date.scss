@@ -1,6 +1,6 @@
-@mixin subject-textarea() {
-    app-subject-textarea {
-        .textarea {
+@mixin subject-date {
+    app-subject-date {
+        .input {
             background-color: var(--primary-container-color) !important;
             border-color: var(--secondary-container-color) !important;
             color: var(--primary-font-color);

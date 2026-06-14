@@ -1,36 +1,124 @@
-<div class="information">
-    <span class="title titlecolor">{{
-        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.TITLE' | translate
-    }}</span>
-    <div class="hero">
-        <app-subject-image-upload
-            [titleText]="'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.TITLE' | translate"
-            [subtitleText]="
-                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.SUBTITLE' | translate
+<form [formGroup]="releaseCreateFormService.mainInformationForm">
+    <div class="information">
+        <span class="title titlecolor">{{
+            'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.TITLE' | translate
+        }}</span>
+        <div class="hero">
+            <app-subject-image-upload
+                [titleText]="
+                    'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.TITLE' | translate
+                "
+                [subtitleText]="
+                    'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.COVER.SUBTITLE' | translate
+                "
+                formControlName="releaseCover"
+            >
+            </app-subject-image-upload>
+            <div class="hero-inputs">
+                <app-subject-input
+                    [labelText]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.TITLE' | translate
+                    "
+                    [placeholder]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.PLACEHOLDER_TITLE'
+                            | translate
+                    "
+                    [mandatory]="true"
+                    formControlName="releaseTitle"
+                ></app-subject-input>
+                <app-subject-select
+                    [multiple]="true"
+                    [titleText]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.ARTISTS.TITLE' | translate
+                    "
+                    [placeholder]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.ARTISTS.PLACEHOLDER'
+                            | translate
+                    "
+                    [selectedSubjects]="selectedArtists"
+                    [subjectOptions]="searchedArtists"
+                    (searchChange)="onArtistSearchChange($event)"
+                    formControlName="releaseArtists"
+                ></app-subject-select>
+                <app-subject-select
+                    [multiple]="false"
+                    [mandatory]="true"
+                    [readonlyInput]="true"
+                    [titleText]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.TYPE.TITLE'
+                            | translate
+                    "
+                    [placeholder]="
+                        'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.TYPE.PLACEHOLDER'
+                            | translate
+                    "
+                    [subjectOptions]="releaseTypes"
+                    [selectedSubjects]="selectedType ? [selectedType] : []"
+                    formControlName="releaseType"
+                ></app-subject-select>
+            </div>
+        </div>
+        <app-subject-date
+            [mandatory]="true"
+            [titleText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.DATE.TITLE' | translate
             "
-        >
-        </app-subject-image-upload>
-        <app-subject-input
-            class="mandatory"
-            [labelText]="
-                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE_TITLE' | translate
+            formControlName="releaseDate"
+        ></app-subject-date>
+        <app-subject-select
+            [multiple]="true"
+            [mandatory]="true"
+            [titleText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.GENRE.TITLE' | translate
             "
             [placeholder]="
-                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.PLACEHOLDER_RELEASE_TITLE'
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.GENRE.PLACEHOLDER'
                     | translate
             "
+            [selectedSubjects]="selectedGenres"
+            [subjectOptions]="searchedGenres"
+            (searchChange)="onGenreSearchChange($event)"
+            formControlName="releaseGenres"
+        ></app-subject-select>
+        <app-subject-select
+            [multiple]="true"
+            [titleText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.MOOD.TITLE' | translate
+            "
+            [placeholder]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.MOOD.PLACEHOLDER'
+                    | translate
+            "
+            [selectedSubjects]="selectedMoods"
+            [subjectOptions]="searchedMoods"
+            (searchChange)="onMoodSearchChange($event)"
+            formControlName="releaseMoods"
+        ></app-subject-select>
+        <app-subject-input
+            [labelText]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.COPYRIGHT.TITLE'
+                    | translate
+            "
+            [placeholder]="
+                'RELEASE_CREATE.ADD_INFORMATION.MAIN_INFORMATION.RELEASE.COPYRIGHT.PLACEHOLDER'
+                    | translate
+            "
+            formControlName="releaseCopyright"
         ></app-subject-input>
     </div>
-</div>
-<app-separator class="content-spacing-vertical"></app-separator>
-<div class="information">
-    <span class="title titlecolor">{{
-        'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.TITLE' | translate
-    }}</span>
-    <app-subject-textarea
-        [labelText]="'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.SUBTITLE' | translate"
-        [placeholder]="
-            'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.PLACEHOLDER' | translate
-        "
-    ></app-subject-textarea>
-</div>
+    <app-separator class="content-spacing-vertical"></app-separator>
+    <div class="information">
+        <span class="title titlecolor">{{
+            'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.TITLE' | translate
+        }}</span>
+        <app-subject-textarea
+            [labelText]="
+                'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.SUBTITLE' | translate
+            "
+            [placeholder]="
+                'RELEASE_CREATE.ADD_INFORMATION.ADDITIONAL_INFORMATION.PLACEHOLDER' | translate
+            "
+            formControlName="releaseAdditionalInformation"
+        ></app-subject-textarea>
+    </div>
+</form>

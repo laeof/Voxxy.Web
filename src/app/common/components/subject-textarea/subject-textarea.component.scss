@@ -15,12 +15,12 @@
 
     .label {
         font-size: 14px;
-    }
 
-    &.mandatory {
-        .label::after {
-            content: '*';
-            font-size: 14px;
+        &.mandatory {
+            &::after {
+                content: '*';
+                font-size: 14px;
+            }
         }
     }
 }

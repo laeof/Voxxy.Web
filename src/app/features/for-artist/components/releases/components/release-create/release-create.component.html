@@ -1,15 +1,34 @@
 <div class="header">
     <span class="title">{{ 'RELEASE_CREATE.TITLE' | translate }}</span>
     <div class="buttons">
-        <span class="common-button" (click)="decreaseStage()" (keydown.enter)="decreaseStage()">{{
-            'RELEASE_CREATE.BACK_BUTTON' | translate
-        }}</span>
+        <span
+            class="common-button"
+            [ngClass]="{ disabled: current <= 0 }"
+            (click)="decreaseStage()"
+            (keydown.enter)="decreaseStage()"
+            >{{ 'RELEASE_CREATE.BACK_BUTTON' | translate }}</span
+        >
         <span
             class="common-button primary"
+            [ngClass]="{
+                disabled: !(this.getRouteFormValid() | async) || current >= total || false,
+                hidden: current >= total,
+            }"
             (click)="increaseStage()"
             (keydown.enter)="increaseStage()"
             >{{ 'RELEASE_CREATE.NEXT_BUTTON' | translate }}</span
         >
+        <span
+            class="common-button primary"
+            [ngClass]="{
+                hidden: !current || current < total,
+                disabled: current < total || !releaseCreateFormService.allFormsValid,
+            }"
+            (click)="submitForm()"
+            (keydown.enter)="submitForm()"
+        >
+            {{ 'RELEASE_CREATE.SUBMIT_BUTTON' | translate }}
+        </span>
     </div>
 </div>
 <app-separator class="content-spacing-vertical"></app-separator>
@@ -36,6 +55,14 @@
             <span class="progress-release-title titlecolor">{{
                 'RELEASE_CREATE.WHATS_NEXT.TITLE' | translate
             }}</span>
+            <div class="release-progress-flow">
+                @for (stage of flow; track stage) {
+                    <for-artist-release-create-what-next-card
+                        [flowCard]="stage"
+                        [maxStage]="total"
+                    ></for-artist-release-create-what-next-card>
+                }
+            </div>
         </div>
     </div>
 </div>

@@ -1,19 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AppRoutes } from '../constants/app.routes.constant';
 import { UrlHelper } from '../helpers/url.helper';
 import { LibraryDto } from '@common/layout/components/librarybar/components/librarybar-list/dtos/library-dto';
 import { FollowType } from '@common/layout/components/librarybar/enums/follow-type-enum';
-import { ForArtistNavigationGroups } from '@common/enums/for-artist-navigation-groups.enum';
-import { ForArtistNavigationGroupReleases } from '@common/enums/for-artist-navigation-groups-items.enum';
-import { AppNavigation, AppNavigationGroup } from '@common/interfaces/navigation.interface';
+import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
+import { filter } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
 export class NavigationService {
-    constructor(private readonly router: Router) {}
+    constructor(
+        private readonly router: Router,
+    ) {}
+
+    get currentUrl(): string {
+        return this.router.url;
+    }
 
     navigateFromLibrary(libraryDto: LibraryDto): void {
         switch (libraryDto.followType) {
@@ -107,5 +112,17 @@ export class NavigationService {
         }
 
         return null;
+    }
+
+    navigateNextPath(path: string, relativeTo?: ActivatedRoute): void {
+        this.router.navigate([path], {
+            relativeTo: relativeTo || null,
+        });
+    }
+
+    navigationEndSubscribe(callback: () => void): void {
+        this.router.events
+            .pipe(filter((event) => event instanceof NavigationEnd))
+            .subscribe(() => callback());
     }
 }

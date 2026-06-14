@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    forwardRef,
+    Input,
+    ViewChild,
+} from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -18,20 +25,50 @@ export interface AudioFileItem {
     templateUrl: './file-drag-drop.component.html',
     styleUrl: './file-drag-drop.component.scss',
     imports: [CommonModule, MatIcon, TranslatePipe],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => FileDragDropComponent),
+            multi: true,
+        },
+    ],
 })
-export class FileDragDropComponent {
+export class FileDragDropComponent implements ControlValueAccessor {
     @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-
-    @Output() filesSelected = new EventEmitter<AudioFileItem[]>();
 
     @Input() fileFormats: string = '';
     @Input() title: string = '';
     @Input() subtitle: string = '';
+    @Input() disabled: boolean = false;
+    @Input() showFileList: boolean = true;
 
     files: AudioFileItem[] = [];
     isDragging = false;
     isLoading = false;
     errorMessage = '';
+
+    private onChange: (files: AudioFileItem[]) => void = () => {};
+    private onTouched: () => void = () => {}
+
+    writeValue(value: AudioFileItem[]): void {
+        this.files = value ?? [];
+    }
+
+    registerOnChange(fn: (value: AudioFileItem[]) => void): void {
+        this.onChange = fn;
+    }
+
+    registerOnTouched(fn: () => void): void {
+        this.onTouched = fn;
+    }
+
+    setDisabledState(isDisabled: boolean): void {
+        this.disabled = isDisabled;
+    }
+
+    onBlur(): void {
+        this.onTouched();
+    }
 
     openFileDialog(): void {
         this.fileInput.nativeElement.click();
@@ -76,13 +113,13 @@ export class FileDragDropComponent {
         URL.revokeObjectURL(item.objectUrl);
 
         this.files = this.files.filter((x) => x !== item);
-        this.filesSelected.emit(this.files);
+        this.onChange(this.files);
     }
 
     clear(): void {
         this.files.forEach((file) => URL.revokeObjectURL(file.objectUrl));
         this.files = [];
-        this.filesSelected.emit(this.files);
+        this.onChange(this.files);
     }
 
     private async handleFiles(files: File[]): Promise<void> {
@@ -110,7 +147,7 @@ export class FileDragDropComponent {
             );
 
             this.files = [...this.files, ...mappedFiles];
-            this.filesSelected.emit(this.files);
+            this.onChange(this.files);
         } finally {
             this.isLoading = false;
         }

@@ -24,7 +24,6 @@ export const forArtistRoutes: Route[] = [
                         (x) => x.ForArtistReleasesAllComponent,
                     ),
             },
-
             ...forArtistReleaseCreateRoutes,
         ],
     },

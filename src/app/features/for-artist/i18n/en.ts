@@ -18,10 +18,17 @@ export const locale = {
             BACK_BUTTON: 'Back',
             TRACK_UPLOAD_TITLE: 'Upload your tracks',
             TRACK_UPLOAD_DESCRIPTION: 'Drag and drop your tracks here or click to browse',
+            SUBMIT_BUTTON: 'Submit for review',
             FLOW: {
-                FIRST: 'Add release information',
-                SECOND: 'Add tracks',
-                THIRD: 'Send release for review',
+                FIRST: {
+                    TITLE: 'Add release information',
+                    SUBTITLE: 'Provide all necessary information about your release',
+                },
+                SECOND: { TITLE: 'Add tracks', SUBTITLE: 'Upload your tracks here' },
+                THIRD: {
+                    TITLE: 'Send release for review',
+                    SUBTITLE: 'Submit your release for review',
+                },
             },
             FILE_DRAG_DROP: {
                 TITLE: 'Drag and drop your tracks here or click to browse',
@@ -29,9 +36,15 @@ export const locale = {
             },
             RELEASE_PROGRESS: {
                 TITLE: 'Release progress',
-                STEP_1: 'Adding release information',
-                STEP_2: 'Upload your tracks',
-                STEP_3: 'Sending release for review',
+                STEP_1: {
+                    TITLE: 'Adding release information',
+                },
+                STEP_2: {
+                    TITLE: 'Upload your tracks',
+                },
+                STEP_3: {
+                    TITLE: 'Sending release for review',
+                },
                 STEP: 'Step',
                 OF: 'of',
                 TRACKS: 'Tracks',
@@ -42,15 +55,39 @@ export const locale = {
             ADD_INFORMATION: {
                 MAIN_INFORMATION: {
                     TITLE: 'Add main information',
-                    RELEASE_TITLE: 'Release title',
-                    PLACEHOLDER_RELEASE_TITLE: 'Enter release title',
-                    ARTIST_NAME: 'Artist name',
-                    RELEASE_TYPE: 'Release type',
-                    GENRE: 'Genre',
-                    RELEASE_DATE: 'Release date',
                     COVER: {
                         TITLE: 'Add cover image',
                         SUBTITLE: 'Upload your cover image here',
+                    },
+                    ARTISTS: {
+                        TITLE: 'Add other artists',
+                        PLACEHOLDER: 'Search for other artists to add to your release',
+                    },
+                    RELEASE: {
+                        TITLE: 'Release title',
+                        PLACEHOLDER_TITLE: 'Enter release title',
+                        TYPE: {
+                            TITLE: 'Release type',
+                            PLACEHOLDER: 'Select release type',
+                            SINGLE: 'Single',
+                            EP: 'EP',
+                            ALBUM: 'Album',
+                        },
+                        DATE: {
+                            TITLE: 'Release date',
+                        },
+                        GENRE: {
+                            TITLE: 'Release genres',
+                            PLACEHOLDER: 'Search for genres to add to your release',
+                        },
+                        MOOD: {
+                            TITLE: 'Release moods',
+                            PLACEHOLDER: 'Search for moods to add to your release',
+                        },
+                        COPYRIGHT: {
+                            TITLE: 'Copyright information',
+                            PLACEHOLDER: 'Enter copyright information for your release',
+                        },
                     },
                 },
                 ADDITIONAL_INFORMATION: {

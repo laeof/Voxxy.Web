@@ -5,6 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { MediaPlayerStateService } from './common/services/media-player-state.service';
 import { MediaPlayerEngineService } from './common/services/media-player-engine.service';
 import { PlayerTitleService } from './common/services/player-title.service';
+import { NavigationService } from '@common/services/navigation.service';
 
 @Component({
     selector: 'app-root',
@@ -17,6 +18,7 @@ import { PlayerTitleService } from './common/services/player-title.service';
         MediaPlayerStateService,
         MediaPlayerEngineService,
         PlayerTitleService,
+        NavigationService
     ],
 })
 export class App {

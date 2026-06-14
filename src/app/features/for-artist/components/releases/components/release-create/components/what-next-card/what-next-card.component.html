@@ -1,0 +1,22 @@
+<div class="what-next-card">
+    <div class="indicator-wrapper">
+        <div
+            class="indicator"
+            [ngClass]="{
+                completed: flowCard && currentStage > flowCard.stage,
+                active: flowCard && currentStage === flowCard.stage,
+            }"
+        >
+            <mat-icon svgIcon="check"></mat-icon>
+        </div>
+        @if (flowCard?.stage !== maxStage) {
+            <app-separator [vertical]="true"></app-separator>
+        }
+    </div>
+    <div class="what-next-card-content">
+        <span class="title titlecolor">{{ flowCard?.title | translate }}</span>
+        <div class="subtitle subcolor">
+            {{ flowCard?.subtitle | translate }}
+        </div>
+    </div>
+</div>

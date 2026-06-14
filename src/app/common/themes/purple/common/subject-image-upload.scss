@@ -1,0 +1,11 @@
+@mixin subject-image-upload {
+    app-subject-image-upload {
+        .cover-wrapper {
+            .cover-overlay {
+                &:hover {
+                    background-color: var(--secondary-container-color) !important;
+                }
+            }
+        }
+    }
+}

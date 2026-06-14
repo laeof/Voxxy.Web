@@ -7,6 +7,7 @@ import { ReleaseCreateService } from '../../release-create.service';
 
 export interface FlowCard {
     title: string;
+    subtitle: string | null;
     stage: number;
 }
 
@@ -26,7 +27,7 @@ export class ForArtistReleaseCreateFlowCardComponent implements OnInit, OnDestro
     constructor(private readonly releaseCreateService: ReleaseCreateService) {}
 
     ngOnInit(): void {
-        this.releaseCreateService.createState$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
+        this.releaseCreateService.createState$.pipe(takeUntil(this.destroy$)).subscribe((state: number) => {
             this.currentStage = state;
         });
     }

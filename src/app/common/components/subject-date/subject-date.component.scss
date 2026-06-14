@@ -1,7 +1,7 @@
 :host {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    position: relative;
 
     .input {
         padding: 14px 10px;
@@ -9,6 +9,22 @@
         border: 1px solid;
         font-size: 14px;
         outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .input-hidden {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+
+        width: 100%;
+        height: 0px;
+
+        left: 0;
+        bottom: 0;
     }
 
     .label {
@@ -18,6 +34,7 @@
             &::after {
                 content: '*';
                 font-size: 14px;
+                margin-left: 2px;
             }
         }
     }

@@ -34,13 +34,11 @@
     </div>
 }
 
-@if (files.length) {
+@if (files.length && showFileList) {
     <div class="files">
         @for (item of files; track item.objectUrl) {
             <div class="file-item">
                 <div class="file-main">
-                    <div class="file-icon">🎧</div>
-
                     <div class="file-info">
                         <div class="file-name">
                             {{ item.name }}

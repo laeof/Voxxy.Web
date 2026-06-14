@@ -10,6 +10,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class ReleaseProgressComponent {
     @Input() current: number = 0;
-    @Input() total: number = 3;
+    @Input() total: number = 2;
     @Input() message: string = '';
 }

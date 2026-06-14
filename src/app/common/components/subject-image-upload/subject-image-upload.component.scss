@@ -1,6 +1,8 @@
 .cover-wrapper {
-    width: 200px;
-    height: 200px;
+    width: 225px;
+    height: 225px;
+    min-width: 200px;
+    min-height: 200px;
     border-radius: 6px;
     overflow: hidden;
     position: relative;
@@ -20,6 +22,7 @@
         align-items: center;
         padding: 10px;
         gap: 10px;
+        transition: background-color 0.2s;
 
         cursor: pointer;
         user-select: none;

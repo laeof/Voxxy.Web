@@ -4,11 +4,17 @@
             color: white;
             .common-button {
                 &.primary {
-                    background-color: var(--theme-lower-darker) !important;
+                    background-color: var(--theme-lower-darker);
 
                     &:hover {
                         background-color: var(--theme-primary) !important;
                     }
+                }
+
+                &.disabled {
+                    background-color: var(--disabled-color);
+                    color: var(--disabled-font-color);
+                    pointer-events: none;
                 }
             }
         }
@@ -58,6 +64,36 @@
 
                     .cover-overlay {
                         background-color: var(--primary-container-color);
+                    }
+                }
+            }
+        }
+    }
+
+    for-artist-release-create-what-next-card {
+        .what-next-card {
+            .indicator-wrapper {
+                .indicator {
+                    background-color: var(--secondary-container-color);
+
+                    &.active {
+                        background-color: var(--primary-container-color);
+                        border-color: var(--theme-primary) !important;
+                    }
+
+                    &.completed {
+                        background-color: var(--primary-container-color);
+                        border-color: var(--theme-primary) !important;
+
+                        mat-icon {
+                            color: var(--theme-primary);
+                        }
+                    }
+                }
+
+                app-separator {
+                    .separator {
+                        background-color: var(--secondary-container-color);
                     }
                 }
             }

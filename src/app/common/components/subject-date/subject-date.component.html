@@ -1,0 +1,20 @@
+<label [for]="id" class="label subcolor" [ngClass]="{ mandatory: mandatory }">{{
+    titleText
+}}</label>
+<input
+    type="date"
+    class="input-hidden subcolor"
+    [id]="id"
+    [min]="minDate"
+    [disabled]="readonly || disabled"
+    (click)="onDateClick()"
+    (input)="onInputChange($event.target.value)"
+    (blur)="onBlur()"
+    [value]="date"
+    #dateInput
+/>
+
+<div class="input" (click)="onDateClick()" (keydown.enter)="onDateClick()">
+    {{ date }}
+    <mat-icon svgIcon="calendar" class="subcolor"></mat-icon>
+</div>

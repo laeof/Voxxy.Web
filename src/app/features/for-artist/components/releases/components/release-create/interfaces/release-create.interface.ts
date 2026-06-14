@@ -3,12 +3,10 @@ import { ImageFileItem } from '@common/components/subject-image-upload/subject-i
 
 export interface ReleaseCreateForm {
     title: string;
-    description: string;
-    coverImage: ImageFileItem | null;
-    releaseDate: Date | null;
+    coverImage: ImageFileItem;
+    releaseDate: string;
     additionalInformation: string;
-    artists: string[];
-    album: string;
+    artistIds: string[];
     tracks: ReleaseCreateTrack[];
 }
 
@@ -19,4 +17,12 @@ export interface ReleaseCreateTrack {
     language: string;
     isRemix: boolean;
     audioFile: AudioFileItem | null;
+}
+
+export interface ReleaseCreateMainInformation {
+    title: string;
+    coverImage: ImageFileItem;
+    releaseDate: string;
+    additionalInformation: string;
+    artistIds: string[];
 }

@@ -1,22 +1,80 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AppRoutes } from '@common/constants/app.routes.constant';
-import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { NavigationService } from '@common/services/navigation.service';
+import { BehaviorSubject, map, merge, Observable, startWith, Subject } from 'rxjs';
+import { ReleaseCreateFormService } from './release-create-form.service';
+import {
+    ReleaseCreateForm,
+    ReleaseCreateMainInformation,
+    ReleaseCreateTrack,
+} from './interfaces/release-create.interface';
 
 @Injectable()
 export class ReleaseCreateService {
     private readonly createState: BehaviorSubject<number> = new BehaviorSubject(0);
     public createState$: Observable<number> = this.createState.asObservable();
 
-    constructor(
-        private readonly router: Router,
-        private readonly activatedRoute: ActivatedRoute,
-    ) {
-        this.upadteFlowState();
+    public stateDictionary: Record<number, string> = {
+        0: AppRoutes.forArtistReleasesCreateAddReleaseInformation,
+        1: AppRoutes.forArtistReleasesCreateUploadTracks,
+        2: AppRoutes.forArtistReleasesCreatePublish,
+    };
 
-        this.router.events
-            .pipe(filter((event) => event instanceof NavigationEnd))
-            .subscribe(() => this.upadteFlowState());
+    private readonly routeChanged$ = new Subject<void>();
+    readonly formValid$: Observable<boolean>;
+
+    constructor(
+        private readonly navigationService: NavigationService,
+        private readonly activatedRoute: ActivatedRoute,
+        private readonly releaseCreateFormService: ReleaseCreateFormService,
+    ) {
+        this.initState();
+        this.navigationService.navigationEndSubscribe(() => {
+            this.routeChanged$.next();
+        });
+
+        this.formValid$ = merge(
+            this.routeChanged$,
+            this.releaseCreateFormService.mainInformationForm.statusChanges,
+            this.releaseCreateFormService.uploadFilesForm.statusChanges,
+        ).pipe(
+            startWith(null),
+            map(() => this.calculateFormValid()),
+        );
+    }
+
+    private calculateFormValid(): boolean {
+        const route = this.navigationService.currentUrl.split('/').pop();
+
+        switch (route) {
+            case AppRoutes.forArtistReleasesCreateAddReleaseInformation:
+                return this.releaseCreateFormService.mainInformationForm.valid;
+
+            case AppRoutes.forArtistReleasesCreateUploadTracks:
+                return this.releaseCreateFormService.uploadFilesForm.valid;
+
+            case AppRoutes.forArtistReleasesCreatePublish:
+                return (
+                    this.releaseCreateFormService.mainInformationForm.valid &&
+                    this.releaseCreateFormService.uploadFilesForm.valid
+                );
+
+            default:
+                return false;
+        }
+    }
+
+    initState(): void {
+        const currentPath = this.navigationService.currentUrl.split('/').pop() ?? '';
+        const stateEntry = Object.entries(this.stateDictionary).find(
+            ([, path]) => path === currentPath,
+        );
+
+        if (stateEntry) {
+            const [state] = stateEntry;
+            this.createState.next(Number(state));
+        }
     }
 
     increaseStage(): void {
@@ -29,47 +87,33 @@ export class ReleaseCreateService {
         this.navigateTo(this.stepByProgress);
     }
 
-    private upadteFlowState(): void {
-        let route = this.activatedRoute.root;
-
-        while (route.firstChild) {
-            route = route.firstChild;
-        }
-
-        const path = route.snapshot.routeConfig?.path;
-
-        this.createState.next(this.getCreateState(path));
-    }
-
-    private getCreateState(path: string | undefined): number {
-        switch (path) {
-            case AppRoutes.forArtistReleasesCreateAddReleaseInformation:
-                return 0;
-            case AppRoutes.forArtistReleasesCreateUploadTracks:
-                return 1;
-            case AppRoutes.forArtistReleasesCreatePublish:
-                return 2;
-            default:
-                return 0;
-        }
-    }
-
     get stepByProgress(): string {
-        switch (this.createState.value) {
-            case 0:
-                return AppRoutes.forArtistReleasesCreateAddReleaseInformation;
-            case 1:
-                return AppRoutes.forArtistReleasesCreateUploadTracks;
-            case 2:
-                return AppRoutes.forArtistReleasesCreatePublish;
-            default:
-                return '';
-        }
+        return (
+            this.stateDictionary[this.createState.value] ??
+            AppRoutes.forArtistReleasesCreateAddReleaseInformation
+        );
     }
 
     private navigateTo(path: string): void {
-        this.router.navigate([path], {
-            relativeTo: this.activatedRoute,
-        });
+        this.navigationService.navigateNextPath(path, this.activatedRoute);
+    }
+
+    submitRelease(): void {
+        let tracks: ReleaseCreateTrack[] = this.releaseCreateFormService.buildUploadTracksForm;
+
+        let mainInformation: ReleaseCreateMainInformation =
+            this.releaseCreateFormService.buildMainInformationForm;
+
+        let model: ReleaseCreateForm = {
+            tracks: tracks,
+            title: mainInformation.title,
+            coverImage: mainInformation.coverImage,
+            releaseDate: mainInformation.releaseDate,
+            additionalInformation: mainInformation.additionalInformation,
+            artistIds: mainInformation.artistIds,
+        };
+
+        console.log('submit release');
+        console.log(model);
     }
 }

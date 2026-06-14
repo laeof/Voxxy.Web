@@ -9,6 +9,7 @@ export const forArtistReleaseCreateRoutes: Route[] = [
                 return x.ForArtistReleaseCreateComponent;
             }),
         children: [
+            { path: '', redirectTo: AppRoutes.forArtistReleasesCreateAddReleaseInformation, pathMatch: 'full' },
             {
                 path: AppRoutes.forArtistReleasesCreateAddReleaseInformation,
                 loadComponent: () =>
