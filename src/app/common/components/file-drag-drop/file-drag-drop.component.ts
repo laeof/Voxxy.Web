@@ -1,16 +1,11 @@
 import { CommonModule } from '@angular/common';
-import {
-    Component,
-    ElementRef,
-    forwardRef,
-    Input,
-    ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, forwardRef, Input, Output, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
 export interface AudioFileItem {
+    id: string;
     file: File;
     name: string;
     size: number;
@@ -40,15 +35,18 @@ export class FileDragDropComponent implements ControlValueAccessor {
     @Input() title: string = '';
     @Input() subtitle: string = '';
     @Input() disabled: boolean = false;
-    @Input() showFileList: boolean = true;
+    @Input() showFileList: boolean = false;
+
+    @Output() filesChanged = new EventEmitter<AudioFileItem[]>();
 
     files: AudioFileItem[] = [];
     isDragging = false;
     isLoading = false;
     errorMessage = '';
 
-    private onChange: (files: AudioFileItem[]) => void = () => {};
-    private onTouched: () => void = () => {}
+    private onChange: (files: AudioFileItem[]) => void = () => { };
+
+    private onTouched: () => void = () => {};
 
     writeValue(value: AudioFileItem[]): void {
         this.files = value ?? [];
@@ -114,12 +112,14 @@ export class FileDragDropComponent implements ControlValueAccessor {
 
         this.files = this.files.filter((x) => x !== item);
         this.onChange(this.files);
+        this.filesChanged.emit(this.files);
     }
 
     clear(): void {
         this.files.forEach((file) => URL.revokeObjectURL(file.objectUrl));
         this.files = [];
         this.onChange(this.files);
+        this.filesChanged.emit(this.files);
     }
 
     private async handleFiles(files: File[]): Promise<void> {
@@ -148,6 +148,7 @@ export class FileDragDropComponent implements ControlValueAccessor {
 
             this.files = [...this.files, ...mappedFiles];
             this.onChange(this.files);
+            this.filesChanged.emit(this.files);
         } finally {
             this.isLoading = false;
         }
@@ -165,6 +166,7 @@ export class FileDragDropComponent implements ControlValueAccessor {
                 const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
 
                 resolve({
+                    id: crypto.randomUUID(),
                     file,
                     name: file.name,
                     size: file.size,

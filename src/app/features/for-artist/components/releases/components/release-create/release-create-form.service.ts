@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
 import { AudioFileItem } from '@common/components/file-drag-drop/file-drag-drop.component';
 import { ImageFileItem } from '@common/components/subject-image-upload/subject-image-upload.component';
 import { SubjectSelectOption } from '@common/components/subject-select/subject-select.component';
@@ -8,6 +8,7 @@ import {
     ReleaseCreateTrack,
 } from './interfaces/release-create.interface';
 import { ArtistStateService } from '@common/services/artist-state.service';
+import { LocalTrackEntity } from './components/upload-tracks/components/tracks-list.service';
 
 @Injectable()
 export class ReleaseCreateFormService {
@@ -40,21 +41,19 @@ export class ReleaseCreateFormService {
     });
 
     uploadFilesForm = new FormGroup({
-        audioFiles: new FormControl<AudioFileItem[]>([], {
+        audioFilesInput: new FormControl<AudioFileItem[]>([], {
             nonNullable: true,
+        }),
+        tracks: new FormArray<
+            FormGroup<{
+                title: FormControl<string>;
+                position: FormControl<number>;
+                language: FormControl<SubjectSelectOption | null>;
+                isRemix: FormControl<boolean>;
+                audioFile: FormControl<AudioFileItem | null>;
+            }>
+        >([], {
             validators: [Validators.required],
-        }),
-        title: new FormControl<string>('', {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        position: new FormControl<number>(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        language: new FormControl<SubjectSelectOption | null>(null),
-        isRemix: new FormControl<boolean>(false, {
-            nonNullable: true,
         }),
     });
 
@@ -78,15 +77,34 @@ export class ReleaseCreateFormService {
     }
 
     get buildUploadTracksForm(): ReleaseCreateTrack[] {
-        return (
-            this.uploadFilesForm.value.audioFiles?.map((audioFile: AudioFileItem) => ({
-                title: this.uploadFilesForm.value.title || '',
-                position: this.uploadFilesForm.value.position || 0,
-                duration: audioFile.duration,
-                language: this.uploadFilesForm.value.language?.id || '',
-                audioFile: audioFile,
-                isRemix: this.uploadFilesForm.value.isRemix || false,
-            })) || []
-        );
+        const tracksArray = this.uploadFilesForm.get('tracks') as FormArray;
+        return tracksArray.value.map((trackGroup: LocalTrackEntity, index: number) => ({
+            title: trackGroup.title || '',
+            position: trackGroup.position || index + 1,
+            duration: trackGroup.audioFile?.duration || 0,
+            language: trackGroup.language || '',
+            audioFile: trackGroup.audioFile || null,
+            isRemix: trackGroup.isRemix || false,
+        }));
+    }
+
+    createTrackFormGroup(audioFile: AudioFileItem, position: number, isRemix: boolean): FormGroup {
+        return new FormGroup({
+            title: new FormControl<string>(audioFile.name, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            position: new FormControl<number>(position, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(1)],
+            }),
+            language: new FormControl<SubjectSelectOption | null>(null),
+            isRemix: new FormControl<boolean>(isRemix, {
+                nonNullable: true,
+            }),
+            audioFile: new FormControl<AudioFileItem | null>(audioFile, {
+                nonNullable: true,
+            }),
+        });
     }
 }

@@ -34,6 +34,15 @@ export const locale = {
                 TITLE: 'Drag and drop your tracks here or click to browse',
                 SUBTITLE: 'Or click to select files from your computer',
             },
+            UPLOAD_FILES: {
+                DRAG: 'Drag',
+                POSITION: '#',
+                PLAY: 'Play',
+                TITLE: 'Title',
+                IS_REMIX: 'Is Remix',
+                DURATION: 'Duration',
+                DELETE: 'Delete',
+            },
             RELEASE_PROGRESS: {
                 TITLE: 'Release progress',
                 STEP_1: {

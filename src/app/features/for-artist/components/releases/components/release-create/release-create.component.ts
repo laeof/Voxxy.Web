@@ -12,6 +12,8 @@ import {
 import { ReleaseCreateFormService } from './release-create-form.service';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { ForArtistReleaseCreateWhatNextCardComponent } from './components/what-next-card/what-next-card.component';
+import { UploadTracksManagerService } from './components/upload-tracks/components/tracks-list.service';
+import { UploadTracksListFacade } from './components/upload-tracks/components/tracks-list/facades/track-list.facade';
 
 @Component({
     selector: 'for-artist-release-create',
@@ -28,7 +30,12 @@ import { ForArtistReleaseCreateWhatNextCardComponent } from './components/what-n
         ForArtistReleaseCreateWhatNextCardComponent,
         AsyncPipe,
     ],
-    providers: [ReleaseCreateService, ReleaseCreateFormService],
+    providers: [
+        ReleaseCreateService,
+        ReleaseCreateFormService,
+        UploadTracksManagerService,
+        UploadTracksListFacade,
+    ],
 })
 export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
     private readonly destroy$ = new Subject<void>();
