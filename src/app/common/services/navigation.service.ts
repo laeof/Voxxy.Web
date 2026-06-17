@@ -6,15 +6,13 @@ import { LibraryDto } from '@common/layout/components/librarybar/components/libr
 import { FollowType } from '@common/layout/components/librarybar/enums/follow-type-enum';
 import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
-import { filter } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
 export class NavigationService {
-    constructor(
-        private readonly router: Router,
-    ) {}
+    constructor(private readonly router: Router) {}
 
     get currentUrl(): string {
         return this.router.url;
@@ -120,9 +118,12 @@ export class NavigationService {
         });
     }
 
-    navigationEndSubscribe(callback: () => void): void {
+    navigationEndSubscribe(destroy$: Subject<void>, callback: () => void): void {
         this.router.events
-            .pipe(filter((event) => event instanceof NavigationEnd))
+            .pipe(
+                takeUntil(destroy$),
+                filter((event) => event instanceof NavigationEnd),
+            )
             .subscribe(() => callback());
     }
 }

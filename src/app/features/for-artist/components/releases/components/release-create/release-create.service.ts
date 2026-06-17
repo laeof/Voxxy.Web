@@ -1,36 +1,32 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppRoutes } from '@common/constants/app.routes.constant';
 import { NavigationService } from '@common/services/navigation.service';
-import { BehaviorSubject, map, merge, Observable, startWith, Subject } from 'rxjs';
+import { map, merge, Observable, startWith, Subject, takeUntil } from 'rxjs';
 import { ReleaseCreateFormService } from './release-create-form.service';
 import {
     ReleaseCreateForm,
     ReleaseCreateMainInformation,
     ReleaseCreateTrack,
 } from './interfaces/release-create.interface';
+import { ReleaseCreateStateService } from '@features/for-artist/services/release-create-state.service';
 
 @Injectable()
-export class ReleaseCreateService {
-    private readonly createState: BehaviorSubject<number> = new BehaviorSubject(0);
-    public createState$: Observable<number> = this.createState.asObservable();
-
-    public stateDictionary: Record<number, string> = {
-        0: AppRoutes.forArtistReleasesCreateAddReleaseInformation,
-        1: AppRoutes.forArtistReleasesCreateUploadTracks,
-        2: AppRoutes.forArtistReleasesCreatePublish,
-    };
+export class ReleaseCreateService implements OnDestroy {
+    private readonly destroy$ = new Subject<void>();
+    public createState$: Observable<number>;
 
     private readonly routeChanged$ = new Subject<void>();
     readonly formValid$: Observable<boolean>;
 
     constructor(
         private readonly navigationService: NavigationService,
-        private readonly activatedRoute: ActivatedRoute,
         private readonly releaseCreateFormService: ReleaseCreateFormService,
+        private readonly releaseCreateStateService: ReleaseCreateStateService,
     ) {
-        this.initState();
-        this.navigationService.navigationEndSubscribe(() => {
+        this.createState$ = this.releaseCreateStateService.createState$;
+
+        this.navigationService.navigationEndSubscribe(this.destroy$, () => {
             this.routeChanged$.next();
         });
 
@@ -39,9 +35,16 @@ export class ReleaseCreateService {
             this.releaseCreateFormService.mainInformationForm.statusChanges,
             this.releaseCreateFormService.uploadFilesForm.statusChanges,
         ).pipe(
+            takeUntil(this.destroy$),
             startWith(null),
             map(() => this.calculateFormValid()),
         );
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+        this.releaseCreateStateService.resetState();
     }
 
     private calculateFormValid(): boolean {
@@ -50,52 +53,34 @@ export class ReleaseCreateService {
         switch (route) {
             case AppRoutes.forArtistReleasesCreateAddReleaseInformation:
                 return this.releaseCreateFormService.mainInformationForm.valid;
-
             case AppRoutes.forArtistReleasesCreateUploadTracks:
                 return this.releaseCreateFormService.uploadFilesForm.valid;
-
             case AppRoutes.forArtistReleasesCreatePublish:
                 return (
                     this.releaseCreateFormService.mainInformationForm.valid &&
                     this.releaseCreateFormService.uploadFilesForm.valid
                 );
-
             default:
                 return false;
         }
     }
 
-    initState(): void {
-        const currentPath = this.navigationService.currentUrl.split('/').pop() ?? '';
-        const stateEntry = Object.entries(this.stateDictionary).find(
-            ([, path]) => path === currentPath,
-        );
-
-        if (stateEntry) {
-            const [state] = stateEntry;
-            this.createState.next(Number(state));
-        }
+    increaseStage(activatedRoute?: ActivatedRoute): void {
+        this.releaseCreateStateService.increaseStage();
+        this.navigateTo(this.stepByProgress, activatedRoute);
     }
 
-    increaseStage(): void {
-        this.createState.next(this.createState.value + 1);
-        this.navigateTo(this.stepByProgress);
-    }
-
-    decreaseStage(): void {
-        this.createState.next(this.createState.value - 1);
-        this.navigateTo(this.stepByProgress);
+    decreaseStage(activatedRoute?: ActivatedRoute): void {
+        this.releaseCreateStateService.decreaseStage();
+        this.navigateTo(this.stepByProgress, activatedRoute);
     }
 
     get stepByProgress(): string {
-        return (
-            this.stateDictionary[this.createState.value] ??
-            AppRoutes.forArtistReleasesCreateAddReleaseInformation
-        );
+        return this.releaseCreateStateService.stepByProgress;
     }
 
-    private navigateTo(path: string): void {
-        this.navigationService.navigateNextPath(path, this.activatedRoute);
+    private navigateTo(path: string, relativeTo?: ActivatedRoute): void {
+        this.navigationService.navigateNextPath(path, relativeTo);
     }
 
     submitRelease(): void {

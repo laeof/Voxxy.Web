@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SeparatorComponent } from '@common/components/separator/separator.component';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { ReleaseCreateService } from './release-create.service';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { ReleaseProgressComponent } from './components/release-progress/release-progress.component';
@@ -12,8 +12,8 @@ import {
 import { ReleaseCreateFormService } from './release-create-form.service';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { ForArtistReleaseCreateWhatNextCardComponent } from './components/what-next-card/what-next-card.component';
-import { UploadTracksManagerService } from './components/upload-tracks/components/tracks-list.service';
 import { UploadTracksListFacade } from './components/upload-tracks/components/tracks-list/facades/track-list.facade';
+import { UploadTracksManagerService } from './components/upload-tracks/components/tracks-list.service';
 
 @Component({
     selector: 'for-artist-release-create',
@@ -31,10 +31,10 @@ import { UploadTracksListFacade } from './components/upload-tracks/components/tr
         AsyncPipe,
     ],
     providers: [
-        ReleaseCreateService,
-        ReleaseCreateFormService,
         UploadTracksManagerService,
         UploadTracksListFacade,
+        ReleaseCreateService,
+        ReleaseCreateFormService,
     ],
 })
 export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
@@ -61,6 +61,7 @@ export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
     constructor(
         private readonly releaseCreateService: ReleaseCreateService,
         public readonly releaseCreateFormService: ReleaseCreateFormService,
+        private readonly activatedRoute: ActivatedRoute,
     ) {}
 
     current: number = 0;
@@ -101,7 +102,7 @@ export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.releaseCreateService.increaseStage();
+        this.releaseCreateService.increaseStage(this.activatedRoute);
     }
 
     decreaseStage(): void {
@@ -109,7 +110,7 @@ export class ForArtistReleaseCreateComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.releaseCreateService.decreaseStage();
+        this.releaseCreateService.decreaseStage(this.activatedRoute);
     }
 
     submitForm(): void {

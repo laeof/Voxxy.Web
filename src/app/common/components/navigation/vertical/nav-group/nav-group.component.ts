@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { NavigationService } from '@common/services/navigation.service';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'navigation-group',
@@ -12,7 +13,8 @@ import { NavigationService } from '@common/services/navigation.service';
     standalone: true,
     imports: [NgClass, MatIcon, TranslatePipe],
 })
-export class NavGroupComponent implements OnInit {
+export class NavGroupComponent implements OnInit, OnDestroy {
+    private readonly destroy$ = new Subject<void>();
     @Input() navigationGroup: AppNavigationGroup | null = null;
 
     isExpanded: boolean = false;
@@ -26,7 +28,12 @@ export class NavGroupComponent implements OnInit {
 
         this.updateSelectedState();
 
-        this.navigationService.navigationEndSubscribe(() => this.updateSelectedState());
+        this.navigationService.navigationEndSubscribe(this.destroy$, () => this.updateSelectedState());
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     private updateSelectedState(): void {
