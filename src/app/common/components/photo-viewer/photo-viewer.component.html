@@ -1,0 +1,14 @@
+<div
+    class="overlay"
+    (click)="close()"
+    (keydown.escape)="close()"
+    [ngClass]="{ hidden: !isVisible }"
+>
+    <div class="viewer-content" [style.height]="heightPercentage + '%'">
+        <div class="photo-viewer">
+            <img [src]="imageUrl" alt="preview" />
+        </div>
+
+        <mat-icon svgIcon="close"></mat-icon>
+    </div>
+</div>

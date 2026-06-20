@@ -25,10 +25,13 @@
             }
         }
 
+        layout-nowplayingbar {
+            transition: min-width 0.3s ease;
+        }
+
         &.now-playing-bar-without-padding {
             padding-right: 0 !important;
             layout-nowplayingbar {
-                transition: ease 0.3s min-width;
                 min-width: 40px;
                 &:hover {
                     width: 50px;
