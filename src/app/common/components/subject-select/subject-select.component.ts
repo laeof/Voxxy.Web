@@ -59,13 +59,10 @@ export class SubjectSelectComponent implements ControlValueAccessor {
     }
 
     onSearchChange(value: string): void {
-        if (value === '') {
-            this.subjectOptions = [];
-            return;
-        }
+        const trimmed = value.trim();
 
-        this.searchResultsShown = true;
-        this.searchChange.emit(value);
+        this.searchChange.emit(trimmed);
+        this.searchResultsShown = trimmed.length > 0;
     }
 
     onSubjectChange(value: SubjectSelectOption): void {

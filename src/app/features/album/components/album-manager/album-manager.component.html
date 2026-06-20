@@ -6,7 +6,7 @@
     <manager-subject-name subject-additional-info [name]="album?.name"></manager-subject-name>
     <album-manager-common
         subject-additional-info
-        [albumImageUrl]="album?.imageUrl"
+        [albumImageUrl]="album?.createdBy?.imageUrl"
         [artistName]="album?.createdBy?.name"
         [artistId]="album?.createdBy?.id"
         [tracksAmount]="album?.tracks?.length || 0"

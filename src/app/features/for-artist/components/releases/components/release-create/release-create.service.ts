@@ -10,6 +10,9 @@ import {
     ReleaseCreateTrack,
 } from './interfaces/release-create.interface';
 import { ReleaseCreateStateService } from '@features/for-artist/services/release-create-state.service';
+import { HttpClient } from '@angular/common/http';
+import { ApiRoutes } from '@common/constants/api.routes.constant';
+import { environment } from '@environments/environment';
 
 @Injectable()
 export class ReleaseCreateService implements OnDestroy {
@@ -23,6 +26,7 @@ export class ReleaseCreateService implements OnDestroy {
         private readonly navigationService: NavigationService,
         private readonly releaseCreateFormService: ReleaseCreateFormService,
         private readonly releaseCreateStateService: ReleaseCreateStateService,
+        private readonly httpClient: HttpClient,
     ) {
         this.createState$ = this.releaseCreateStateService.createState$;
 
@@ -92,13 +96,51 @@ export class ReleaseCreateService implements OnDestroy {
         let model: ReleaseCreateForm = {
             tracks: tracks,
             title: mainInformation.title,
-            coverImage: mainInformation.coverImage,
+            coverImage: mainInformation.coverImage.file,
             releaseDate: mainInformation.releaseDate,
             additionalInformation: mainInformation.additionalInformation,
             artistIds: mainInformation.artistIds,
+            moodIds: mainInformation.moodIds,
+            genreIds: mainInformation.genreIds,
+            copyright: mainInformation.copyright,
+            releaseType: mainInformation.releaseType,
         };
 
-        console.log('submit release');
-        console.log(model);
+        let formData = new FormData();
+
+        formData.append('title', model.title);
+        formData.append('releaseDate', model.releaseDate);
+        formData.append('additionalInformation', model.additionalInformation);
+        formData.append('coverImage', model.coverImage);
+        formData.append('copyright', model.copyright);
+        formData.append('releaseType', model.releaseType);
+
+        model.artistIds.forEach((id) => {
+            formData.append('artistIds', id);
+        });
+
+        model.moodIds.forEach((id) => {
+            formData.append('moodIds', id);
+        });
+
+        model.genreIds.forEach((id) => {
+            formData.append('genreIds', id);
+        });
+
+        model.tracks.forEach((track, index) => {
+            formData.append(`tracks[${index}].title`, track.title);
+            formData.append(`tracks[${index}].position`, track.position.toString());
+            formData.append(`tracks[${index}].duration`, track.duration.toString());
+            formData.append(`tracks[${index}].isRemix`, track.isRemix.toString());
+            formData.append(`tracks[${index}].audioFile`, track.audioFile?.file!);
+        });
+
+        const url = `${environment.apiUrl}${ApiRoutes.ForArtists.releases}`;
+
+        console.log(model.artistIds)
+
+        this.httpClient.post(url, formData).subscribe((response) => {
+            console.log('Release created successfully', response);
+        });
     }
 }

@@ -38,7 +38,7 @@ export class ArtistPopularTrackService extends EntityManagerService<Album> {
                     ?.flatMap((album: Album) => {
                         album.tracks.forEach((track) => {
                             track.fromPlaylist = album.id;
-                            track.artist = this.artist!;
+                            track.artists[0] = this.artist!;
                         });
                         this.onEntitiesChanged.next([album]);
                     })!;

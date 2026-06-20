@@ -22,7 +22,7 @@
     />
     @if (selectedSubjects.length > 0) {
         <div class="selected-subjects">
-            @for (subject of selectedSubjects; track subject) {
+            @for (subject of selectedSubjects; track subject.id) {
                 <div class="selected-subject">
                     {{ subject.title }}
                     <div class="remove-icon wrapped-icon-hover">
@@ -39,7 +39,7 @@
 
     @if (subjectOptions.length > 0 && searchResultsShown) {
         <div class="subject-options">
-            @for (option of subjectOptions; track option) {
+            @for (option of subjectOptions; track option.id) {
                 <app-separator></app-separator>
                 <div
                     class="subject-option"

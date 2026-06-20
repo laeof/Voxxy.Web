@@ -7,12 +7,12 @@ import {
     ReleaseCreateMainInformation,
     ReleaseCreateTrack,
 } from './interfaces/release-create.interface';
-import { ArtistStateService } from '@common/services/artist-state.service';
 import { LocalTrackEntity } from './components/upload-tracks/components/tracks-list.service';
+import { ForArtistService } from '@features/for-artist/services/for-artist.service';
 
 @Injectable()
 export class ReleaseCreateFormService {
-    constructor(private readonly artistStateService: ArtistStateService) {}
+    constructor(private readonly forArtistService: ForArtistService) {}
 
     mainInformationForm = new FormGroup({
         releaseCover: new FormControl<ImageFileItem | null>(null, {
@@ -24,7 +24,7 @@ export class ReleaseCreateFormService {
             validators: [Validators.required],
         }),
         releaseArtists: new FormControl<SubjectSelectOption[]>([], {}),
-        releaseType: new FormControl<SubjectSelectOption | null>(null, {
+        releaseType: new FormControl<SubjectSelectOption[]>([], {
             validators: [Validators.required],
         }),
         releaseGenres: new FormControl<SubjectSelectOption[]>([], {
@@ -48,6 +48,7 @@ export class ReleaseCreateFormService {
             FormGroup<{
                 title: FormControl<string>;
                 position: FormControl<number>;
+                duration: FormControl<number>;
                 language: FormControl<SubjectSelectOption | null>;
                 isRemix: FormControl<boolean>;
                 audioFile: FormControl<AudioFileItem | null>;
@@ -69,10 +70,14 @@ export class ReleaseCreateFormService {
             additionalInformation:
                 this.mainInformationForm.value.releaseAdditionalInformation || '',
             artistIds: [
-                this.artistStateService.value()[0].id,
+                this.forArtistService.getWorkingArtistId(),
                 ...(this.mainInformationForm.value.releaseArtists?.map((artist) => artist.id) ||
                     []),
             ],
+            moodIds: this.mainInformationForm.value.releaseMoods?.map((mood) => mood.id) || [],
+            genreIds: this.mainInformationForm.value.releaseGenres?.map((genre) => genre.id) || [],
+            copyright: this.mainInformationForm.value.releaseCopyright || '',
+            releaseType: this.mainInformationForm.value.releaseType?.[0]?.id || '',
         };
     }
 
@@ -81,7 +86,7 @@ export class ReleaseCreateFormService {
         return tracksArray.value.map((trackGroup: LocalTrackEntity, index: number) => ({
             title: trackGroup.title || '',
             position: trackGroup.position || index + 1,
-            duration: trackGroup.audioFile?.duration || 0,
+            duration: trackGroup.duration || 0,
             language: trackGroup.language || '',
             audioFile: trackGroup.audioFile || null,
             isRemix: trackGroup.isRemix || false,
@@ -103,6 +108,9 @@ export class ReleaseCreateFormService {
                 nonNullable: true,
             }),
             audioFile: new FormControl<AudioFileItem | null>(audioFile, {
+                nonNullable: true,
+            }),
+            duration: new FormControl<number>(audioFile.duration, {
                 nonNullable: true,
             }),
         });

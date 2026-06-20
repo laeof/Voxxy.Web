@@ -70,7 +70,7 @@ export class ArtistComponent extends SingleEntityFacade<Artist> implements OnIni
                     this.playlistId = album.id;
                     album.tracks.forEach((track) => {
                         track.fromPlaylist = album.id;
-                        track.artist = artist!;
+                        track.artists = [artist];
                     });
                     return album.tracks;
                 })!;

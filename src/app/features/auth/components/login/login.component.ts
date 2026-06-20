@@ -21,6 +21,7 @@ import { TranslationLoaderService } from '@common/services/translation-loader.se
 import { UserStateService } from '@common/services/user-state.service';
 import { SnowComponent } from '@common/components/snow/snow.component';
 import { LogoComponent } from '@common/layout/components/topbar/components/logo/logo.component';
+import { first } from 'rxjs';
 
 @Component({
     selector: 'auth-login',
@@ -46,7 +47,7 @@ export class LoginComponent {
         private readonly translationLoaderService: TranslationLoaderService,
         private readonly authService: AuthService,
         private readonly router: Router,
-        private readonly userStateService: UserStateService
+        private readonly userStateService: UserStateService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian);
 
@@ -65,6 +66,7 @@ export class LoginComponent {
                 //TODO: remove after backend implementation
                 user.userClaims = [{ value: AppPermissions.UserActive }];
                 this.authenticateUser(user);
+                this.authService.xsrfToken().pipe(first()).subscribe();
             });
         } else {
             console.log('Form is invalid');

@@ -11,6 +11,16 @@ import { ForArtist } from '../interfaces/for-artist.interface';
 export class ForArtistService {
     constructor(private readonly httpClient: HttpClient) {}
 
+    private workingArtistId: string = '';
+
+    setWorkingArtistId(artistId: string): void {
+        this.workingArtistId = artistId;
+    }
+
+    getWorkingArtistId(): string {
+        return this.workingArtistId;
+    }
+
     public getArtistsOnAccount(): Observable<ForArtist> {
         const url = `${environment.apiUrl}${ApiRoutes.Artists.getArtistsOnAccount}`;
         return this.httpClient.get<ForArtist>(url);

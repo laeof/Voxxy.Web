@@ -31,4 +31,9 @@ export class AuthService {
         const url = `${environment.apiUrl}${ApiRoutes.Auth.refresh}`;
         return this.httpClient.post<User>(url, {});
     }
+
+    public xsrfToken(): Observable<void> {
+        const url = `${environment.apiUrl}${ApiRoutes.Auth.xsrf}`;
+        return this.httpClient.get<void>(url);
+    }
 }
