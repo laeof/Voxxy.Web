@@ -6,6 +6,8 @@
                 [alt]="subjectName"
                 [style.border-radius]="subjectImageRadius"
                 class="subject-cover"
+                (click)="openPhotoViewer()"
+                (keydown.enter)="openPhotoViewer()"
             />
         </div>
         <div class="subject-info-wrapper">
@@ -17,3 +19,8 @@
         <ng-content select="[manager-action-button]"></ng-content>
     </div>
 </div>
+<app-photo-viewer
+    [imageUrl]="subjectImageUrl || ''"
+    [isVisible]="photoViewerOpened"
+    (closed)="photoViewerOpened = false"
+></app-photo-viewer>

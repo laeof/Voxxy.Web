@@ -22,18 +22,6 @@
         width: 100%;
         padding-left: 12px;
 
-        &:hover {
-            .toggle-sidebar {
-                .icon-wrapper {
-                    .hidden-left {
-                        transform: translateX(0);
-                        width: 20px;
-                        opacity: 1;
-                    }
-                }
-            }
-        }
-
         .toggle-sidebar {
             display: flex;
             align-items: center;
@@ -55,6 +43,18 @@
                 }
             }
             font-weight: 700;
+        }
+
+        &:hover {
+            .toggle-sidebar {
+                .icon-wrapper {
+                    .hidden-left {
+                        transform: translateX(0);
+                        width: 20px;
+                        opacity: 1;
+                    }
+                }
+            }
         }
     }
 }

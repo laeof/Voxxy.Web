@@ -8,6 +8,7 @@
 @use './navigation.scss' as navigation;
 @use './separator.scss' as separator;
 @use './state-progress.scss' as state-progress;
+@use './photo-viewer.scss' as photo-viewer;
 
 @mixin subject {
     @include subject-date.subject-date;
@@ -20,4 +21,5 @@
     @include navigation.navigation-theme;
     @include separator.separator;
     @include state-progress.state-progress;
+    @include photo-viewer.photo-viewer;
 }
