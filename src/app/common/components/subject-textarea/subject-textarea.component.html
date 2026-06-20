@@ -1,0 +1,13 @@
+<label class="label" [for]="id">
+    {{ labelText }}
+</label>
+<textarea
+    class="textarea"
+    [id]="id"
+    [placeholder]="placeholder"
+    (blur)="onBlur()"
+    (input)="onInputChange($any($event.target).value)"
+    [value]="content"
+    [readonly]="readonly"
+    [disabled]="disabled"
+></textarea>

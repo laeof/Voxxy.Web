@@ -148,5 +148,29 @@ export class MatIconsService {
             'upload',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/upload.svg'),
         );
+        this.matIconRegistry.addSvgIcon(
+            'image',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/image.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'close',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/close.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'calendar',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/calendar.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'delete',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/delete.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'drag_handle',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/drag_handle.svg'),
+        );
+        this.matIconRegistry.addSvgIcon(
+            'stop',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/stop.svg'),
+        );
     }
 }

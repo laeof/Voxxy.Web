@@ -8,17 +8,13 @@
 @use './playlist/playlist' as playlist;
 @use './logo/logo' as logo;
 @use './material/material.overrides' as mat-overrides;
-@use './common/resizer' as resizer;
 @use './auth/auth' as auth;
 @use './manager/manager' as manager;
 @use './action-buttons/action-buttons' as action-buttons;
 @use './manager/approved-artist' as approved-artist;
 @use './common/title-section' as title-section;
-@use './common/navigation' as navigation;
-@use './common/separator' as separator;
 @use './for-artist/for-artist' as for-artist;
-@use './common/file-drag-drop' as file-drag-drop;
-@use './common/state-progress' as state-progress;
+@use './common/subject' as common-subject;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();
@@ -29,16 +25,12 @@
 @include title-section.title-section();
 @include logo.logo();
 @include mat-overrides.material-overrides();
-@include resizer.resizer();
 @include auth.auth();
 @include manager.manager();
 @include action-buttons.action-buttons();
 @include approved-artist.approved-artist();
-@include navigation.navigation-theme();
 @include for-artist.for-artist();
-@include separator.separator();
-@include file-drag-drop.file-drag-drop();
-@include state-progress.state-progress();
+@include common-subject.subject();
 
 @mixin theme() {
     $slim-slider-tokens: (
@@ -71,13 +63,17 @@
 
     --theme-secondary: #3b8fde;
     --mat-table-background-color: transparent;
-    --secondary-font-color: #b3b3b3;
     --table-header-border-color: #ffffff1a;
     --primary-container-color: #121212;
     --secondary-container-color: #2a2a2a;
     --overlay-color: rgba(#121212, 0.7);
     --secondary-font-color: #b3b3b3;
+    --primary-font-color: var(--mat-sys-on-background);
+    --placeholder-color: #646464;
     --separator-color: rgba(255, 255, 255, 0.1);
     --resizer-color: var(--secondary-font-color);
     --default-black-color: #000000;
+    --mandatory-color: #cd2f2f;
+    --disabled-color: var(--secondary-container-color);
+    --disabled-font-color: #646464;
 }

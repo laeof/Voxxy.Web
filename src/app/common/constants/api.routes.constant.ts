@@ -19,6 +19,7 @@ export class ApiRoutes {
         login: '/users/login',
         logout: '/users/logout',
         refresh: '/users/refresh',
+        xsrf: '/users/xsrf-token',
     };
 
     public static readonly Users = {
@@ -34,4 +35,11 @@ export class ApiRoutes {
         getById: '/artists/:id',
         getArtistsOnAccount: '/artists/on-account',
     };
+
+    public static readonly ForArtists = {
+        releases: '/for-artist/releases',
+        searchGenres: '/for-artist/genres',
+        searchMoods: '/for-artist/moods',
+        searchArtists: '/for-artist/artists',
+    }
 }

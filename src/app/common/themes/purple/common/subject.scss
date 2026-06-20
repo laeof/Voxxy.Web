@@ -1,0 +1,23 @@
+@use './subject-date' as subject-date;
+@use './subject-input' as subject-input;
+@use './subject-select' as subject-select;
+@use './subject-image-upload' as subject-image-upload;
+@use './subject-textarea' as subject-textarea;
+@use './file-drag-drop' as file-drag-drop;
+@use './resizer.scss' as resizer;
+@use './navigation.scss' as navigation;
+@use './separator.scss' as separator;
+@use './state-progress.scss' as state-progress;
+
+@mixin subject {
+    @include subject-date.subject-date;
+    @include subject-input.subject-input;
+    @include subject-select.subject-select;
+    @include subject-image-upload.subject-image-upload;
+    @include subject-textarea.subject-textarea;
+    @include file-drag-drop.file-drag-drop;
+    @include resizer.resizer;
+    @include navigation.navigation-theme;
+    @include separator.separator;
+    @include state-progress.state-progress;
+}

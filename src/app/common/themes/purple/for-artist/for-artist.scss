@@ -2,7 +2,7 @@
 
 @mixin for-artist() {
     @include release-create.release-create();
-    
+
     app-for-artist {
         .content {
             background: var(--primary-container-color);

@@ -25,7 +25,7 @@ export class PlayerTitleService implements OnDestroy {
                 return;
             }
 
-            const artist = track.artist?.name ?? '';
+            const artist = track.artists[0]?.name ?? '';
             const title = track.name ?? 'Voxxy';
 
             this.title.setTitle(`${title} - ${artist}`);

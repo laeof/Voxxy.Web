@@ -1,0 +1,54 @@
+<label class="label subcolor" [ngClass]="{ mandatory: mandatory }" [for]="id">{{
+    titleText
+}}</label>
+<div
+    class="subject-select"
+    [ngClass]="{
+        'search-focused-out': !searchInputFocused && selectedSubjects.length > 0,
+        readonly: readonlyInput,
+    }"
+    [id]="id"
+>
+    <input
+        type="text"
+        class="subject-search-input"
+        placeholder="{{ placeholder }}"
+        (input)="onSearchChange($event.target.value)"
+        (focusout)="onFocusOut()"
+        (focus)="onFocus()"
+        (keydown)="onFocusOutWithKeyboard($event)"
+        (mousedown)="onFocusInWithClick()"
+        [readonly]="readonlyInput"
+    />
+    @if (selectedSubjects.length > 0) {
+        <div class="selected-subjects">
+            @for (subject of selectedSubjects; track subject.id) {
+                <div class="selected-subject">
+                    {{ subject.title }}
+                    <div class="remove-icon wrapped-icon-hover">
+                        <mat-icon
+                            svgIcon="close"
+                            (click)="onSubjectRemove(subject)"
+                            (keydown.enter)="onSubjectRemove(subject)"
+                        ></mat-icon>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (subjectOptions.length > 0 && searchResultsShown) {
+        <div class="subject-options">
+            @for (option of subjectOptions; track option.id) {
+                <app-separator></app-separator>
+                <div
+                    class="subject-option"
+                    (click)="onSubjectChange(option)"
+                    (keydown.enter)="onSubjectChange(option)"
+                >
+                    {{ option.title }}
+                </div>
+            }
+        </div>
+    }
+</div>

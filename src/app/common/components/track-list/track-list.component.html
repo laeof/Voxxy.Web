@@ -23,13 +23,20 @@
                     <div class="song-info">
                         <span class="song-name">{{ element.name }}</span>
                         @if (showArtist) {
-                            <span
-                                class="song-artist subcolor"
-                                (click)="navigateArtist(element.artist.id)"
-                                (keydown.enter)="navigateArtist(element.album.id)"
-                            >
-                                {{ element?.artist?.name }}</span
-                            >
+                            <div style="display: flex; gap: 5px">
+                                @for (artist of element.artists; track artist.id; let i = $index) {
+                                    <span
+                                        class="song-artist subcolor"
+                                        (click)="navigateArtist(artist.id)"
+                                        (keydown.enter)="navigateArtist(artist.id)"
+                                    >
+                                        {{ artist.name }}</span
+                                    >
+                                    @if (i < element.artists.length - 1) {
+                                        <span class="subcolor">&</span>
+                                    }
+                                }
+                            </div>
                         }
                     </div>
                 </div>

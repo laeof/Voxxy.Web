@@ -1,0 +1,13 @@
+<div class="flow-card">
+    <span
+        class="number"
+        [ngClass]="{
+            completed: flowCard && currentStage > flowCard.stage,
+            active: flowCard && currentStage === flowCard.stage,
+        }"
+    >
+        <mat-icon svgIcon="check"></mat-icon>
+        <p>{{ flowCard?.stage !== undefined ? flowCard!.stage + 1 : '' }}</p>
+    </span>
+    <span class="flow-card-title">{{ flowCard?.title | translate }}</span>
+</div>

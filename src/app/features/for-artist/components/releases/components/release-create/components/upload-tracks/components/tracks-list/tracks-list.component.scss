@@ -1,0 +1,159 @@
+:host {
+    display: block;
+}
+
+.tracks-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+        text-align: left;
+        padding: 12px;
+        font-weight: 600;
+        border-bottom: 2px solid var(--separator-color);
+        background-color: var(--secondary-container-color);
+        color: var(--primary-font-color);
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid var(--separator-color);
+        vertical-align: middle;
+    }
+
+    .track-row {
+        cursor: grab;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: var(--primary-container-color);
+        }
+
+        &.cdk-drop-list-dragging .cdk-drag:hover {
+            box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    .cdk-drag-preview {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        background-color: var(--secondary-container-color);
+        border-radius: 4px;
+        border: 1px solid var(--separator-color);
+    }
+
+    .cdk-drag-animating {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-preview) {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    .drag-cell {
+        text-align: center;
+        cursor: grab;
+        padding: 8px;
+
+        mat-icon {
+            color: var(--secondary-font-color);
+        }
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+}
+
+.edit-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--theme-primary);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: var(--primary-container-color);
+    color: var(--primary-font-color);
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(138, 100, 200, 0.1);
+    }
+}
+
+.track-title {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+
+    &:hover {
+        background-color: var(--secondary-container-color);
+        text-decoration: underline;
+    }
+}
+
+.title-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+
+    &:hover {
+        background-color: var(--secondary-container-color);
+        text-decoration: underline;
+    }
+
+    &:focus {
+        outline: 2px solid var(--theme-primary);
+    }
+}
+
+.remix-checkbox {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--theme-primary);
+}
+
+.play-btn {
+    color: var(--theme-primary);
+
+    &:hover {
+        background-color: rgba(138, 100, 200, 0.1);
+    }
+}
+
+.stop-btn {
+    color: var(--mandatory-color);
+
+    &:hover {
+        background-color: rgba(205, 47, 47, 0.1);
+    }
+}
+
+.delete-btn {
+    color: var(--mandatory-color);
+
+    &:hover {
+        background-color: rgba(205, 47, 47, 0.1);
+    }
+}
+
+.drag-preview {
+    background: var(--secondary-container-color);
+    padding: 12px 16px;
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+    color: var(--primary-font-color);
+    border: 1px solid var(--separator-color);
+}

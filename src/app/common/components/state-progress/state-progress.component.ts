@@ -11,11 +11,11 @@ export class StateProgressComponent {
     circumference: number = 2 * Math.PI * 45;
 
     get progress(): number {
-        return ((this.currentState + 1) / this.maxState) * 100;
+        return ((this.currentState) / this.maxState) * 100;
     }
 
     get progressNext(): number {
-        return ((this.currentState + 2) / this.maxState) * 100;
+        return ((this.currentState + 1) / this.maxState) * 100;
     }
 
     get dashOffset(): number {

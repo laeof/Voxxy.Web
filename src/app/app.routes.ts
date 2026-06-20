@@ -10,7 +10,7 @@ export const routes: Routes = [
     {
         path: '',
         redirectTo: AppRoutes.layout,
-        pathMatch: 'prefix',
+        pathMatch: 'full',
     },
     {
         path: AppRoutes.layout,

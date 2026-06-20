@@ -1,0 +1,39 @@
+.flow-card {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: default;
+    user-select: none;
+
+    .number {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        border: 2px solid;
+
+        mat-icon {
+            display: none;
+            width: 20px;
+            height: 20px;
+        }
+
+        &.completed {
+            mat-icon {
+                display: block;
+            }
+            p {
+                display: none;
+            }
+        }
+    }
+
+    .flow-card-title {
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

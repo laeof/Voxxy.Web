@@ -1,0 +1,14 @@
+<label class="label" [for]="id" [ngClass]="{ mandatory: mandatory }">
+    {{ labelText }}
+</label>
+<input
+    type="text"
+    class="input"
+    [id]="id"
+    [placeholder]="placeholder"
+    (input)="onInputChange($event.target.value)"
+    [readonly]="readonly"
+    [disabled]="disabled"
+    [value]="value"
+    (blur)="onBlur()"
+/>

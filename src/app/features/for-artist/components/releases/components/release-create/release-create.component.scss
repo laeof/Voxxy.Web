@@ -1,0 +1,50 @@
+:host {
+    padding: 20px;
+    display: block;
+
+    .header {
+        display: flex;
+        align-items: center;
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .buttons {
+            display: flex;
+            margin-left: auto;
+            gap: 10px;
+            .common-button {
+                padding: 6px 20px;
+                border-radius: 12px;
+                &.hidden {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .create-flow {
+        display: flex;
+        align-items: center;
+    }
+
+    .create-release-content {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+
+        .right-column {
+            margin-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+
+            > * {
+                padding: 10px;
+                border: 1px solid;
+                border-radius: 6px;
+            }
+        }
+    }
+}

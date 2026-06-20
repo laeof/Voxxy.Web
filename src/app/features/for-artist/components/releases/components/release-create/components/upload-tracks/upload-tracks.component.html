@@ -1,0 +1,26 @@
+<form [formGroup]="releaseCreateFormService.uploadFilesForm">
+    <div class="track-upload">
+        <span class="upload-area-title titlecolor">{{
+            'RELEASE_CREATE.TRACK_UPLOAD_TITLE' | translate
+        }}</span>
+        <span class="upload-area-description subcolor">{{
+            'RELEASE_CREATE.TRACK_UPLOAD_DESCRIPTION' | translate
+        }}</span>
+
+        <app-file-drag-drop
+            [title]="'RELEASE_CREATE.FILE_DRAG_DROP.TITLE' | translate"
+            [subtitle]="'RELEASE_CREATE.FILE_DRAG_DROP.SUBTITLE' | translate"
+            [fileFormats]="musicFormats"
+            formControlName="audioFilesInput"
+            (filesChanged)="onFilesAdded($event)"
+        ></app-file-drag-drop>
+
+        @if ((uploadTracksListFacade.dataSource$ | async)?.length || 0 > 0) {
+            <div class="tracks-table-container">
+                <for-artist-tracks-list
+                    [tracksFacade]="uploadTracksListFacade"
+                ></for-artist-tracks-list>
+            </div>
+        }
+    </div>
+</form>

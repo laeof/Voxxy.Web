@@ -1,0 +1,21 @@
+:host {
+    flex: 1;
+
+    .information {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .hero {
+            display: flex;
+            gap: 10px;
+
+            .hero-inputs {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                flex: 1;
+            }
+        }
+    }
+}

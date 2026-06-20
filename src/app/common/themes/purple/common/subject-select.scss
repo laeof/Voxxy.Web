@@ -1,0 +1,39 @@
+@mixin subject-select() {
+    app-subject-select {
+        .subject-select {
+            background-color: var(--primary-container-color) !important;
+            border-color: var(--secondary-container-color) !important;
+            color: var(--primary-font-color);
+
+            .selected-subject {
+                background-color: var(--secondary-container-color) !important;
+                color: var(--primary-font-color);
+            }
+
+            .subject-options {
+                background-color: var(--primary-container-color) !important;
+                border-color: var(--secondary-container-color) !important;
+                color: var(--primary-font-color);
+                .subject-option {
+                    &:hover {
+                        background-color: var(--secondary-container-color) !important;
+                    }
+                }
+            }
+
+            &::placeholder {
+                color: var(--placeholder-color);
+            }
+        }
+
+        .label {
+            color: var(--secondary-font-color);
+
+            &.mandatory {
+                &::after {
+                    color: var(--mandatory-color);
+                }
+            }
+        }
+    }
+}

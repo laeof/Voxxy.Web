@@ -1,0 +1,65 @@
+:host {
+    .what-next-card {
+        display: flex;
+        margin-top: 8px;
+
+        .indicator-wrapper {
+            min-width: 38px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            margin-left: -5px;
+
+            .indicator {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                border: none;
+                margin-top: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                mat-icon {
+                    display: none;
+                    min-width: 20px;
+                    min-height: 20px;
+                    margin-left: 5px;
+                    margin-top: -5px;
+                }
+
+                &.active {
+                    border: 3px solid;
+                }
+
+                &.completed {
+                    border: 3px solid;
+                    mat-icon {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                }
+            }
+
+            app-separator {
+                flex: 1;
+                margin-top: 10px;
+            }
+        }
+
+        .what-next-card-content {
+            display: flex;
+            flex-direction: column;
+
+            .title {
+                font-size: 16px;
+                font-weight: 500;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+        }
+    }
+}

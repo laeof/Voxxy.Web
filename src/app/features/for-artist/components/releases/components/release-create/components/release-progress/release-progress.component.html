@@ -1,0 +1,18 @@
+<div class="release-progress">
+    <span class="progress-release-title titlecolor">{{
+        'RELEASE_CREATE.RELEASE_PROGRESS.TITLE' | translate
+    }}</span>
+    <div class="progress-release-content">
+        <app-state-progress [currentState]="current" [maxState]="total + 1"></app-state-progress>
+        <div class="content">
+            <span class="subcolor"
+                >{{ 'RELEASE_CREATE.RELEASE_PROGRESS.STEP' | translate }} {{ current + 1 }}
+                {{ 'RELEASE_CREATE.RELEASE_PROGRESS.OF' | translate }} {{ total + 1}}
+            </span>
+            <span class="titlecolor">{{
+                'RELEASE_CREATE.RELEASE_PROGRESS.TRACKS' | translate
+            }}</span>
+            <span class="subcolor">{{ message | translate }}</span>
+        </div>
+    </div>
+</div>

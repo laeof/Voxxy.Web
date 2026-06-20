@@ -1,0 +1,127 @@
+<table
+    mat-table
+    [dataSource]="(tracksFacade.dataSource$ | async) || []"
+    cdkDropList
+    (cdkDropListDropped)="tracksFacade.reorderTracks($event.previousIndex, $event.currentIndex)"
+    class="tracks-table"
+>
+    <!-- Drag Column -->
+    <ng-container matColumnDef="drag">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element" class="drag-cell" cdkDragHandle>
+            <mat-icon svgIcon="drag_handle"></mat-icon>
+        </td>
+    </ng-container>
+
+    <!-- Position Column -->
+    <ng-container matColumnDef="position">
+        <th mat-header-cell *matHeaderCellDef>
+            {{ 'RELEASE_CREATE.UPLOAD_FILES.POSITION' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element">
+            {{ element?.position }}
+        </td>
+    </ng-container>
+
+    <!-- Play Column -->
+    <ng-container matColumnDef="play">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element; let i = index">
+            @if ((isPlaying$ | async) && (currentTrack$ | async)?.name === element?.title) {
+                <button
+                    type="button"
+                    mat-icon-button
+                    (click)="tracksFacade.stopTrack()"
+                    class="stop-btn"
+                    [attr.aria-label]="'COMMON.STOP' | translate"
+                >
+                    <mat-icon svgIcon="pause"></mat-icon>
+                </button>
+            } @else {
+                <button
+                    type="button"
+                    mat-icon-button
+                    (click)="tracksFacade.playTrack(i)"
+                    class="play-btn"
+                    [attr.aria-label]="'COMMON.PLAY' | translate"
+                >
+                    <mat-icon svgIcon="play"></mat-icon>
+                </button>
+            }
+        </td>
+    </ng-container>
+
+    <!-- Title Column (Editable) -->
+    <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>
+            {{ 'RELEASE_CREATE.UPLOAD_FILES.TITLE' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element; let i = index">
+            @if (editingIndex === i) {
+                <input
+                    type="text"
+                    class="edit-input"
+                    [value]="element?.title"
+                    (blur)="saveTitle(element?.id, $event)"
+                    (keydown.enter)="saveTitle(element?.id, $event)"
+                    (keydown.escape)="cancelEditingTitle()"
+                    autofocus
+                />
+            } @else {
+                <button type="button" class="title-btn" (click)="startEditingTitle(i)">
+                    {{ element?.title }}
+                </button>
+            }
+        </td>
+    </ng-container>
+
+    <!-- Is Remix Column -->
+    <ng-container matColumnDef="isRemix">
+        <th mat-header-cell *matHeaderCellDef>
+            {{ 'RELEASE_CREATE.UPLOAD_FILES.IS_REMIX' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element">
+            <input
+                type="checkbox"
+                class="remix-checkbox"
+                [checked]="element?.isRemix"
+                (change)="updateIsRemix(element.id, $event.target.checked)"
+            />
+        </td>
+    </ng-container>
+
+    <!-- Duration Column -->
+    <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef>
+            {{ 'RELEASE_CREATE.UPLOAD_FILES.DURATION' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element; let i = index">
+            {{ element?.durationText }}
+        </td>
+    </ng-container>
+
+    <!-- Delete Column -->
+    <ng-container matColumnDef="delete">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element; let i = index">
+            <button
+                type="button"
+                mat-icon-button
+                (click)="tracksFacade.removeTrack(element)"
+                class="delete-btn"
+                [attr.aria-label]="'COMMON.REMOVE' | translate"
+            >
+                <mat-icon svgIcon="delete"></mat-icon>
+            </button>
+        </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="track-row"
+        cdkDrag
+        [cdkDragData]="row"
+    ></tr>
+</table>

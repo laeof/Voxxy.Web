@@ -4,20 +4,23 @@ import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { loaderInterceptor } from './common/interceptors/loader.interceptor';
-import { provideAuthInitializer } from '@features/auth/initializers/auth.initializer';
 import { authInterceptor } from '@features/auth/interceptors/auth.interceptor';
 import { credentialsInterceptor } from '@features/auth/interceptors/credential.interceptor';
-import { provideArtistInitializer } from '@features/for-artist/initializers/artist.initializer';
+import { provideAppStartupInitializer } from '@common/initializers/app-startup.initializer';
+import { xsrfInterceptor } from '@features/auth/interceptors/xsrf.interceptor';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideBrowserGlobalErrorListeners(),
         provideRouter(routes),
         provideHttpClient(
-            withInterceptors([loaderInterceptor, credentialsInterceptor, authInterceptor])
+            // withXsrfConfiguration({
+            //     cookieName: 'VOXXY-XSRF-TOKEN',
+            //     headerName: 'X-XSRF-TOKEN',
+            // }),                                  //production
+            withInterceptors([loaderInterceptor, credentialsInterceptor, authInterceptor, xsrfInterceptor]),
         ),
         provideTranslateService(),
-        provideAuthInitializer,
-        provideArtistInitializer,
+        provideAppStartupInitializer,
     ],
 };
