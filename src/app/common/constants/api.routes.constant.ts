@@ -42,4 +42,8 @@ export class ApiRoutes {
         searchMoods: '/for-artist/moods',
         searchArtists: '/for-artist/artists',
     }
+
+    public static readonly GlobalSearch = {
+        search: '/search',
+    }
 }

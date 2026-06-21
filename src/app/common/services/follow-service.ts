@@ -54,7 +54,6 @@ export class FollowService extends EntityManagerService<Following> {
             })
             .subscribe((data: Following[]) => {
                 this.onEntitiesChanged.next(data);
-                console.log(data);
                 this.onEntitiesLoading.next(false);
             });
     }

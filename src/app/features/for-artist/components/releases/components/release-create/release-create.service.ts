@@ -137,10 +137,8 @@ export class ReleaseCreateService implements OnDestroy {
 
         const url = `${environment.apiUrl}${ApiRoutes.ForArtists.releases}`;
 
-        console.log(model.artistIds)
-
         this.httpClient.post(url, formData).subscribe((response) => {
-            console.log('Release created successfully', response);
+            this.navigationService.navigateForArtist(AppRoutes.forArtistReleases);
         });
     }
 }

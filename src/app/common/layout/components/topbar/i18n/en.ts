@@ -3,6 +3,9 @@ export const locale = {
     data: {
         SEARCH: {
             PLACEHOLDER: 'Search',
+            SEARCH_TYPE_TRACK: 'Track',
+            SEARCH_TYPE_ARTIST: 'Artist',
+            SEARCH_TYPE_ALBUM: 'Album',
         },
         ANONYMOUS_MODE: {
             LOGIN_BUTTON: 'Login',

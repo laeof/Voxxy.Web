@@ -99,11 +99,9 @@ export class UploadTracksComponent implements OnDestroy {
     }
 
     onTrackIsRemixUpdated(trackId: string, isRemix: boolean): void {
-        console.log(isRemix);
         this.tracksArray.value.find(
             (track: LocalTrackEntity) => track.audioFile?.id === trackId,
         ).isRemix = isRemix;
-        console.log(this.tracksArray.value)
     }
 
     onTracksUpdated(tracks: LocalTrackEntity[]): void {
@@ -113,6 +111,5 @@ export class UploadTracksComponent implements OnDestroy {
                 this.releaseCreateFormService.createTrackFormGroup(track.audioFile, track.position, track.isRemix),
             );
         });
-        console.log(this.tracksArray.value);
     }
 }

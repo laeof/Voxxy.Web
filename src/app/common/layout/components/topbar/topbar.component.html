@@ -12,14 +12,7 @@
             }
         </button>
     </div>
-    <div class="search-wrapper">
-        <mat-icon svgIcon="search" class="search-icon"></mat-icon>
-        <input
-            class="search-input"
-            type="text"
-            placeholder="{{ 'SEARCH.PLACEHOLDER' | translate }}"
-        />
-    </div>
+    <app-global-search></app-global-search>
 </div>
 <div class="end-section">
     <ng-container *authorize>

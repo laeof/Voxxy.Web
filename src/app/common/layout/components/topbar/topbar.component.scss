@@ -21,7 +21,7 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        width: 100%;
+        flex: 1;
 
         .button-wrapper {
             position: relative;
@@ -31,26 +31,6 @@
                 width: 48px;
                 border-radius: var(--corner-full);
                 transition: background-color 0.3s ease;
-            }
-        }
-
-        .search-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-
-            .search-icon {
-                position: absolute;
-                cursor: text;
-                left: 12px;
-            }
-
-            .search-input {
-                padding: 14.75px 50px;
-                border-radius: var(--corner-extra-large);
-                width: 100%;
             }
         }
     }

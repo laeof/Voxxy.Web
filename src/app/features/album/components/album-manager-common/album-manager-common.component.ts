@@ -9,10 +9,8 @@ import { TranslatePipe } from '@ngx-translate/core';
     imports: [TranslatePipe],
 })
 export class AlbumManagerCommonComponent {
-    @Input() albumImageUrl: string | undefined = undefined;
     @Input() tracksAmount: number | undefined = undefined;
-    @Input() artistName: string | undefined = undefined;
-    @Input() artistId: string | undefined = undefined;
+    @Input() artists: { name: string; id: string; imageUrl?: string }[] | undefined = [];
 
     constructor(private readonly navigationService: NavigationService) {}
 
