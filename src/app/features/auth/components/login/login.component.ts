@@ -61,10 +61,8 @@ export class LoginComponent {
         if (this.loginForm.valid) {
             this.loading = true;
             const loginData: LoginModel = this.loginForm.value;
-            this.authService.login(loginData).subscribe((user: User) => {
+            this.authService.login(loginData).subscribe((user) => {
                 this.loading = false;
-                //TODO: remove after backend implementation
-                user.userClaims = [{ value: AppPermissions.UserActive }];
                 this.authenticateUser(user);
                 this.authService.xsrfToken().pipe(first()).subscribe();
             });

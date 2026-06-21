@@ -3,6 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MediaPlayerStateService } from './media-player-state.service';
+import { Track } from '@features/track/models/track';
 
 @Injectable({
     providedIn: 'root',
@@ -13,23 +14,25 @@ export class PlayerTitleService implements OnDestroy {
 
     constructor(
         private readonly title: Title,
-        private readonly playerState: MediaPlayerStateService
+        private readonly playerState: MediaPlayerStateService,
     ) {
         this.init();
     }
 
     private init() {
-        this.playerState.currentTrackObs$.pipe(takeUntil(this.destroy$)).subscribe((track) => {
-            if (!track) {
-                this.title.setTitle(this.appTitle);
-                return;
-            }
+        this.playerState.currentTrackObs$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((track: Track | null) => {
+                if (!track) {
+                    this.title.setTitle(this.appTitle);
+                    return;
+                }
 
-            const artist = track.artists[0]?.name ?? '';
-            const title = track.name ?? 'Voxxy';
+                const artist = track.artists.map((artist) => artist.name).join(' & ');
+                const title = track.name ?? 'Voxxy';
 
-            this.title.setTitle(`${title} - ${artist}`);
-        });
+                this.title.setTitle(`${title} - ${artist}`);
+            });
     }
 
     ngOnDestroy(): void {

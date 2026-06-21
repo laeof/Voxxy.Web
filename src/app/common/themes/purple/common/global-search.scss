@@ -1,0 +1,30 @@
+@mixin global-search {
+    app-global-search {
+        .search-input {
+            background-color: var(--mat-sys-surface-container) !important;
+        }
+
+        &:focus-within,
+        &:hover {
+            .search-input {
+                background-color: var(--mat-sys-inverse-on-surface) !important;
+            }
+
+            .search-icon {
+                color: var(--mat-sys-on-background);
+            }
+        }
+
+        .search-results {
+            background-color: var(--primary-container-color) !important;
+
+            color: var(--mat-sys-on-surface);
+
+            .search-result-item {
+                &:hover {
+                    background-color: var(--secondary-container-color);
+                }
+            }
+        }
+    }
+}

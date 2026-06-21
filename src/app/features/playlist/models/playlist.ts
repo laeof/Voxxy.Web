@@ -6,7 +6,7 @@ import { PlaylistType } from '@common/enums/playlist-type';
 
 export interface Playlist extends BaseEntity {
     name: string;
-    artist: Artist;
+    artists: Artist[];
     playlistType: PlaylistType;
     primaryColor: string;
     tracks: Track[];

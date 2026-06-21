@@ -18,6 +18,8 @@ import { NavigationService } from '@common/services/navigation.service';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
 import { UserStateService } from '@common/services/user-state.service';
 import { AuthService } from '@features/auth/services/auth.service';
+import { GlobalSearchService } from '@common/services/global-search.service';
+import { GlobalSearchComponent } from './components/global-search/global-search.component';
 
 @Component({
     selector: 'layout-topbar',
@@ -34,6 +36,7 @@ import { AuthService } from '@features/auth/services/auth.service';
         MatMenu,
         MatMenuTrigger,
         MatDivider,
+        GlobalSearchComponent,
     ],
 })
 export class TopBarComponent implements OnInit, OnDestroy {
@@ -48,7 +51,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
         private readonly router: Router,
         private readonly route: ActivatedRoute,
         private readonly authService: AuthService,
-        public userStateService: UserStateService
+        private readonly globalSearchService: GlobalSearchService,
+        public userStateService: UserStateService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian, ukrainian);
     }
@@ -60,7 +64,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
         this.router.events
             .pipe(
                 filter((e) => e instanceof NavigationEnd),
-                takeUntil(this.destroy$)
+                takeUntil(this.destroy$),
             )
             .subscribe(() => {
                 const child = this.route.firstChild;

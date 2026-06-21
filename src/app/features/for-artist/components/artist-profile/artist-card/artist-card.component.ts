@@ -22,7 +22,5 @@ export class ArtistCardComponent {
         if (this.artists && this.artists.length > 1) {
             this.isExpanded = !this.isExpanded;
         }
-
-        console.log(this.artists)
     }
 }

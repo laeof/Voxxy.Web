@@ -33,15 +33,15 @@ export class ArtistPopularTrackService extends EntityManagerService<Album> {
             .subscribe((artist: Artist) => {
                 this.artist = artist;
 
-                this.artist?.albums
-                    ?.filter((album) => album.tracks.length !== 0)
-                    ?.flatMap((album: Album) => {
-                        album.tracks.forEach((track) => {
-                            track.fromPlaylist = album.id;
-                            track.artists[0] = this.artist!;
-                        });
-                        this.onEntitiesChanged.next([album]);
-                    })!;
+                // this.artist?.albums
+                //     ?.filter((album) => album.tracks.length !== 0)
+                //     ?.flatMap((album: Album) => {
+                //         album.tracks.forEach((track) => {
+                //             track.fromPlaylist = album.id;
+                //             track.artists[0] = this.artist!;
+                //         });
+                //         this.onEntitiesChanged.next([album]);
+                //     })!;
             });
     }
 }

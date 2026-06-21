@@ -7,6 +7,8 @@ import { FollowType } from '@common/layout/components/librarybar/enums/follow-ty
 import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
 import { filter, Subject, takeUntil } from 'rxjs';
+import { GlobalSearchResult } from '@common/entities/GlobalSearchResult';
+import { SearchEntityType } from '@common/enums/search-entity-type.enum';
 
 @Injectable({
     providedIn: 'root',
@@ -57,6 +59,10 @@ export class NavigationService {
 
     navigateUserProfileById(id: string): void {
         this.router.navigate([UrlHelper.transform(AppRoutes.userProfile, ':id', id)]);
+    }
+
+    navigateTrackById(id: string): void {
+        this.router.navigate([UrlHelper.transform(AppRoutes.track, ':id', id)]);
     }
 
     navigateHome(): void {
@@ -125,5 +131,21 @@ export class NavigationService {
                 filter((event) => event instanceof NavigationEnd),
             )
             .subscribe(() => callback());
+    }
+
+    navigateToSearchResults(entityId: string, resultType: SearchEntityType): void {
+        switch (resultType) {
+            case SearchEntityType.Track:
+                this.navigateTrackById(entityId);
+                break;
+            case SearchEntityType.Artist:
+                this.navigateArtistById(entityId);
+                break;
+            case SearchEntityType.Album:
+                this.navigateAlbumById(entityId);
+                break;
+            default:
+                console.warn(`NavigationService: Unknown search result type '${resultType}'`);
+        }
     }
 }

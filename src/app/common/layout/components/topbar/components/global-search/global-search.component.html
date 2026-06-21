@@ -1,0 +1,31 @@
+<div class="search-container">
+    <mat-icon svgIcon="search" class="search-icon"></mat-icon>
+    <input
+        class="search-input"
+        type="text"
+        placeholder="{{ 'SEARCH.PLACEHOLDER' | translate }}"
+        (input)="onSearchInput($event.target.value)"
+        (focus)="onSearchFocus()"
+    />
+</div>
+@if ((dataSource$ | async)?.[0] && showResults) {
+    <div class="search-results">
+        @for (result of dataSource$ | async; track result.entityId) {
+            <div
+                class="search-result-item"
+                (click)="onResultClick(result)"
+                (keydown.enter)="onResultClick(result)"
+            >
+                <div class="cover-wrapper">
+                    <img [src]="result.imageUrl" alt="{{ result.title }}" class="cover-image" />
+                </div>
+                <div class="info-wrapper">
+                    <p class="result-title">{{ result.title }}</p>
+                    <p class="result-type subcolor">
+                        {{ 'SEARCH.' + (result.type | searchTypeTranslate) | translate }}
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,10 +1,17 @@
-<span
-    class="artist-name"
-    (click)="redirectToArtist(artistId)"
-    (keydown.enter)="redirectToArtist(artistId)"
->
-    <img [src]="albumImageUrl" [alt]="artistName" class="user-image" />
-    <span>{{ artistName }}</span>
-</span>
-<span class="subcolor" style="font-size: 0.5rem">•</span>
-<span class="subcolor"> {{ tracksAmount }} {{ 'MANAGER.TRACKS_AMOUNT' | translate }} </span>
+@for (artist of artists; let i = $index; track artist.id) {
+    <span
+        class="artist-name"
+        (click)="redirectToArtist(artist.id)"
+        (keydown.enter)="redirectToArtist(artist.id)"
+    >
+        <img [src]="artist.imageUrl" [alt]="artist.name" class="user-image" />
+        <span>{{ artist.name }}</span>
+    </span>
+    @if (artists && i < artists.length - 1) {
+        <span class="subcolor" style="font-size: 0.5rem">•</span>
+    }
+}
+@if (artists && artists.length < 2) {
+    <span class="subcolor" style="font-size: 0.5rem">•</span>
+    <span class="subcolor"> {{ tracksAmount }} {{ 'MANAGER.TRACKS_AMOUNT' | translate }} </span>
+}

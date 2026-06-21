@@ -21,6 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                     }),
                     catchError((refreshError) => {
                         //refresh token failed => error 403
+                        console.log('refresh token failed, logging out...');
                         if (userStateService.value() !== null) {
                             auth.logout().pipe(first()).subscribe();
                             globalThis.location.reload();
@@ -31,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                 );
             }
             if (error.status === 403) {
-                console.log('error creating refresh token, logging out...');
+                console.log('forbidden');
             }
             return throwError(() => error);
         })

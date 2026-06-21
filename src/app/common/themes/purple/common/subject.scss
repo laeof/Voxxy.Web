@@ -9,6 +9,7 @@
 @use './separator.scss' as separator;
 @use './state-progress.scss' as state-progress;
 @use './photo-viewer.scss' as photo-viewer;
+@use './global-search.scss' as global-search;
 
 @mixin subject {
     @include subject-date.subject-date;
@@ -22,4 +23,5 @@
     @include separator.separator;
     @include state-progress.state-progress;
     @include photo-viewer.photo-viewer;
+    @include global-search.global-search;
 }

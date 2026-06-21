@@ -5,23 +5,6 @@
                 background-color: var(--mat-sys-surface-container);
             }
         }
-
-        .search-wrapper {
-            &:focus-within,
-            &:hover {
-                .search-input {
-                    background-color: var(--mat-sys-inverse-on-surface);
-                }
-
-                .search-icon {
-                    color: var(--mat-sys-on-background);
-                }
-            }
-
-            .search-input {
-                background-color: var(--mat-sys-surface-container);
-            }
-        }
     }
 
     .end-section {
