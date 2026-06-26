@@ -2,10 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, distinctUntilChanged, takeUntil, combineLatest } from 'rxjs';
 import { Track } from '../../features/track/models/track';
-import { MediaPlayerStateService } from './media-player-state.service';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { environment } from '../../../environments/environment';
 import { UrlHelper } from '../helpers/url.helper';
 import { ApiRoutes } from '../constants/api.routes.constant';
+import { PlayerHubService } from './player-hub.service';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerEngineService implements OnDestroy {
@@ -15,7 +16,8 @@ export class MediaPlayerEngineService implements OnDestroy {
 
     constructor(
         private readonly state: MediaPlayerStateService,
-        private readonly http: HttpClient
+        private readonly playerHubService: PlayerHubService,
+        private readonly http: HttpClient,
     ) {
         this.bindState();
         this.bindAudio();
@@ -57,8 +59,8 @@ export class MediaPlayerEngineService implements OnDestroy {
                 `${environment.apiUrl}${UrlHelper.transform(
                     ApiRoutes.Track.stream,
                     ':id',
-                    track.id
-                )}`
+                    track.id,
+                )}`,
             )
             .pipe(takeUntil(this.destroy$))
             .subscribe((url) => {
@@ -78,6 +80,12 @@ export class MediaPlayerEngineService implements OnDestroy {
     private bindAudio() {
         this.audio.addEventListener('timeupdate', () => {
             this.state.setPosition(this.audio.currentTime);
+            this.playerHubService.changePosition({
+                positionMs: Math.floor(this.audio.currentTime * 1000),
+                updatedAt: new Date().toISOString(),
+                trackId: null,
+                queueId: null,
+            });
         });
 
         this.audio.addEventListener('ended', () => {

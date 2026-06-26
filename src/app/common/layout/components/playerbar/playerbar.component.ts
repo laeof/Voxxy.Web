@@ -8,22 +8,40 @@ import { DurationTranslatePipe } from '@common/pipes/duration-translation.pipe';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { Track } from '@features/track/models/track';
 import { TrackService } from '@features/track/services/track.service';
+import { DeviceComponent } from './components/device/device.component';
+import { locale as english } from './i18n/en';
+import { locale as russian } from './i18n/ru';
+import { TranslationLoaderService } from '@common/services/translation-loader.service';
+import { PlayerHubService } from '@common/services/player-hub.service';
 
 @Component({
     selector: 'layout-playerbar',
     standalone: true,
     templateUrl: './playerbar.component.html',
     styleUrl: './playerbar.component.scss',
-    imports: [MatIcon, MatSlider, MatSliderThumb, DurationTranslatePipe, AsyncPipe],
+    imports: [
+        MatIcon,
+        MatSlider,
+        MatSliderThumb,
+        DurationTranslatePipe,
+        AsyncPipe,
+        DeviceComponent,
+    ],
     providers: [TrackService],
 })
 export class PlayerBarComponent {
-    constructor(private readonly mediaPlayerStateService: MediaPlayerStateService) {
+    constructor(
+        private readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly translationLoaderService: TranslationLoaderService,
+        private readonly playerHubService: PlayerHubService,
+    ) {
         this.currentTime$ = this.mediaPlayerStateService.positionObs$;
         this.currentVolume$ = this.mediaPlayerStateService.volumeObs$;
         this.currentTrack$ = this.mediaPlayerStateService.currentTrackObs$;
         this.isPlaying$ = this.mediaPlayerStateService.playingObs$;
         this.repeatState$ = this.mediaPlayerStateService.repeatObs$;
+
+        this.translationLoaderService.loadTranslations(english, russian);
     }
 
     protected readonly RepeatMode = RepeatMode;
@@ -37,11 +55,11 @@ export class PlayerBarComponent {
     volumeChange($event: Event) {
         const value = ($event.target as HTMLInputElement).valueAsNumber;
         this.mediaPlayerStateService.setVolume(value);
+        this.playerHubService.changeVolume(value);
     }
 
-    trackPositionChange($event: Event) {
-        const value = ($event.target as HTMLInputElement).valueAsNumber;
-        this.mediaPlayerStateService.setPosition(value);
+    trackPositionChange(position: number) {
+        this.mediaPlayerStateService.setPosition(position);
     }
 
     togglePlayPause() {

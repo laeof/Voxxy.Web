@@ -1,0 +1,23 @@
+:host {
+    display: flex;
+    align-items: center;
+    .mat-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mat-icon {
+            min-width: 18px;
+            min-height: 18px;
+            max-width: 18px;
+            max-height: 18px;
+        }
+    }
+}
+
+::ng-deep {
+    .mat-mdc-menu-content {
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+}

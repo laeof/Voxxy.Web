@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    width: 100%;
+
+    .device-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+        cursor: pointer;
+        border-radius: 6px;
+        width: 100%;
+
+        padding: 12px 12px;
+
+        .device-name {
+            transition: color 0.3s ease;
+        }
+    }
+}

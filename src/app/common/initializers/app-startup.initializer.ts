@@ -1,5 +1,6 @@
 import { provideAppInitializer, inject } from '@angular/core';
 import { ArtistStateService } from '@common/services/artist-state.service';
+import { PlayerHubService } from '@common/services/player-hub.service';
 import { UserStateService } from '@common/services/user-state.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { ForArtist } from '@features/for-artist/interfaces/for-artist.interface';
@@ -11,14 +12,19 @@ export const provideAppStartupInitializer = provideAppInitializer(() => {
     const forArtistService = inject(ForArtistService);
     const userStateService = inject(UserStateService);
     const artistStateService = inject(ArtistStateService);
+    const playerHubService = inject(PlayerHubService);
 
     return firstValueFrom(
         authService.me().pipe(
-            tap((me) => me && userStateService.set(me)),
+            tap((me) => me),
             switchMap((me) => {
                 if (!me) {
                     return of(null);
                 }
+
+                userStateService.set(me);
+
+                playerHubService.connect();
 
                 return authService.xsrfToken().pipe(
                     switchMap(() => {

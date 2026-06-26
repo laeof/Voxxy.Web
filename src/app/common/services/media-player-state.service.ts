@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Track } from '../../features/track/models/track';
 import { RepeatMode } from '../enums/repeat-mode.enum';
+import { PlayerState } from '@common/entities/PlayerState';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerStateService {
     private readonly playing$ = new BehaviorSubject(false);
-    private readonly position$ = new BehaviorSubject(0);
-    private readonly volume$ = new BehaviorSubject(50);
+    private readonly position$ = new BehaviorSubject<number>(0);
+    private readonly volume$ = new BehaviorSubject<number>(50);
 
     private readonly queue$ = new BehaviorSubject<Track[]>([]);
     private readonly index$ = new BehaviorSubject<number>(-1);
@@ -38,9 +39,20 @@ export class MediaPlayerStateService {
         return this.repeat$.value;
     }
 
+    updateState(playerState: PlayerState) {
+        // this.playing$.next(state.playing);
+        this.setPosition(playerState.positionMs / 1000);
+        this.volume$.next(playerState.volumePercent);
+        // this.queue$.next(state.queue);
+        // this.index$.next(state.index);
+        // this.currentTrack$.next(state.currentTrack);
+        // this.repeat$.next(state.repeat);
+    }
+
     play() {
         this.playing$.next(true);
     }
+
     pause() {
         this.playing$.next(false);
     }

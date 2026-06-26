@@ -1,0 +1,4 @@
+<div class="device-card" [ngClass]="{ selected: device.connectionId === activeDeviceConnectionId }">
+    <mat-icon svgIcon="device"></mat-icon>
+    <span class="subcolor device-name">{{ device.name }}</span>
+</div>

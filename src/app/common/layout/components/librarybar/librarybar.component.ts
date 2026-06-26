@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef } from '@angular/core';
 import { LibraryBarManagerComponent } from './components/libarybar-manager/librarybar-manager.component';
 import { LibraryBarListComponent } from './components/librarybar-list/librarybar-list.component';
 import { locale as english } from './i18n/en';

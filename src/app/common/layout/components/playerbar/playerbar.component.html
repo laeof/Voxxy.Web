@@ -73,9 +73,13 @@
                     [min]="0"
                     [max]="(currentTrack$ | async)?.duration"
                     [step]="1"
-                    (input)="trackPositionChange($event)"
                 >
-                    <input matSliderThumb #slider [value]="currentTime$ | async" />
+                    <input
+                        matSliderThumb
+                        #slider
+                        [value]="currentTime$ | async"
+                        (valueChange)="trackPositionChange($event)"
+                    />
                 </mat-slider>
                 <span class="time subcolor">{{
                     (currentTrack$ | async)?.duration | durationTranslate
@@ -84,6 +88,7 @@
         </div>
     </div>
     <div class="additional section">
+        <playerbar-device></playerbar-device>
         <mat-icon svgIcon="lyrics"></mat-icon>
         <mat-icon svgIcon="queue"></mat-icon>
         <div class="volume wrapped-icon-hover">
