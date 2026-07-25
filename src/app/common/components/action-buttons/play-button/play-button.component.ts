@@ -32,7 +32,6 @@ export class PlayButtonComponent {
             return;
         }
 
-        this.mediaPlayerStateService.playQueue(this.trackList || [], 0);
         this.mediaPlayerSyncService.play(this.trackList[0].id, 0);
     }
 }

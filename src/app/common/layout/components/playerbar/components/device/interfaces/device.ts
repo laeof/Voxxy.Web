@@ -1,5 +1,7 @@
 export interface Device {
     id: string;
     name: string;
-    connectionId: string;
+    isOnline: boolean;
+    isActive: boolean;
+    isLocal: boolean;
 }

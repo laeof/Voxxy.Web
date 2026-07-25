@@ -9,7 +9,7 @@
     >
     @for (device of dataSource$ | async; track device.id) {
         <playerbar-device-card
-            [activeDeviceConnectionId]="selected$ | async"
+            [activeDeviceId]="selected$ | async"
             [device]="device"
             (click)="selectDevice(device)"
             (keydown.enter)="selectDevice(device)"

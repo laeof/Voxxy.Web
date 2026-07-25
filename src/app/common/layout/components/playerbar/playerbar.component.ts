@@ -74,15 +74,15 @@ export class PlayerBarComponent {
             one: RepeatMode.None,
         }[this.mediaPlayerStateService.repeat];
 
-        this.mediaPlayerStateService.setRepeat(next);
+        this.mediaPlayerSyncService.setRepeat(next);
     }
 
     togglePrev() {
-        this.mediaPlayerStateService.prev();
+        this.mediaPlayerSyncService.previous();
     }
 
     toggleNext() {
-        this.mediaPlayerStateService.next();
+        this.mediaPlayerSyncService.next();
     }
 
     toggleShuffle() {

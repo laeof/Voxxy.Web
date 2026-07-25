@@ -22,8 +22,6 @@ import { UserStateService } from '@common/services/user-state.service';
 import { SnowComponent } from '@common/components/snow/snow.component';
 import { LogoComponent } from '@common/layout/components/topbar/components/logo/logo.component';
 import { first } from 'rxjs';
-import { LocalStorageService } from '@common/services/local-storage.service';
-import { DeviceService } from '@common/layout/components/playerbar/components/device/services/device-service';
 import { PlayerHubService } from '@common/services/player-hub.service';
 
 @Component({
@@ -51,9 +49,7 @@ export class LoginComponent {
         private readonly authService: AuthService,
         private readonly router: Router,
         private readonly userStateService: UserStateService,
-        private readonly localStorageService: LocalStorageService,
-        private readonly deviceService: DeviceService,
-        private readonly hubService: PlayerHubService
+        private readonly hubService: PlayerHubService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian);
 
@@ -69,10 +65,8 @@ export class LoginComponent {
             const loginData: LoginModel = this.loginForm.value;
             this.authService.login(loginData).subscribe((user) => {
                 this.loading = false;
-                this.localStorageService.clear();
-                this.deviceService.tryCreateDeviceId();
-                this.hubService.connect();
                 this.authenticateUser(user);
+                void this.hubService.connect();
                 this.authService.xsrfToken().pipe(first()).subscribe();
             });
         } else {

@@ -44,7 +44,7 @@ export class MediaPlayerEngineService implements OnDestroy {
             this.activeDevice = value;
 
             if (value) {
-                this.loadTrack(this.state.currentTrack!);
+                if (this.state.currentTrack) this.loadTrack(this.state.currentTrack);
                 this.audio.currentTime = this.state.position;
                 if (this.state.playing) {
                     this.audio.play().catch(() => {});
@@ -118,9 +118,8 @@ export class MediaPlayerEngineService implements OnDestroy {
         //     }
         // });
 
-        this.audio.addEventListener('ended', () => {
-            this.state.next();
-        });
+        // Playback completion is a user-agent observation, not authoritative state. The Connect
+        // coordinator advances the queue through an explicit command owned by the UI workflow.
     }
 
     ngOnDestroy() {

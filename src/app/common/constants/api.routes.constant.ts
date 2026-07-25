@@ -48,7 +48,4 @@ export class ApiRoutes {
         search: '/search',
     }
 
-    public static readonly PlayerHub = {
-        hub: '/hubs/player',
-    }
 }

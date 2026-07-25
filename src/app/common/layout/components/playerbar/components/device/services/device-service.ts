@@ -2,14 +2,31 @@ import { EntityManagerService } from '@common/services/entity-manager.service';
 import { Device } from '../interfaces/device';
 import { Injectable } from '@angular/core';
 import { BaseFilter } from '@common/filters/base-filter';
-import { LocalStorageService } from '@common/services/local-storage.service';
+import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { DeviceIdentityService } from '@common/connect/device/device-identity.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class DeviceService extends EntityManagerService<Device> {
-    constructor(private readonly localStorageService: LocalStorageService) {
+    constructor(
+        connectStore: ConnectStateStore,
+        identity: DeviceIdentityService,
+    ) {
         super(new BaseFilter());
+        connectStore.presence$.subscribe((presence) => {
+            if (!presence) return;
+            this.setDevices(
+                presence.devices.map((device) => ({
+                    id: device.deviceId,
+                    name: device.name,
+                    isOnline: device.isOnline,
+                    isActive: device.deviceId === presence.activeDeviceId,
+                    isLocal: device.deviceId === identity.deviceId,
+                })),
+            );
+            this.setActiveDeviceId(presence.activeDeviceId ?? '');
+        });
     }
 
     setDevices(devices: Device[]): void {
@@ -24,23 +41,4 @@ export class DeviceService extends EntityManagerService<Device> {
         return this.onEntitySelectedId;
     }
 
-    public tryCreateDeviceId(): string {
-        let deviceId = this.localStorageService.getItem('deviceId');
-
-        if (!deviceId) {
-            if (crypto.randomUUID) {
-                deviceId = crypto.randomUUID();
-            } else {
-                deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                    const r = Math.trunc(Math.random() * 16);
-                    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-                    return v.toString(16);
-                });
-            }
-
-            this.localStorageService.setItem('deviceId', deviceId);
-        }
-
-        return deviceId;
-    }
 }

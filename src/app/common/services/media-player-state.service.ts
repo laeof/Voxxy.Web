@@ -56,6 +56,26 @@ export class MediaPlayerStateService {
         return this.repeat$.value;
     }
 
+    applyAuthoritativeState(value: {
+        isPlaying: boolean;
+        positionSec: number;
+        volumePercent: number;
+        queue: Track[];
+        index: number;
+        currentTrack: Track | null;
+        repeat: RepeatMode;
+        isAudioOwner: boolean;
+    }): void {
+        this.queue$.next(value.queue);
+        this.index$.next(value.index);
+        this.currentTrack$.next(value.currentTrack);
+        this.position$.next(value.positionSec);
+        this.volume$.next(value.volumePercent);
+        this.repeat$.next(value.repeat);
+        this.device$.next(value.isAudioOwner);
+        this.playing$.next(value.isPlaying);
+    }
+
     applyServerState(playerState: ClientPlayerState): void {
         this.volume$.next(playerState.volumePercent);
         this.playing$.next(playerState.isPlaying);

@@ -16,6 +16,7 @@ import { NavigationService } from '@common/services/navigation.service';
 import { FollowService } from '@common/services/follow-service';
 import { AutoSubjectNameSizeDirective } from '@common/directives/fix-text-height.directive';
 import { ManagerSubjectNameComponent } from '@common/components/manager/manager-subject-info/subject-name/subject-name.component';
+import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 
 @Component({
     selector: 'librarybar-list',
@@ -50,6 +51,7 @@ export class LibraryBarListComponent extends ListEntitiesFacade<LibraryDto> impl
         private readonly route: ActivatedRoute,
         private readonly router: Router,
         public readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService,
         private readonly followService: FollowService,
     ) {
         super(libraryBarService);
@@ -91,11 +93,12 @@ export class LibraryBarListComponent extends ListEntitiesFacade<LibraryDto> impl
     togglePlayButton(playlist: LibraryDto) {
         if (this.mediaPlayerStateService.currentTrack?.fromPlaylist === playlist?.id) {
             this.mediaPlayerStateService.playing
-                ? this.mediaPlayerStateService.pause()
-                : this.mediaPlayerStateService.play();
+                ? this.mediaPlayerSyncService.pause()
+                : this.mediaPlayerSyncService.play();
             return;
         }
 
-        this.mediaPlayerStateService.playQueue(playlist.tracks || [], 0);
+        const firstTrack = playlist.tracks?.[0];
+        if (firstTrack) this.mediaPlayerSyncService.play(firstTrack.id, 0);
     }
 }

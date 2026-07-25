@@ -11,5 +11,5 @@ import { NgClass } from "@angular/common";
 })
 export class DeviceCardComponent {
     @Input() device!: Device;
-    @Input() activeDeviceConnectionId!: string | null | undefined;
+    @Input() activeDeviceId!: string | null | undefined;
 }

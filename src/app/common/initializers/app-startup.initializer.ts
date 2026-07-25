@@ -1,5 +1,4 @@
 import { provideAppInitializer, inject } from '@angular/core';
-import { DeviceService } from '@common/layout/components/playerbar/components/device/services/device-service';
 import { ArtistStateService } from '@common/services/artist-state.service';
 import { PlayerHubService } from '@common/services/player-hub.service';
 import { UserStateService } from '@common/services/user-state.service';
@@ -14,7 +13,6 @@ export const provideAppStartupInitializer = provideAppInitializer(() => {
     const userStateService = inject(UserStateService);
     const artistStateService = inject(ArtistStateService);
     const playerHubService = inject(PlayerHubService);
-    const deviceService = inject(DeviceService);
 
     return firstValueFrom(
         authService.me().pipe(
@@ -25,8 +23,7 @@ export const provideAppStartupInitializer = provideAppInitializer(() => {
                 }
 
                 userStateService.set(me);
-                deviceService.tryCreateDeviceId();
-                playerHubService.connect();
+                void playerHubService.connect();
 
                 return authService.xsrfToken().pipe(
                     switchMap(() => {

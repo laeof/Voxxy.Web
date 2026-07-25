@@ -31,6 +31,6 @@ export class DeviceComponent extends ListEntitiesFacade<Device> {
     }
 
     selectDevice(device: Device) {
-        this.playerHubService.selectDevice(device.connectionId);
+        void this.playerHubService.selectDevice(device.id);
     }
 }

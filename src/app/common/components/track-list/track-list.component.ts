@@ -10,6 +10,7 @@ import { DurationTranslatePipe } from '@common/pipes/duration-translation.pipe';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { NavigationService } from '@common/services/navigation.service';
 import { Track } from '@features/track/models/track';
+import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 
 @Component({
     selector: 'app-track-list',
@@ -32,6 +33,7 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
     constructor(
         private readonly trackListService: TrackListService,
         private readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService,
         private readonly elRef: ElementRef,
         private readonly navigationService: NavigationService,
     ) {
@@ -70,15 +72,12 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
             this.mediaPlayerStateService.currentTrack?.fromPlaylist === track.fromPlaylist
         ) {
             this.mediaPlayerStateService.playing
-                ? this.mediaPlayerStateService.pause()
-                : this.mediaPlayerStateService.play();
+                ? this.mediaPlayerSyncService.pause()
+                : this.mediaPlayerSyncService.play();
             return;
         }
 
-        const tracks = this.tracks;
-        const index = tracks.findIndex((t: Track) => t.id === track.id);
-
-        this.mediaPlayerStateService.playQueue(tracks, index);
+        this.mediaPlayerSyncService.play(track.id, 0);
     }
 
     navigateAlbum(albumId: string) {
