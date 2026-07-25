@@ -20,4 +20,11 @@ describe('ConnectTransportErrorMapper', () => {
         expect(mapped).toEqual({ kind: 'Unexpected', code: 'connect_unexpected_error' });
         expect(mapped.code).not.toContain('secret');
     });
+
+    it('RateLimitedError_IsMappedSafely', () => {
+        expect(mapper.map(new Error('HubException: connect_rate_limited'))).toEqual({
+            kind: 'RateLimited',
+            code: 'connect_rate_limited',
+        });
+    });
 });

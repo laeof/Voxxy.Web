@@ -84,7 +84,8 @@
                         matSliderThumb
                         #slider
                         [value]="(currentTime$ | async) || 0"
-                        (valueChange)="trackPositionChange($event)"
+                        (input)="trackPositionPreview($event)"
+                        (change)="trackPositionChange(slider.value)"
                     />
                 </mat-slider>
                 <label for="slider" class="time subcolor">{{

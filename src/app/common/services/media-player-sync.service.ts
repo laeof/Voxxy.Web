@@ -9,6 +9,7 @@ import { TrackService } from '@features/track/services/track.service';
 import { Subject, distinctUntilChanged, filter, map, takeUntil } from 'rxjs';
 import { MediaPlayerStateService } from './media-player-state.service';
 import { PlayerHubService } from './player-hub.service';
+import { ConnectCommandCoalescer } from '@common/connect/commands/connect-command-coalescer.service';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerSyncService implements OnDestroy {
@@ -22,6 +23,7 @@ export class MediaPlayerSyncService implements OnDestroy {
         private readonly commands: ConnectCommandService,
         private readonly hub: PlayerHubService,
         private readonly identity: DeviceIdentityService,
+        private readonly coalescer: ConnectCommandCoalescer,
         trackService: TrackService,
     ) {
         this.viewPosition$ = this.connectStore.positionMs$.pipe(
@@ -66,11 +68,15 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     setVolume(volume: number): void {
-        void this.commands.changeVolume(volume);
+        this.coalescer.setVolume(volume);
     }
 
     seek(positionSec: number): void {
-        void this.commands.changePosition(Math.floor(positionSec * 1000));
+        this.coalescer.commitSeek(positionSec);
+    }
+
+    previewSeek(positionSec: number): void {
+        this.coalescer.previewSeek(positionSec);
     }
 
     next(): void {

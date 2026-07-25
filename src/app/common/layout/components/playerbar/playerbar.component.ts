@@ -61,8 +61,14 @@ export class PlayerBarComponent {
         this.mediaPlayerSyncService.setVolume(value);
     }
 
-    trackPositionChange(position: number) {
-        this.mediaPlayerSyncService.seek(position);
+    trackPositionChange(position: number | string) {
+        this.mediaPlayerSyncService.seek(Number(position));
+    }
+
+    trackPositionPreview($event: Event) {
+        this.mediaPlayerSyncService.previewSeek(
+            ($event.target as HTMLInputElement).valueAsNumber,
+        );
     }
 
     togglePlayPause() {

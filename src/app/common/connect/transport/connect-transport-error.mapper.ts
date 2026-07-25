@@ -6,6 +6,7 @@ export type ConnectTransportErrorKind =
     | 'WebSocketUnavailable'
     | 'Disconnected'
     | 'ServerUnavailable'
+    | 'RateLimited'
     | 'Unexpected';
 
 export interface ConnectTransportError {
@@ -33,6 +34,9 @@ export class ConnectTransportErrorMapper {
         }
         if (message.includes('connect_transport_disconnected')) {
             return { kind: 'Disconnected', code: 'connect_transport_disconnected' };
+        }
+        if (message.includes('connect_rate_limited')) {
+            return { kind: 'RateLimited', code: 'connect_rate_limited' };
         }
         if (
             message.includes('connect_internal_error') ||

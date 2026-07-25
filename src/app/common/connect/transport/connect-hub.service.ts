@@ -22,6 +22,7 @@ import {
 import { ConnectClientTelemetry } from './connect-client-telemetry.service';
 import { ConnectHubConnectionFactory } from './connect-hub-connection.factory';
 import { ConnectTransportErrorMapper } from './connect-transport-error.mapper';
+import { ConnectTiming } from './connect-timing.service';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 
@@ -29,7 +30,7 @@ const HEARTBEAT_INTERVAL_MS = 15_000;
 export class ConnectHubService {
     private readonly connection: HubConnection;
     private connectPromise: Promise<void> | null = null;
-    private heartbeatId: ReturnType<typeof setInterval> | null = null;
+    private heartbeatId: ReturnType<typeof setTimeout> | null = null;
     private registrationPromise: Promise<void> | null = null;
     private snapshotPromise: Promise<boolean> | null = null;
 
@@ -42,6 +43,7 @@ export class ConnectHubService {
         private readonly errors: ConnectTransportErrorMapper,
         private readonly telemetry: ConnectClientTelemetry,
         private readonly playerState: MediaPlayerStateService,
+        private readonly timing: ConnectTiming,
     ) {
         this.connection = this.connectionFactory.create(
             `${environment.apiUrl}/hubs/connect`,
@@ -51,6 +53,10 @@ export class ConnectHubService {
         );
         this.registerHandlers();
         this.applier.setSnapshotRecovery(() => this.refreshSnapshot());
+        globalThis.addEventListener?.('offline', () => {
+            this.stopHeartbeat();
+            this.playerState.pause();
+        });
     }
 
     get isConnected(): boolean {
@@ -101,7 +107,7 @@ export class ConnectHubService {
     }
 
     async recoverFromUnconfirmedDelivery(commandId: string): Promise<void> {
-        this.telemetry.emit('connect_delivery_unconfirmed', { commandId });
+        this.telemetry.emit('connect_delivery_unconfirmed');
         this.telemetry.emit('connect_snapshot_recovery_started', { reason: 'delivery_unconfirmed' });
         try {
             const applied = await this.requestSnapshot();
@@ -220,13 +226,21 @@ export class ConnectHubService {
 
     private startHeartbeat(): void {
         if (this.heartbeatId !== null) return;
-        this.heartbeatId = setInterval(() => void this.sendHeartbeat(), HEARTBEAT_INTERVAL_MS);
+        this.scheduleHeartbeat();
     }
 
     private stopHeartbeat(): void {
         if (this.heartbeatId === null) return;
-        clearInterval(this.heartbeatId);
+        clearTimeout(this.heartbeatId);
         this.heartbeatId = null;
+    }
+
+    private scheduleHeartbeat(): void {
+        this.heartbeatId = setTimeout(async () => {
+            this.heartbeatId = null;
+            await this.sendHeartbeat();
+            if (this.isConnected) this.scheduleHeartbeat();
+        }, this.timing.heartbeatDelay(HEARTBEAT_INTERVAL_MS));
     }
 
     private async sendHeartbeat(): Promise<void> {

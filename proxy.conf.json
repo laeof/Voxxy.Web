@@ -1,17 +1,15 @@
 {
-    "/api/hubs/": {
+    "/api/hubs": {
         "target": "http://localhost:5001",
         "secure": false,
         "changeOrigin": true,
-        "ws": true,
-        "pathRewrite": {
-            "^/api": ""
-        }
+        "ws": true
     },
     "/api": {
         "target": "http://localhost:5001",
         "secure": false,
         "changeOrigin": true,
+        "ws": true,
         "pathRewrite": {
             "^/api": ""
         }

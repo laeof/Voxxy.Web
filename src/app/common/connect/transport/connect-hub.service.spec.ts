@@ -65,6 +65,51 @@ describe('ConnectHubService transport failure and reconnect', () => {
         ).toHaveLength(2);
         vi.useRealTimers();
     });
+
+    it('Offline_PausesEngineWithoutPauseCommand', () => {
+        const connection = fakeConnection();
+        const playerState = { pause: vi.fn() };
+        createService(connection, playerState);
+
+        globalThis.dispatchEvent(new Event('offline'));
+
+        expect(playerState.pause).toHaveBeenCalled();
+        expect(connection.invoke).not.toHaveBeenCalledWith('Pause', expect.anything());
+    });
+
+    it('SuspendedTab_ReregistersAfterLeaseExpiry', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: null,
+                });
+            }
+            if (method === 'RefreshConnectionLease') {
+                return Promise.resolve({
+                    commandId: null,
+                    status: 'ConnectionNotFound',
+                    errorCode: null,
+                    outcome: null,
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const { service } = createService(connection);
+        await service.registerConnection();
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect(
+            connection.invoke.mock.calls.filter(([method]) => method === 'RegisterConnection'),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
 });
 
 function createService(
@@ -83,6 +128,7 @@ function createService(
         new ConnectTransportErrorMapper(),
         telemetry as never,
         playerState as never,
+        { heartbeatDelay: () => 15_000 } as never,
     );
     return { service, store };
 }
