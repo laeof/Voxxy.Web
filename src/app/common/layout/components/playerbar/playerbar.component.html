@@ -67,7 +67,7 @@
         </div>
         <div class="bottom-wrap">
             <div class="bottom">
-                <span class="time subcolor">{{ currentTime$ | async | durationTranslate }}</span>
+                <label for="slider" class="time subcolor">{{ currentTime$ | async | durationTranslate }}</label>
                 <mat-slider
                     class="song-slider"
                     [min]="0"
@@ -75,15 +75,16 @@
                     [step]="1"
                 >
                     <input
+                        id="slider"
                         matSliderThumb
                         #slider
-                        [value]="currentTime$ | async"
+                        [value]="(currentTime$ | async) || 0"
                         (valueChange)="trackPositionChange($event)"
                     />
                 </mat-slider>
-                <span class="time subcolor">{{
+                <label for="slider" class="time subcolor">{{
                     (currentTrack$ | async)?.duration | durationTranslate
-                }}</span>
+                }}</label>
             </div>
         </div>
     </div>

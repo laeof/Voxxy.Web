@@ -1,0 +1,14 @@
+services:
+    frontend:
+        container_name: voxxy-web
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - '80:8080'
+        restart: unless-stopped
+        networks:
+            - voxxy
+networks:
+    voxxy:
+        external: true

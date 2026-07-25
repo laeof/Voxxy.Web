@@ -14,4 +14,6 @@ export const SignalRConstants = {
     queuePlaybackEvent: 'QueuePlaybackChanged',
     activeDeviceChangedEvent: 'ActiveDeviceChanged',
     deviceListChangedEvent: 'DeviceListChanged',
+    positionChangedEvent: 'PositionChanged',
+    volumeChangedEvent: 'VolumeChanged',
 };

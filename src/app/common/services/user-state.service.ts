@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { UserClaim } from '@features/auth/models/user-claim';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '@features/auth/models/user';
+import { LocalStorageService } from './local-storage.service';
 
 @Injectable({
     providedIn: 'root',

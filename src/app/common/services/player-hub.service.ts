@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PlayerState } from '@common/entities/PlayerState';
+import { PlayerState, PositionState } from '@common/entities/PlayerState';
 import { BehaviorSubject } from 'rxjs';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '@environments/environment';
@@ -8,9 +8,7 @@ import { DeviceType } from '@common/enums/device-type.enum';
 import { SignalRConstants } from '@common/constants/signalr.constant';
 import { PlayRequest } from '@common/entities/PlayRequest';
 import { SignalRRetryPolicy } from '@common/policies/signalr-retry.policy';
-import { LocalStorageService } from './local-storage.service';
 import { DeviceService } from '@common/layout/components/playerbar/components/device/services/device-service';
-import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 
 @Injectable({
     providedIn: 'root',
@@ -19,13 +17,21 @@ export class PlayerHubService {
     private connection?: HubConnection;
 
     private readonly playerStateSubject = new BehaviorSubject<PlayerState | null>(null);
+    private readonly volumeSubject = new BehaviorSubject<number | null>(null);
+    private readonly positionSubject = new BehaviorSubject<PositionState | null>(null);
     playerState$ = this.playerStateSubject.asObservable();
+    volume$ = this.volumeSubject.asObservable();
+    position$ = this.positionSubject.asObservable();
 
-    constructor(
-        private readonly localStorageService: LocalStorageService,
-        private readonly deviceService: DeviceService,
-        private readonly mediaPlayerStateService: MediaPlayerStateService,
-    ) {}
+    constructor(private readonly deviceService: DeviceService) {}
+
+    get isConnected(): boolean {
+        return this.connection?.state === 'Connected';
+    }
+
+    get connectionId(): string | null | undefined {
+        return this.connection?.connectionId;
+    }
 
     public async connect(): Promise<void> {
         if (this.connection) return;
@@ -37,11 +43,7 @@ export class PlayerHubService {
 
         this.registerHandlers();
 
-        let deviceId = this.localStorageService.getItem('deviceId');
-
-        if (!deviceId) this.localStorageService.setItem('deviceId', crypto.randomUUID());
-
-        deviceId = this.localStorageService.getItem('deviceId')!;
+        let deviceId = this.deviceService.tryCreateDeviceId();
 
         this.connection.onreconnected(async () => {
             await this.registerConnection(deviceId);
@@ -61,45 +63,8 @@ export class PlayerHubService {
         return this.connection?.invoke(SignalRConstants.playMethod, request) ?? Promise.resolve();
     }
 
-    public pause(): Promise<void> {
-        return this.connection?.invoke(SignalRConstants.pauseMethod) ?? Promise.resolve();
-    }
-
-    private async registerConnection(deviceId: string): Promise<void> {
-        await this.connection?.invoke(SignalRConstants.registerDeviceMethod, {
-            id: deviceId,
-            name: `${DeviceType.Web} ${this.getBrowserName()}`,
-            connectionId: this.connection?.connectionId,
-        });
-
-        await this.connection?.invoke(SignalRConstants.registerPlayerMethod);
-        await this.connection?.invoke(SignalRConstants.registerQueueMethod);
-    }
-
-    private registerHandlers(): void {
-        this.connection?.on(SignalRConstants.playerStateChangedEvent, (state: PlayerState) => {
-            this.mediaPlayerStateService.updateState(state);
-        });
-        this.connection?.on(SignalRConstants.queuePlaybackEvent, (queue) => {
-            console.log('queue', queue);
-        });
-        this.connection?.on(SignalRConstants.activeDeviceChangedEvent, (activeDeviceId: string) => {
-            this.deviceService.setActiveDeviceId(activeDeviceId);
-        });
-        this.connection?.on(SignalRConstants.deviceListChangedEvent, (devices) => {
-            this.deviceService.setDevices(devices.items);
-        });
-    }
-
-    private getBrowserName(): string {
-        const ua = navigator.userAgent;
-
-        if (ua.includes('Edg')) return 'Edge';
-        if (ua.includes('Chrome')) return 'Chrome';
-        if (ua.includes('Firefox')) return 'Firefox';
-        if (ua.includes('Safari')) return 'Safari';
-
-        return 'Unknown';
+    public pause(request: PlayRequest): Promise<void> {
+        return this.connection?.invoke(SignalRConstants.pauseMethod, request) ?? Promise.resolve();
     }
 
     public selectDevice(deviceId: string): Promise<void> {
@@ -109,7 +74,7 @@ export class PlayerHubService {
         );
     }
 
-    public changePosition(request: PlayRequest): Promise<void> {
+    public changePosition(request: PositionState): Promise<void> {
         return (
             this.connection?.invoke(SignalRConstants.changePositionMethod, request) ??
             Promise.resolve()
@@ -121,5 +86,63 @@ export class PlayerHubService {
             this.connection?.invoke(SignalRConstants.changeVolumeMethod, volume) ??
             Promise.resolve()
         );
+    }
+
+    private async registerConnection(deviceId: string): Promise<void> {
+        await this.connection?.invoke(SignalRConstants.registerPlayerMethod);
+        await this.connection?.invoke(SignalRConstants.registerQueueMethod);
+
+        await this.connection?.invoke(SignalRConstants.registerDeviceMethod, {
+            id: deviceId,
+            name: `${DeviceType.Web} ${this.getBrowserName()}`,
+            connectionId: this.connection?.connectionId,
+        });
+    }
+
+    private registerHandlers(): void {
+        this.connection?.on(SignalRConstants.playerStateChangedEvent, (state: PlayerState) => {
+            this.playerStateSubject.next(state);
+            console.log('playerStateChangedEvent', state);
+        });
+        this.connection?.on(SignalRConstants.queuePlaybackEvent, (queue) => {
+            console.log('queue', queue);
+        });
+        this.connection?.on(SignalRConstants.activeDeviceChangedEvent, (activeDeviceId: string) => {
+            this.deviceService.setActiveDeviceId(activeDeviceId);
+            console.log('activeDeviceChangedEvent', activeDeviceId);
+        });
+        this.connection?.on(SignalRConstants.deviceListChangedEvent, (devices) => {
+            this.deviceService.setDevices(devices.items);
+        });
+        this.connection?.on(SignalRConstants.volumeChangedEvent, (volume: number) => {
+            this.volumeSubject.next(volume);
+        });
+        this.connection?.on(
+            SignalRConstants.positionChangedEvent,
+            (positionMs: number, updatedAt: string) => {
+                this.positionSubject.next({ positionMs, updatedAt });
+            },
+        );
+    }
+
+    private getBrowserName(): string {
+        const ua = navigator.userAgent;
+
+        let os = 'Unknown OS';
+
+        let browser = 'Unknown Browser';
+
+        if (/Windows/i.test(ua)) os = 'Windows';
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = 'Iphone';
+        else if (/Android/i.test(ua)) os = 'Android';
+        else if (/Linux/i.test(ua)) os = 'Linux';
+        else if (/Mac/i.test(ua)) os = 'Macbook';
+
+        if (ua.includes('Edg')) browser = 'Edge';
+        else if (ua.includes('Chrome')) browser = 'Chrome';
+        else if (ua.includes('Firefox')) browser = 'Firefox';
+        else if (ua.includes('Safari')) browser = 'Safari';
+
+        return `${browser} (${os})`;
     }
 }

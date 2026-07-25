@@ -2,6 +2,7 @@ import { AsyncPipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
+import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 import { Track } from '@features/track/models/track';
 
 @Component({
@@ -11,7 +12,9 @@ import { Track } from '@features/track/models/track';
     imports: [MatIcon, AsyncPipe],
 })
 export class PlayButtonComponent {
-    constructor(public readonly mediaPlayerStateService: MediaPlayerStateService) {}
+    constructor(public readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService
+    ) {}
 
     @Input() trackList: Track[] | undefined = [];
     @Input() trackListId: string | undefined = undefined;
@@ -19,13 +22,17 @@ export class PlayButtonComponent {
     togglePlayButton(): void {
         if (!this.trackList || !this.trackListId || this.trackList.length === 0) return;
 
+        console.log('togglePlayButton', this.mediaPlayerStateService.playing);
+
         if (this.mediaPlayerStateService.currentTrack?.fromPlaylist === this.trackListId) {
+            console.log('togglePlayButton', this.mediaPlayerStateService.position);
             this.mediaPlayerStateService.playing
-                ? this.mediaPlayerStateService.pause()
-                : this.mediaPlayerStateService.play();
+                ? this.mediaPlayerSyncService.pause()
+                : this.mediaPlayerSyncService.play(undefined, this.mediaPlayerStateService.position * 1000);
             return;
         }
 
         this.mediaPlayerStateService.playQueue(this.trackList || [], 0);
+        this.mediaPlayerSyncService.play(this.trackList[0].id, 0);
     }
 }

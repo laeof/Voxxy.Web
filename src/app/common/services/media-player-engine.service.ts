@@ -6,28 +6,58 @@ import { MediaPlayerStateService } from '@common/services/media-player-state.ser
 import { environment } from '../../../environments/environment';
 import { UrlHelper } from '../helpers/url.helper';
 import { ApiRoutes } from '../constants/api.routes.constant';
-import { PlayerHubService } from './player-hub.service';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerEngineService implements OnDestroy {
     private readonly audio = new Audio();
     private readonly destroy$ = new Subject<void>();
     private loadingKey: string | null = null;
+    private activeDevice: boolean = false;
 
     constructor(
         private readonly state: MediaPlayerStateService,
-        private readonly playerHubService: PlayerHubService,
         private readonly http: HttpClient,
     ) {
         this.bindState();
         this.bindAudio();
     }
 
+    get currentTime(): number {
+        return this.audio.currentTime;
+    }
+
+    get paused(): boolean {
+        return this.audio.paused;
+    }
+
+    seek(positionSec: number): void {
+        if (Math.abs(this.audio.currentTime - positionSec) > 0.3) {
+            this.audio.currentTime = positionSec;
+        }
+
+        this.state.setPosition(positionSec);
+    }
+
     private bindState() {
+        this.state.deviceObs$.pipe(takeUntil(this.destroy$)).subscribe((value: boolean) => {
+            console.log('device state changed:', value);
+            this.activeDevice = value;
+
+            if (value) {
+                this.loadTrack(this.state.currentTrack!);
+                this.audio.currentTime = this.state.position;
+                if (this.state.playing) {
+                    this.audio.play().catch(() => {});
+                }
+            } else {
+                this.audio.pause();
+            }
+        });
+
         this.state.playingObs$
             .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
             .subscribe((p) => {
-                p ? this.audio.play().catch(() => {}) : this.audio.pause();
+                p && this.activeDevice ? this.audio.play().catch(() => {}) : this.audio.pause();
             });
 
         this.state.volumeObs$
@@ -69,9 +99,9 @@ export class MediaPlayerEngineService implements OnDestroy {
                 this.audio.src = url;
                 this.audio.currentTime = 0;
 
-                if (this.state.playing) {
-                    this.audio.play().catch(() => {});
-                }
+                console.log(this.state.playing, this.activeDevice);
+
+                if (this.state.playing && this.activeDevice) this.audio.play().catch(() => {});
 
                 this.loadingKey = null;
             });
@@ -80,13 +110,13 @@ export class MediaPlayerEngineService implements OnDestroy {
     private bindAudio() {
         this.audio.addEventListener('timeupdate', () => {
             this.state.setPosition(this.audio.currentTime);
-            this.playerHubService.changePosition({
-                positionMs: Math.floor(this.audio.currentTime * 1000),
-                updatedAt: new Date().toISOString(),
-                trackId: null,
-                queueId: null,
-            });
         });
+
+        // this.audio.addEventListener('playing', () => {
+        //     if (!this.activeDevice) {
+        //         this.state.pause();
+        //     }
+        // });
 
         this.audio.addEventListener('ended', () => {
             this.state.next();

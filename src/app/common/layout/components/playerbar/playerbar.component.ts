@@ -7,12 +7,11 @@ import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { DurationTranslatePipe } from '@common/pipes/duration-translation.pipe';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { Track } from '@features/track/models/track';
-import { TrackService } from '@features/track/services/track.service';
 import { DeviceComponent } from './components/device/device.component';
 import { locale as english } from './i18n/en';
 import { locale as russian } from './i18n/ru';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
-import { PlayerHubService } from '@common/services/player-hub.service';
+import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 
 @Component({
     selector: 'layout-playerbar',
@@ -27,15 +26,14 @@ import { PlayerHubService } from '@common/services/player-hub.service';
         AsyncPipe,
         DeviceComponent,
     ],
-    providers: [TrackService],
 })
 export class PlayerBarComponent {
     constructor(
         private readonly mediaPlayerStateService: MediaPlayerStateService,
         private readonly translationLoaderService: TranslationLoaderService,
-        private readonly playerHubService: PlayerHubService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService,
     ) {
-        this.currentTime$ = this.mediaPlayerStateService.positionObs$;
+        this.currentTime$ = this.mediaPlayerSyncService.viewPosition$;
         this.currentVolume$ = this.mediaPlayerStateService.volumeObs$;
         this.currentTrack$ = this.mediaPlayerStateService.currentTrackObs$;
         this.isPlaying$ = this.mediaPlayerStateService.playingObs$;
@@ -54,19 +52,18 @@ export class PlayerBarComponent {
 
     volumeChange($event: Event) {
         const value = ($event.target as HTMLInputElement).valueAsNumber;
-        this.mediaPlayerStateService.setVolume(value);
-        this.playerHubService.changeVolume(value);
+        this.mediaPlayerSyncService.setVolume(value);
     }
 
     trackPositionChange(position: number) {
-        this.mediaPlayerStateService.setPosition(position);
+        this.mediaPlayerSyncService.seek(position);
     }
 
     togglePlayPause() {
         if (this.mediaPlayerStateService.playing) {
-            this.mediaPlayerStateService.pause();
+            this.mediaPlayerSyncService.pause();
         } else {
-            this.mediaPlayerStateService.play();
+            this.mediaPlayerSyncService.play();
         }
     }
 

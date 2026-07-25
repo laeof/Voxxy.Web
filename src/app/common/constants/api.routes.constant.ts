@@ -29,6 +29,7 @@ export class ApiRoutes {
 
     public static readonly Track = {
         stream: '/tracks/:id/stream',
+        batch: '/tracks/batch',
     };
 
     public static readonly Artists = {
