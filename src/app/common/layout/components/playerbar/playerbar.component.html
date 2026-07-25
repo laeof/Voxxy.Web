@@ -1,4 +1,9 @@
 <div class="wrap">
+    @if ((transportErrorCode$ | async) === 'connect_websocket_unavailable') {
+        <div class="transport-warning" role="status">
+            {{ 'PLAYER.CONNECT_WEBSOCKET_UNAVAILABLE' | translate }}
+        </div>
+    }
     @if (!(currentTrack$ | async)) {
         <div class="overlay"></div>
     }

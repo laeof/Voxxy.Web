@@ -12,6 +12,8 @@ import { locale as english } from './i18n/en';
 import { locale as russian } from './i18n/ru';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
 import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
+import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     selector: 'layout-playerbar',
@@ -25,6 +27,7 @@ import { MediaPlayerSyncService } from '@common/services/media-player-sync.servi
         DurationTranslatePipe,
         AsyncPipe,
         DeviceComponent,
+        TranslatePipe,
     ],
 })
 export class PlayerBarComponent {
@@ -32,12 +35,14 @@ export class PlayerBarComponent {
         private readonly mediaPlayerStateService: MediaPlayerStateService,
         private readonly translationLoaderService: TranslationLoaderService,
         private readonly mediaPlayerSyncService: MediaPlayerSyncService,
+        connectStore: ConnectStateStore,
     ) {
         this.currentTime$ = this.mediaPlayerSyncService.viewPosition$;
         this.currentVolume$ = this.mediaPlayerStateService.volumeObs$;
         this.currentTrack$ = this.mediaPlayerStateService.currentTrackObs$;
         this.isPlaying$ = this.mediaPlayerStateService.playingObs$;
         this.repeatState$ = this.mediaPlayerStateService.repeatObs$;
+        this.transportErrorCode$ = connectStore.transportErrorCode$;
 
         this.translationLoaderService.loadTranslations(english, russian);
     }
@@ -49,6 +54,7 @@ export class PlayerBarComponent {
     currentTrack$: Observable<Track | null | undefined>;
     isPlaying$: Observable<boolean>;
     repeatState$: Observable<RepeatMode>;
+    transportErrorCode$: Observable<string | null>;
 
     volumeChange($event: Event) {
         const value = ($event.target as HTMLInputElement).valueAsNumber;

@@ -27,6 +27,7 @@ export class ConnectStateStore {
     private readonly transportSubject = new BehaviorSubject<ConnectTransportState>('disconnected');
     private readonly syncStatusSubject = new BehaviorSubject<ConnectSyncStatus>('Disconnected');
     private readonly pendingSubject = new BehaviorSubject<ReadonlySet<string>>(new Set());
+    private readonly transportErrorSubject = new BehaviorSubject<string | null>(null);
 
     readonly state$ = this.stateSubject.asObservable();
     readonly player$ = this.state$.pipe(map((state) => state.player));
@@ -35,6 +36,7 @@ export class ConnectStateStore {
     readonly transportState$ = this.transportSubject.asObservable();
     readonly syncStatus$ = this.syncStatusSubject.asObservable();
     readonly pendingCommandIds$ = this.pendingSubject.asObservable();
+    readonly transportErrorCode$ = this.transportErrorSubject.asObservable();
     readonly positionMs$: Observable<number> = combineLatest([
         this.player$,
         interval(250).pipe(startWith(0)),
@@ -58,8 +60,14 @@ export class ConnectStateStore {
                 ? 'Connected'
                 : state === 'reconnecting'
                   ? 'Reconnecting'
-                  : 'Disconnected',
+                  : state === 'unavailable'
+                    ? 'Unavailable'
+                    : 'Disconnected',
         );
+    }
+
+    setTransportError(code: string | null): void {
+        this.transportErrorSubject.next(code);
     }
 
     setSyncStatus(status: ConnectSyncStatus): void {
@@ -135,6 +143,7 @@ export class ConnectStateStore {
     clear(): void {
         this.stateSubject.next({ player: null, queue: null, presence: null, clockOffsetMs: 0 });
         this.pendingSubject.next(new Set());
+        this.transportErrorSubject.next(null);
         this.setTransportState('disconnected');
     }
 

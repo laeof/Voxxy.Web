@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
     HubConnection,
-    HubConnectionBuilder,
     HubConnectionState,
-    LogLevel,
 } from '@microsoft/signalr';
 import { environment } from '@environments/environment';
-import { SignalRRetryPolicy } from '@common/policies/signalr-retry.policy';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { CommandIdService } from '../commands/command-id.service';
 import { DeviceIdentityService } from '../device/device-identity.service';
 import { ConnectStateStore } from '../state/connect-state.store';
@@ -21,6 +19,9 @@ import {
     QueueStateChangedEvent,
     RegisterConnectionRequest,
 } from './connect-transport.models';
+import { ConnectClientTelemetry } from './connect-client-telemetry.service';
+import { ConnectHubConnectionFactory } from './connect-hub-connection.factory';
+import { ConnectTransportErrorMapper } from './connect-transport-error.mapper';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 
@@ -30,18 +31,24 @@ export class ConnectHubService {
     private connectPromise: Promise<void> | null = null;
     private heartbeatId: ReturnType<typeof setInterval> | null = null;
     private registrationPromise: Promise<void> | null = null;
+    private snapshotPromise: Promise<boolean> | null = null;
 
     constructor(
         private readonly store: ConnectStateStore,
         private readonly applier: ConnectEventApplierService,
         private readonly identity: DeviceIdentityService,
         private readonly commandIds: CommandIdService,
+        private readonly connectionFactory: ConnectHubConnectionFactory,
+        private readonly errors: ConnectTransportErrorMapper,
+        private readonly telemetry: ConnectClientTelemetry,
+        private readonly playerState: MediaPlayerStateService,
     ) {
-        this.connection = new HubConnectionBuilder()
-            .withUrl(`${environment.apiUrl}/hubs/connect`)
-            .withAutomaticReconnect(new SignalRRetryPolicy())
-            .configureLogging(LogLevel.Warning)
-            .build();
+        this.connection = this.connectionFactory.create(
+            `${environment.apiUrl}/hubs/connect`,
+            // Authentication uses an HttpOnly JWT cookie. Keep the factory dynamic so a future
+            // bearer-token provider is read at connection/reconnection time, never captured.
+            () => '',
+        );
         this.registerHandlers();
         this.applier.setSnapshotRecovery(() => this.refreshSnapshot());
     }
@@ -62,12 +69,19 @@ export class ConnectHubService {
         this.connectPromise = this.connection
             .start()
             .then(async () => {
+                this.store.setTransportError(null);
                 this.store.setTransportState('connected');
+                this.telemetry.emit('connect_transport_connected');
                 await this.restoreSession();
             })
             .catch((error: unknown) => {
-                this.store.setTransportState('disconnected');
-                throw error;
+                const mapped = this.errors.map(error);
+                this.stopHeartbeat();
+                this.store.setTransportState(
+                    mapped.kind === 'WebSocketUnavailable' ? 'unavailable' : 'disconnected',
+                );
+                this.store.setTransportError(mapped.code);
+                throw new Error(mapped.code);
             })
             .finally(() => {
                 this.connectPromise = null;
@@ -83,14 +97,24 @@ export class ConnectHubService {
     }
 
     async refreshSnapshot(): Promise<void> {
-        if (!this.isConnected) return;
-        const snapshot = await this.invoke<ConnectSnapshotResponse>('GetSnapshot');
-        if (snapshot.status === 'Applied') {
-            this.store.applySnapshot(snapshot);
-        } else if (snapshot.status === 'Unavailable') {
-            this.store.setSyncStatus('Unavailable');
-        } else {
+        await this.requestSnapshot();
+    }
+
+    async recoverFromUnconfirmedDelivery(commandId: string): Promise<void> {
+        this.telemetry.emit('connect_delivery_unconfirmed', { commandId });
+        this.telemetry.emit('connect_snapshot_recovery_started', { reason: 'delivery_unconfirmed' });
+        try {
+            const applied = await this.requestSnapshot();
+            if (!applied) throw new Error('connect_snapshot_recovery_failed');
+            this.telemetry.emit('connect_snapshot_recovery_succeeded', {
+                reason: 'delivery_unconfirmed',
+            });
+        } catch {
             this.store.setSyncStatus('OutOfSync');
+            this.telemetry.emit('connect_snapshot_recovery_failed', {
+                reason: 'delivery_unconfirmed',
+            });
+            throw new Error('connect_snapshot_recovery_failed');
         }
     }
 
@@ -145,21 +169,53 @@ export class ConnectHubService {
         );
         this.connection.onreconnecting(() => {
             this.stopHeartbeat();
+            this.playerState.pause();
             this.store.setTransportState('reconnecting');
+            this.telemetry.emit('connect_transport_reconnecting');
         });
         this.connection.onreconnected(() => {
             this.store.setTransportState('connected');
-            void this.restoreSession();
+            this.telemetry.emit('connect_transport_connected', { reconnected: true });
+            void this.restoreSession().catch(() => this.store.setSyncStatus('OutOfSync'));
         });
         this.connection.onclose(() => {
             this.stopHeartbeat();
+            this.playerState.pause();
             this.store.setTransportState('disconnected');
+            this.telemetry.emit('connect_transport_disconnected');
         });
     }
 
     private async restoreSession(): Promise<void> {
         await this.refreshSnapshot();
         await this.registerConnection();
+        // Registration establishes a new connection membership and may change ownership.
+        // Reconcile again before the media projection is allowed to act on Presence.
+        await this.refreshSnapshot();
+    }
+
+    private requestSnapshot(): Promise<boolean> {
+        if (this.snapshotPromise) return this.snapshotPromise;
+        if (!this.isConnected) return Promise.resolve(false);
+
+        this.snapshotPromise = this.invoke<ConnectSnapshotResponse>('GetSnapshot')
+            .then((snapshot) => {
+                if (snapshot.status === 'Applied') {
+                    return this.store.applySnapshot(snapshot);
+                }
+                this.store.setSyncStatus(
+                    snapshot.status === 'Unavailable' ? 'Unavailable' : 'OutOfSync',
+                );
+                return false;
+            })
+            .catch(() => {
+                this.store.setSyncStatus('OutOfSync');
+                return false;
+            })
+            .finally(() => {
+                this.snapshotPromise = null;
+            });
+        return this.snapshotPromise;
     }
 
     private startHeartbeat(): void {

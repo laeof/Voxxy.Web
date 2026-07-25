@@ -6,6 +6,7 @@ import {
     RepeatModeContract,
 } from '../transport/connect-transport.models';
 import { CommandIdService } from './command-id.service';
+import { ConnectTransportErrorMapper } from '../transport/connect-transport-error.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class ConnectCommandService {
@@ -13,6 +14,7 @@ export class ConnectCommandService {
         private readonly hub: ConnectHubService,
         private readonly ids: CommandIdService,
         private readonly store: ConnectStateStore,
+        private readonly errors: ConnectTransportErrorMapper,
     ) {}
 
     play(): Promise<ConnectCommandAck> {
@@ -70,6 +72,20 @@ export class ConnectCommandService {
                 await this.hub.refreshSnapshot();
             }
             return ack;
+        } catch (error: unknown) {
+            const mapped = this.errors.map(error);
+            if (mapped.kind !== 'DeliveryUnconfirmed') {
+                throw new Error(mapped.code);
+            }
+
+            // The authoritative mutation may already be committed. Never retry it with a new ID.
+            await this.hub.recoverFromUnconfirmedDelivery(commandId);
+            return {
+                commandId,
+                status: 'Duplicate',
+                errorCode: null,
+                outcome: null,
+            };
         } finally {
             this.store.removePending(commandId);
         }

@@ -5,5 +5,9 @@ export const locale = {
             ONLINE_DEVICES: 'Онлайн устройства',
             NO_DEVICES_FOUND: 'Устройства не найдены',
         },
+        PLAYER: {
+            CONNECT_WEBSOCKET_UNAVAILABLE:
+                'Синхронизация плеера недоступна: не удалось подключить WebSocket.',
+        },
     },
 };

@@ -1,4 +1,9 @@
-export type ConnectTransportState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
+export type ConnectTransportState =
+    | 'disconnected'
+    | 'connecting'
+    | 'connected'
+    | 'reconnecting'
+    | 'unavailable';
 export type ConnectSyncStatus =
     | 'Connected'
     | 'Reconnecting'
