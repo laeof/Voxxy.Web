@@ -1,5 +1,6 @@
 import { ConnectStateStore } from '../state/connect-state.store';
 import { ConnectEventApplierService } from './connect-event-applier.service';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 describe('ConnectEventApplierService', () => {
     it('VersionGap_AppliesNewerStateWithoutSnapshotRecovery', async () => {
@@ -7,8 +8,8 @@ describe('ConnectEventApplierService', () => {
         const applier = new ConnectEventApplierService(store);
         const recover = vi.fn().mockResolvedValue(undefined);
         applier.setSnapshotRecovery(recover);
-        applier.applyPlayerEvent({ commandId: crypto.randomUUID(), player: player(3) });
-        applier.applyPlayerEvent({ commandId: crypto.randomUUID(), player: player(5) });
+        applier.applyPlayerEvent({ commandId: createUuid(), player: player(3) });
+        applier.applyPlayerEvent({ commandId: createUuid(), player: player(5) });
 
         expect(store.value.player?.version).toBe(5);
         expect(recover).not.toHaveBeenCalled();
@@ -23,11 +24,11 @@ describe('ConnectEventApplierService', () => {
         );
 
         applier.applyPlayerPresenceEvent({
-            commandId: crypto.randomUUID(),
+            commandId: createUuid(),
             player: player(1),
             presence: {
                 devices: [],
-                activeDeviceId: crypto.randomUUID(),
+                activeDeviceId: createUuid(),
                 audioOwnerConnectionId: 'connection',
                 version: 1,
             },
@@ -43,12 +44,12 @@ describe('ConnectEventApplierService', () => {
         const recover = vi.fn().mockResolvedValue(undefined);
         applier.setSnapshotRecovery(recover);
         applier.applyPlayerQueueEvent({
-            commandId: crypto.randomUUID(),
+            commandId: createUuid(),
             player: player(2),
             queue: queue(2),
         });
         applier.applyPlayerQueueEvent({
-            commandId: crypto.randomUUID(),
+            commandId: createUuid(),
             player: player(3),
             queue: queue(1),
         });

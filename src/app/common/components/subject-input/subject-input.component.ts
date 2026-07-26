@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 @Component({
     selector: 'app-subject-input',
@@ -21,7 +22,7 @@ export class SubjectInputComponent implements ControlValueAccessor {
     @Input() mandatory: boolean = false;
     @Input() readonly: boolean = false;
     @Input() disabled: boolean = false;
-    @Input() id = `subject-input-${crypto.randomUUID()}`;
+    @Input() id = `subject-input-${createUuid()}`;
 
     value: string = '';
 

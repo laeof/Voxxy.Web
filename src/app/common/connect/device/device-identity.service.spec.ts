@@ -22,18 +22,16 @@ describe('DeviceIdentityService', () => {
     });
 
     it('DeviceId_UsesFallbackWhenRandomUuidUnavailable', () => {
-        const original = crypto.randomUUID;
-        Object.defineProperty(crypto, 'randomUUID', { configurable: true, value: undefined });
-        try {
-            expect(new DeviceIdentityService().deviceId).toMatch(
-                /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-            );
-        } finally {
-            Object.defineProperty(crypto, 'randomUUID', {
-                configurable: true,
-                value: original,
-            });
-        }
+        vi.stubGlobal('crypto', {
+            getRandomValues: (bytes: Uint8Array) => {
+                bytes.forEach((_, index) => (bytes[index] = index));
+                return bytes;
+            },
+        });
+
+        expect(new DeviceIdentityService().deviceId).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+        );
     });
 
     it('Reconnect_ReusesSameDeviceId', () => {

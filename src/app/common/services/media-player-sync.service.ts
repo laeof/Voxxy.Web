@@ -25,6 +25,7 @@ import {
     isSamePlaybackContext,
     queueItemForDisplayedTrack,
 } from '@common/connect/state/playback-context';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerSyncService implements OnDestroy {
@@ -148,7 +149,7 @@ export class MediaPlayerSyncService implements OnDestroy {
             sourceId,
             sourceType,
             tracks.map((track) => ({
-                queueItemId: crypto.randomUUID(),
+                queueItemId: createUuid(),
                 trackId: track.id,
             })),
             startIndex ?? 0,

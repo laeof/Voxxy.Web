@@ -3,6 +3,7 @@ import { Component, ElementRef, EventEmitter, forwardRef, Input, Output, ViewChi
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 export interface AudioFileItem {
     id: string;
@@ -166,7 +167,7 @@ export class FileDragDropComponent implements ControlValueAccessor {
                 const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
 
                 resolve({
-                    id: crypto.randomUUID(),
+                    id: createUuid(),
                     file,
                     name: file.name,
                     size: file.size,
