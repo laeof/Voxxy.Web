@@ -131,6 +131,18 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         expect(displayedPosition).toBe(31.25);
     });
 
+    it('DisplayedProgress_NeverExceedsTrackDuration', () => {
+        const harness = createHarness();
+        let displayedPosition = -1;
+        harness.service.viewPosition$.subscribe((value) => (displayedPosition = value));
+        harness.store.applySnapshot(snapshot());
+        harness.trackService.entities.next([track()]);
+
+        harness.state.setPosition(181);
+
+        expect(displayedPosition).toBe(180);
+    });
+
     it('Play_SelectsLocalDeviceBeforePlaying_WhenNoActiveDeviceExists', async () => {
         const harness = createHarness();
         harness.store.applySnapshot(

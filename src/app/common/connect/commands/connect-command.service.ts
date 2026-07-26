@@ -53,11 +53,24 @@ export class ConnectCommandService {
     next(): Promise<ConnectCommandAck> {
         return this.command('NextQueueItem');
     }
+    completeCurrentTrack(
+        expectedQueueItemId: string,
+        completedPositionMs: number,
+    ): Promise<ConnectCommandAck> {
+        return this.command('CompleteCurrentTrack', {
+            expectedQueueItemId,
+            completedPositionMs,
+        });
+    }
     previous(): Promise<ConnectCommandAck> {
         return this.command('PreviousQueueItem');
     }
     selectDevice(deviceId: string): Promise<ConnectCommandAck> {
         return this.command('SelectActiveDevice', { deviceId });
+    }
+
+    recoverSnapshot(): Promise<void> {
+        return this.hub.refreshSnapshot();
     }
 
     private async command(

@@ -6,7 +6,15 @@ import { RepeatModeContract } from '@common/connect/transport/connect-transport.
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
 import { TrackService } from '@features/track/services/track.service';
-import { Subject, distinctUntilChanged, filter, map, switchMap, takeUntil } from 'rxjs';
+import {
+    Subject,
+    combineLatest,
+    distinctUntilChanged,
+    filter,
+    map,
+    switchMap,
+    takeUntil,
+} from 'rxjs';
 import { MediaPlayerStateService } from './media-player-state.service';
 import { PlayerHubService } from './player-hub.service';
 import { ConnectCommandCoalescer } from '@common/connect/commands/connect-command-coalescer.service';
@@ -30,12 +38,17 @@ export class MediaPlayerSyncService implements OnDestroy {
         private readonly coalescer: ConnectCommandCoalescer,
         trackService: TrackService,
     ) {
-        this.viewPosition$ = this.state.audioOwnerObs$.pipe(
-            switchMap((isAudioOwner) =>
-                isAudioOwner
-                    ? this.state.positionObs$
-                    : this.connectStore.positionMs$.pipe(map((position) => position / 1000)),
+        this.viewPosition$ = combineLatest([
+            this.state.audioOwnerObs$.pipe(
+                switchMap((isAudioOwner) =>
+                    isAudioOwner
+                        ? this.state.positionObs$
+                        : this.connectStore.positionMs$.pipe(map((position) => position / 1000)),
+                ),
             ),
+            this.state.currentTrackObs$,
+        ]).pipe(
+            map(([position, track]) => Math.min(position, track?.duration ?? position)),
             distinctUntilChanged(),
         );
         trackService.onEntitiesChanged$
@@ -171,6 +184,7 @@ export class MediaPlayerSyncService implements OnDestroy {
             currentTrack,
             repeat: repeat[queue.repeatMode],
             isAudioOwner,
+            currentQueueItemId: queue.currentQueueItemId,
         });
         this.lastPositionAnchor = positionAnchor;
         this.lastTrackId = authoritativeTrackId;

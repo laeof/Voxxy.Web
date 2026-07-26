@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 import { Subject, distinctUntilChanged, finalize, takeUntil } from 'rxjs';
 import { Track } from '../../features/track/models/track';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { environment } from '../../../environments/environment';
 import { UrlHelper } from '../helpers/url.helper';
 import { ApiRoutes } from '../constants/api.routes.constant';
+import { ConnectCommandService } from '@common/connect/commands/connect-command.service';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerEngineService implements OnDestroy {
@@ -14,6 +15,9 @@ export class MediaPlayerEngineService implements OnDestroy {
     private loadingKey: string | null = null;
     private loadedKey: string | null = null;
     private isAudioOwner: boolean = false;
+    private ending = false;
+    private completedQueueItemId: string | null = null;
+    private readonly audioEnded = () => void this.handleEnded();
     private readonly retryPlayback = () => {
         if (this.state.playing && this.isAudioOwner && this.audio.paused) {
             this.tryPlay('user-interaction-retry');
@@ -23,6 +27,7 @@ export class MediaPlayerEngineService implements OnDestroy {
     constructor(
         private readonly state: MediaPlayerStateService,
         private readonly http: HttpClient,
+        private readonly injector: Injector,
     ) {
         this.bindState();
         this.bindAudio();
@@ -96,6 +101,12 @@ export class MediaPlayerEngineService implements OnDestroy {
         this.state.positionObs$.pipe(takeUntil(this.destroy$)).subscribe((p) => {
             if (Math.abs(this.audio.currentTime - p) > 1) {
                 this.audio.currentTime = p;
+            }
+            if (p < 1 && this.completedQueueItemId !== null) {
+                this.completedQueueItemId = null;
+                if (this.state.playing && this.isAudioOwner && this.audio.paused) {
+                    this.tryPlay('authoritative-track-repeat');
+                }
             }
         });
 
@@ -218,9 +229,44 @@ export class MediaPlayerEngineService implements OnDestroy {
                 snapshot: this.engineSnapshot(),
             });
         });
+        this.audio.addEventListener('ended', this.audioEnded);
+    }
 
-        // Playback completion is a user-agent observation, not authoritative state. The Connect
-        // coordinator advances the queue through an explicit command owned by the UI workflow.
+    private async handleEnded(): Promise<void> {
+        const queueItemId = this.state.currentQueueItemId;
+        if (
+            this.ending ||
+            !this.isAudioOwner ||
+            !queueItemId ||
+            this.completedQueueItemId === queueItemId
+        ) {
+            return;
+        }
+
+        const durationSec = Number.isFinite(this.audio.duration)
+            ? this.audio.duration
+            : (this.state.currentTrack?.duration ?? this.audio.currentTime);
+        const completedPositionSec = Math.max(0, durationSec);
+        this.state.setPosition(completedPositionSec);
+        this.ending = true;
+        this.completedQueueItemId = queueItemId;
+
+        try {
+            const commands = this.injector.get(ConnectCommandService);
+            const ack = await commands.completeCurrentTrack(
+                queueItemId,
+                Math.round(completedPositionSec * 1000),
+            );
+            if (!['Applied', 'NoChanges', 'Duplicate'].includes(ack.status)) {
+                await commands.recoverSnapshot();
+                this.completedQueueItemId = null;
+            }
+        } catch {
+            await this.injector.get(ConnectCommandService).recoverSnapshot();
+            this.completedQueueItemId = null;
+        } finally {
+            this.ending = false;
+        }
     }
 
     private log(message: string, details: Record<string, unknown> = {}): void {
@@ -258,6 +304,7 @@ export class MediaPlayerEngineService implements OnDestroy {
 
     ngOnDestroy() {
         globalThis.removeEventListener?.('pointerdown', this.retryPlayback);
+        this.audio.removeEventListener('ended', this.audioEnded);
         this.destroy$.next();
         this.destroy$.complete();
     }

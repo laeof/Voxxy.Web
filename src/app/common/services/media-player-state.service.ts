@@ -19,6 +19,7 @@ export class MediaPlayerStateService {
 
     private readonly audioOwner$ = new BehaviorSubject<boolean>(false);
     private readonly playbackIntent$ = new Subject<void>();
+    private authoritativeQueueItemId: string | null = null;
 
     readonly playingObs$ = this.playing$.asObservable();
     readonly positionObs$ = this.position$.asObservable();
@@ -58,6 +59,10 @@ export class MediaPlayerStateService {
         return this.repeat$.value;
     }
 
+    get currentQueueItemId(): string | null {
+        return this.authoritativeQueueItemId;
+    }
+
     requestPlaybackFromUserGesture(): void {
         this.playbackIntent$.next();
     }
@@ -71,6 +76,7 @@ export class MediaPlayerStateService {
         currentTrack: Track | null;
         repeat: RepeatMode;
         isAudioOwner: boolean;
+        currentQueueItemId?: string | null;
     }): void {
         this.queue$.next(value.queue);
         this.index$.next(value.index);
@@ -80,6 +86,9 @@ export class MediaPlayerStateService {
         }
         this.volume$.next(value.volumePercent);
         this.repeat$.next(value.repeat);
+        if (value.currentQueueItemId !== undefined) {
+            this.authoritativeQueueItemId = value.currentQueueItemId;
+        }
         this.audioOwner$.next(value.isAudioOwner);
         this.playing$.next(value.isPlaying);
     }
