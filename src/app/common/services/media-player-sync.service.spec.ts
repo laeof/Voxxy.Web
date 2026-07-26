@@ -233,7 +233,7 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         await vi.waitFor(() => expect(harness.commands.play).toHaveBeenCalledOnce());
     });
 
-    it('PlayContext_DifferentContext_StartsAtomicContextCommand', async () => {
+    it('PlayContext_DifferentContext_StartsFirstTrackExplicitly', async () => {
         const harness = createHarness();
         harness.store.applySnapshot(snapshot());
 
@@ -246,7 +246,59 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
             'album-2',
             'Album',
             [expect.objectContaining({ trackId: 'track-1' })],
-            undefined,
+            0,
+        );
+    });
+
+    it('PlayContext_LibraryAndManagerAlbumOrdersProduceSameCommandItems', async () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+        const first = { ...track('track-1'), albumOrder: 1 };
+        const second = { ...track('track-2'), albumOrder: 2 };
+
+        await harness.service.playContext('album-2', 'Album', [second, first]);
+        await harness.service.playContext('album-2', 'Album', [first, second]);
+
+        const expectedItems = [
+            expect.objectContaining({ trackId: 'track-1' }),
+            expect.objectContaining({ trackId: 'track-2' }),
+        ];
+        expect(harness.commands.startPlaybackContext).toHaveBeenNthCalledWith(
+            1,
+            'album-2',
+            'Album',
+            expectedItems,
+            0,
+        );
+        expect(harness.commands.startPlaybackContext).toHaveBeenNthCalledWith(
+            2,
+            'album-2',
+            'Album',
+            expectedItems,
+            0,
+        );
+    });
+
+    it('PlayContextFromDisplayedTrack_DifferentContext_PreservesSecondTrackIndex', async () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+        const tracks = [track('track-1'), track('track-2')];
+
+        await harness.service.playContextFromDisplayedTrack(
+            'album-2',
+            'Album',
+            tracks,
+            1,
+        );
+
+        expect(harness.commands.startPlaybackContext).toHaveBeenCalledWith(
+            'album-2',
+            'Album',
+            [
+                expect.objectContaining({ trackId: 'track-1' }),
+                expect.objectContaining({ trackId: 'track-2' }),
+            ],
+            1,
         );
     });
 
@@ -279,7 +331,12 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         const harness = createHarness();
         harness.store.applySnapshot(snapshot());
 
-        harness.service.playContext('playlist-1', 'Playlist', [track()], 0);
+        harness.service.playContextFromDisplayedTrack(
+            'playlist-1',
+            'Playlist',
+            [track()],
+            0,
+        );
 
         await vi.waitFor(() =>
             expect(harness.commands.selectQueueItem).toHaveBeenCalledWith('queue-1'),
@@ -310,7 +367,7 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         });
         const displayed = [track('track-2'), track('track-1')];
 
-        await harness.service.playContext(
+        await harness.service.playContextFromDisplayedTrack(
             'playlist-1',
             'Playlist',
             displayed,
@@ -340,7 +397,7 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
             'album-2',
             'Album',
             [expect.objectContaining({ trackId: 'track-1' })],
-            undefined,
+            0,
         );
         expect(harness.commands.play).not.toHaveBeenCalled();
     });

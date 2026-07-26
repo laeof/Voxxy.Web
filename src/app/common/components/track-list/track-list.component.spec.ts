@@ -67,7 +67,7 @@ describe('TrackListComponent playback state', () => {
         const sync = {
             pause: vi.fn(),
             play: vi.fn(),
-            playContext: vi.fn().mockResolvedValue(undefined),
+            playContextFromDisplayedTrack: vi.fn().mockResolvedValue(undefined),
         };
         const component = createComponent(store, sync);
         component.tracks = [track('track-1'), track('track-2')];
@@ -77,7 +77,7 @@ describe('TrackListComponent playback state', () => {
 
         component.togglePlayButton(component.tracks[0]);
         expect(sync.pause).toHaveBeenCalledOnce();
-        expect(sync.playContext).not.toHaveBeenCalled();
+        expect(sync.playContextFromDisplayedTrack).not.toHaveBeenCalled();
 
         store.applyPlayer({
             ...snapshot('context-1', 'Album', false, 'queue-1').player!,
@@ -92,7 +92,7 @@ describe('TrackListComponent playback state', () => {
         const sync = {
             pause: vi.fn(),
             play: vi.fn(),
-            playContext: vi.fn().mockResolvedValue(undefined),
+            playContextFromDisplayedTrack: vi.fn().mockResolvedValue(undefined),
         };
         const component = createComponent(store, sync);
         component.tracks = [track('track-1'), track('track-2')];
@@ -101,7 +101,7 @@ describe('TrackListComponent playback state', () => {
         store.applySnapshot(snapshot('context-1', 'Album', true, 'queue-1'));
 
         component.togglePlayButton(component.tracks[1]);
-        expect(sync.playContext).toHaveBeenCalledWith(
+        expect(sync.playContextFromDisplayedTrack).toHaveBeenCalledWith(
             'context-1',
             'Album',
             component.tracks,
@@ -111,7 +111,7 @@ describe('TrackListComponent playback state', () => {
 
         component.sourceId = 'context-2';
         component.togglePlayButton(component.tracks[0]);
-        expect(sync.playContext).toHaveBeenLastCalledWith(
+        expect(sync.playContextFromDisplayedTrack).toHaveBeenLastCalledWith(
             'context-2',
             'Album',
             component.tracks,
@@ -122,7 +122,9 @@ describe('TrackListComponent playback state', () => {
 
 function createComponent(
     store: ConnectStateStore,
-    sync: object = { playContext: vi.fn().mockResolvedValue(undefined) },
+    sync: object = {
+        playContextFromDisplayedTrack: vi.fn().mockResolvedValue(undefined),
+    },
 ): TrackListComponent {
     const entities = new BehaviorSubject([]);
     const selected = new BehaviorSubject<string | null>(null);

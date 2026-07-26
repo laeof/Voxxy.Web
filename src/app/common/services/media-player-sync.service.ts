@@ -86,10 +86,33 @@ export class MediaPlayerSyncService implements OnDestroy {
         sourceId: string,
         sourceType: PlaybackSourceTypeContract,
         tracks: readonly Track[],
-        startIndex?: number,
     ): Promise<void> {
         if (tracks.length === 0) return Promise.resolve();
-        return this.startContext(sourceId, sourceType, tracks, startIndex);
+        const orderedTracks =
+            sourceType === 'Album'
+                ? [...tracks].sort(
+                      (left, right) =>
+                          (left.albumOrder ?? Number.MAX_SAFE_INTEGER) -
+                              (right.albumOrder ?? Number.MAX_SAFE_INTEGER) ||
+                          left.id.localeCompare(right.id),
+                  )
+                : tracks;
+        return this.startContext(sourceId, sourceType, orderedTracks, undefined);
+    }
+
+    playContextFromDisplayedTrack(
+        sourceId: string,
+        sourceType: PlaybackSourceTypeContract,
+        tracks: readonly Track[],
+        displayedTrackIndex: number,
+    ): Promise<void> {
+        if (tracks.length === 0) return Promise.resolve();
+        return this.startContext(
+            sourceId,
+            sourceType,
+            tracks,
+            displayedTrackIndex,
+        );
     }
 
     private async startContext(
@@ -128,7 +151,7 @@ export class MediaPlayerSyncService implements OnDestroy {
                 queueItemId: crypto.randomUUID(),
                 trackId: track.id,
             })),
-            startIndex,
+            startIndex ?? 0,
         );
     }
 

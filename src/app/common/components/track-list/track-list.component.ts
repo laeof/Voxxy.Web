@@ -183,7 +183,12 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
         }
 
         void this.mediaPlayerSyncService
-            .playContext(this.sourceId, this.sourceType, this.tracks, startIndex)
+            .playContextFromDisplayedTrack(
+                this.sourceId,
+                this.sourceType,
+                this.tracks,
+                startIndex,
+            )
             .catch((error: unknown) => {
                 console.error('[Connect v2] track selection command failed', {
                     sourceId: this.sourceId,
