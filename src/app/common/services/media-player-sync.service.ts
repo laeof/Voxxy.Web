@@ -2,7 +2,10 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { ConnectCommandService } from '@common/connect/commands/connect-command.service';
 import { DeviceIdentityService } from '@common/connect/device/device-identity.service';
 import { ConnectStateStore } from '@common/connect/state/connect-state.store';
-import { RepeatModeContract } from '@common/connect/transport/connect-transport.models';
+import {
+    PlaybackSourceTypeContract,
+    RepeatModeContract,
+} from '@common/connect/transport/connect-transport.models';
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
 import { TrackService } from '@features/track/services/track.service';
@@ -18,6 +21,10 @@ import {
 import { MediaPlayerStateService } from './media-player-state.service';
 import { PlayerHubService } from './player-hub.service';
 import { ConnectCommandCoalescer } from '@common/connect/commands/connect-command-coalescer.service';
+import {
+    isSamePlaybackContext,
+    queueItemForDisplayedTrack,
+} from '@common/connect/state/playback-context';
 
 @Injectable({ providedIn: 'root' })
 export class MediaPlayerSyncService implements OnDestroy {
@@ -72,10 +79,57 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     play(trackId?: string, positionMs?: number): void {
-        if (!trackId || this.state.currentTrack?.id === trackId) {
-            this.state.requestPlaybackFromUserGesture();
-        }
         void this.startPlayback(trackId, positionMs);
+    }
+
+    playContext(
+        sourceId: string,
+        sourceType: PlaybackSourceTypeContract,
+        tracks: readonly Track[],
+        startIndex?: number,
+    ): Promise<void> {
+        if (tracks.length === 0) return Promise.resolve();
+        return this.startContext(sourceId, sourceType, tracks, startIndex);
+    }
+
+    private async startContext(
+        sourceId: string,
+        sourceType: PlaybackSourceTypeContract,
+        tracks: readonly Track[],
+        startIndex?: number,
+    ): Promise<void> {
+        const queue = this.connectStore.value.queue;
+        const isCurrentContext = isSamePlaybackContext(queue, { sourceId, sourceType });
+        if (isCurrentContext && queue) {
+            if (startIndex !== undefined) {
+                const queueItem = queueItemForDisplayedTrack(
+                    queue,
+                    tracks,
+                    startIndex,
+                );
+                if (queueItem) {
+                    await this.commands.selectQueueItem(queueItem.queueItemId);
+                }
+                return;
+            }
+            const player = this.connectStore.value.player;
+            if (player?.isPlaying) {
+                await this.commands.pause();
+            } else {
+                await this.commands.play();
+            }
+            return;
+        }
+
+        await this.commands.startPlaybackContext(
+            sourceId,
+            sourceType,
+            tracks.map((track) => ({
+                queueItemId: crypto.randomUUID(),
+                trackId: track.id,
+            })),
+            startIndex,
+        );
     }
 
     private async startPlayback(trackId?: string, positionMs?: number): Promise<void> {

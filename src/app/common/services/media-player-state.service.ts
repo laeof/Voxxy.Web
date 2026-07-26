@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ClientPlayerState } from '@common/entities/PlayerState';
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -18,7 +18,6 @@ export class MediaPlayerStateService {
     private readonly repeat$ = new BehaviorSubject<RepeatMode>(RepeatMode.None);
 
     private readonly audioOwner$ = new BehaviorSubject<boolean>(false);
-    private readonly playbackIntent$ = new Subject<void>();
     private authoritativeQueueItemId: string | null = null;
 
     readonly playingObs$ = this.playing$.asObservable();
@@ -29,7 +28,6 @@ export class MediaPlayerStateService {
     readonly currentTrackObs$ = this.currentTrack$.asObservable();
     readonly repeatObs$ = this.repeat$.asObservable();
     readonly audioOwnerObs$ = this.audioOwner$.asObservable();
-    readonly playbackIntentObs$ = this.playbackIntent$.asObservable();
 
     get playing(): boolean {
         return this.playing$.value;
@@ -61,10 +59,6 @@ export class MediaPlayerStateService {
 
     get currentQueueItemId(): string | null {
         return this.authoritativeQueueItemId;
-    }
-
-    requestPlaybackFromUserGesture(): void {
-        this.playbackIntent$.next();
     }
 
     applyAuthoritativeState(value: {

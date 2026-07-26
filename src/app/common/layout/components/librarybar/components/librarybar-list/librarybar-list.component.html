@@ -1,29 +1,23 @@
 <mat-nav-list>
-    @for (item of dataSource$ | async; track item.id) {
+    @for (viewModel of itemViewModels$ | async; track viewModel.item.id) {
+        @let item = viewModel.item;
         <button
             class="item-card wrapped-icon-hover"
             mat-list-item
             (click)="navigate(item)"
             [ngClass]="{
                 active: (this.libraryBarService.onEntitySelected$ | async) === item.id,
-                playing:
-                    (this.mediaPlayerStateService.currentTrackObs$ | async)?.fromPlaylist ===
-                    item.id,
+                playing: viewModel.isCurrentContext,
             }"
         >
             <div class="image-wrapper">
                 <div
                     class="play-overlay"
-                    (click)="togglePlayButton(item)"
-                    (keydown.enter)="togglePlayButton(item)"
+                    (click)="togglePlayButton($event, item)"
+                    (keydown.enter)="togglePlayButton($event, item)"
                     [ngClass]="{
-                        playing:
-                            (this.mediaPlayerStateService.currentTrackObs$ | async)
-                                ?.fromPlaylist === item.id,
-                        paused:
-                            (this.mediaPlayerStateService.currentTrackObs$ | async)
-                                ?.fromPlaylist === item.id &&
-                            !(this.mediaPlayerStateService.playingObs$ | async),
+                        playing: viewModel.showPause,
+                        paused: viewModel.isCurrentContext && !viewModel.showPause,
                     }"
                 >
                     <mat-icon class="pause hover-scale" svgIcon="pause"></mat-icon>

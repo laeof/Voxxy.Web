@@ -18,6 +18,7 @@
         manager-action-button
         [trackList]="playlist?.tracks"
         [trackListId]="playlist?.id"
+        sourceType="Playlist"
     ></action-play-button>
     <action-shuffle-button manager-action-button></action-shuffle-button>
     @if (playlist?.playlistType != 5) {

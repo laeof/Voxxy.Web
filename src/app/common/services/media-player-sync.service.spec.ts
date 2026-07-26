@@ -23,7 +23,7 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         expect(harness.state.currentTrack?.id).toBe('track-1');
         expect(harness.state.volume).toBe(73);
         expect(harness.state.playing).toBe(true);
-        expect(harness.state.position).toBe(12);
+        expect(harness.state.position).toBeCloseTo(12, 2);
         expect(isAudioOwner).toBe(true);
     });
 
@@ -232,6 +232,143 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
 
         await vi.waitFor(() => expect(harness.commands.play).toHaveBeenCalledOnce());
     });
+
+    it('PlayContext_DifferentContext_StartsAtomicContextCommand', async () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+
+        harness.service.playContext('album-2', 'Album', [track()]);
+
+        await vi.waitFor(() =>
+            expect(harness.commands.startPlaybackContext).toHaveBeenCalledOnce(),
+        );
+        expect(harness.commands.startPlaybackContext).toHaveBeenCalledWith(
+            'album-2',
+            'Album',
+            [expect.objectContaining({ trackId: 'track-1' })],
+            undefined,
+        );
+    });
+
+    it('PlayContext_SamePlayingContext_PausesPlayer', async () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+
+        harness.service.playContext('playlist-1', 'Playlist', [track()]);
+        await vi.waitFor(() => expect(harness.commands.pause).toHaveBeenCalledOnce());
+
+        expect(harness.commands.startPlaybackContext).not.toHaveBeenCalled();
+        expect(harness.commands.play).not.toHaveBeenCalled();
+    });
+
+    it('PlayContext_SamePausedContext_OnlyResumesPlayer', async () => {
+        const harness = createHarness();
+        const current = snapshot();
+        harness.store.applySnapshot({
+            ...current,
+            player: { ...current.player!, isPlaying: false },
+        });
+
+        harness.service.playContext('playlist-1', 'Playlist', [track()]);
+
+        await vi.waitFor(() => expect(harness.commands.play).toHaveBeenCalledOnce());
+        expect(harness.commands.startPlaybackContext).not.toHaveBeenCalled();
+    });
+
+    it('PlayContext_TrackInSameContext_SelectsExistingQueueItem', async () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+
+        harness.service.playContext('playlist-1', 'Playlist', [track()], 0);
+
+        await vi.waitFor(() =>
+            expect(harness.commands.selectQueueItem).toHaveBeenCalledWith('queue-1'),
+        );
+        expect(harness.commands.startPlaybackContext).not.toHaveBeenCalled();
+    });
+
+    it('PlayContext_ReorderedDisplay_SelectsQueueItemByTrackIdentity', async () => {
+        const harness = createHarness();
+        const current = snapshot();
+        harness.store.applySnapshot({
+            ...current,
+            queue: {
+                ...current.queue!,
+                items: [
+                    {
+                        queueItemId: 'queue-1',
+                        trackId: 'track-1',
+                        canonicalOrder: 0,
+                    },
+                    {
+                        queueItemId: 'queue-2',
+                        trackId: 'track-2',
+                        canonicalOrder: 1,
+                    },
+                ],
+            },
+        });
+        const displayed = [track('track-2'), track('track-1')];
+
+        await harness.service.playContext(
+            'playlist-1',
+            'Playlist',
+            displayed,
+            0,
+        );
+
+        expect(harness.commands.selectQueueItem).toHaveBeenCalledWith('queue-2');
+    });
+
+    it('PlayContext_PauseThenStartDifferentContext_UsesNextAtomicCommand', async () => {
+        const harness = createHarness();
+        const current = snapshot();
+        harness.store.applySnapshot(current);
+
+        await harness.service.playContext('playlist-1', 'Playlist', [track()]);
+        expect(harness.commands.pause).toHaveBeenCalledOnce();
+
+        harness.store.applyPlayer({
+            ...current.player!,
+            isPlaying: false,
+            version: 2,
+        });
+        await harness.service.playContext('album-2', 'Album', [track()]);
+
+        expect(harness.commands.startPlaybackContext).toHaveBeenCalledOnce();
+        expect(harness.commands.startPlaybackContext).toHaveBeenCalledWith(
+            'album-2',
+            'Album',
+            [expect.objectContaining({ trackId: 'track-1' })],
+            undefined,
+        );
+        expect(harness.commands.play).not.toHaveBeenCalled();
+    });
+
+    it('PlayContext_FailedDifferentContext_DoesNotMutateAuthoritativeProjection', async () => {
+        const harness = createHarness();
+        const paused = snapshot({
+            player: {
+                ...snapshot().player!,
+                isPlaying: false,
+                version: 2,
+            },
+        });
+        harness.store.applySnapshot(paused);
+        harness.trackService.entities.next([track()]);
+        harness.commands.startPlaybackContext.mockRejectedValueOnce(
+            new Error('connect_server_rejected'),
+        );
+
+        await expect(
+            harness.service.playContext('album-2', 'Album', [track('track-2')]),
+        ).rejects.toThrow('connect_server_rejected');
+
+        expect(harness.store.value.player).toEqual(paused.player);
+        expect(harness.store.value.queue).toEqual(paused.queue);
+        expect(harness.state.playing).toBe(false);
+        expect(harness.state.currentTrack?.id).toBe('track-1');
+    });
 });
 
 function createHarness() {
@@ -253,6 +390,7 @@ function createHarness() {
     };
     const commands = {
         play: vi.fn(async () => applied),
+        pause: vi.fn(async () => applied),
         selectDevice: vi.fn(async () => applied),
         addQueueItem: vi.fn(async () => ({
             ...applied,
@@ -260,6 +398,7 @@ function createHarness() {
         })),
         selectQueueItem: vi.fn(async () => applied),
         changePosition: vi.fn(async () => applied),
+        startPlaybackContext: vi.fn(async () => applied),
     };
     const service = new MediaPlayerSyncService(
         state,
@@ -291,6 +430,8 @@ function snapshot(
             repeatMode: 'None',
             isShuffled: false,
             version: 1,
+            sourceId: 'playlist-1',
+            sourceType: 'Playlist',
         },
         presence: presence(1, 'connection-1'),
         serverTime: '2026-01-01T12:00:00.000Z',
@@ -315,9 +456,9 @@ function presence(version: number, owner: string): PresenceStateDto {
     };
 }
 
-function track(): Track {
+function track(id = 'track-1'): Track {
     return {
-        id: 'track-1',
+        id,
         name: 'Track',
         audioKey: 'audio-key',
         duration: 180,

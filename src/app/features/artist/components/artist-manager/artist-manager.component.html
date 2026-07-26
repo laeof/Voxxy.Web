@@ -12,7 +12,8 @@
     <action-play-button
         manager-action-button
         [trackList]="(entity$ | async)?.tracks"
-        [trackListId]="(entity$ | async)?.id"
+        [trackListId]="artist?.id"
+        sourceType="Search"
     ></action-play-button>
     <action-shuffle-button manager-action-button></action-shuffle-button>
     <action-follow-button [followeeId]="artist?.id" [type]="4" manager-action-button></action-follow-button>

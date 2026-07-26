@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import {
     HubConnection,
     HubConnectionState,
@@ -23,12 +23,14 @@ import { ConnectClientTelemetry } from './connect-client-telemetry.service';
 import { ConnectHubConnectionFactory } from './connect-hub-connection.factory';
 import { ConnectTransportErrorMapper } from './connect-transport-error.mapper';
 import { ConnectTiming } from './connect-timing.service';
+import { Subject, filter, firstValueFrom, take, takeUntil, timeout } from 'rxjs';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const INITIAL_RECONNECT_DELAY_MS = 2_000;
+const READY_TIMEOUT_MS = 15_000;
 
 @Injectable({ providedIn: 'root' })
-export class ConnectHubService {
+export class ConnectHubService implements OnDestroy {
     private readonly connection: HubConnection;
     private connectPromise: Promise<void> | null = null;
     private heartbeatId: ReturnType<typeof setTimeout> | null = null;
@@ -37,6 +39,9 @@ export class ConnectHubService {
     private snapshotPromise: Promise<boolean> | null = null;
     private allowInitialReconnect = true;
     private registeredConnectionId: string | null = null;
+    private restorePromise: Promise<void> | null = null;
+    private readonly destroy$ = new Subject<void>();
+    private disposed = false;
 
     constructor(
         private readonly store: ConnectStateStore,
@@ -67,13 +72,46 @@ export class ConnectHubService {
         return this.connection.state === HubConnectionState.Connected;
     }
 
+    get isReady(): boolean {
+        return this.isConnected && this.store.transportState === 'ready';
+    }
+
     get connectionId(): string | null {
         return this.registeredConnectionId;
     }
 
+    get diagnosticState() {
+        const { player, queue, presence } = this.store.value;
+        return {
+            connectionExists: true,
+            connectionState: this.connection.state,
+            signalRConnectionId: this.connection.connectionId,
+            lifecycleState: this.store.transportState,
+            isReady: this.isReady,
+            isRegistered: this.registeredConnectionId !== null,
+            snapshotApplied: player !== null && queue !== null && presence !== null,
+            recoveryInProgress: this.restorePromise !== null || this.snapshotPromise !== null,
+            registeredConnectionId: this.registeredConnectionId,
+            disposed: this.disposed,
+            pendingCommandCount: this.store.pendingCommandCount,
+            playerIsPlaying: player?.isPlaying ?? null,
+            playerVersion: player?.version ?? null,
+            queueSourceId: queue?.sourceId ?? null,
+            queueSourceType: queue?.sourceType ?? null,
+            queueCurrentQueueItemId: queue?.currentQueueItemId ?? null,
+            queueCurrentTrackId:
+                queue?.items.find(
+                    (item) => item.queueItemId === queue.currentQueueItemId,
+                )?.trackId ?? null,
+            queueVersion: queue?.version ?? null,
+            unavailableReason: this.getUnavailableReason(),
+        };
+    }
+
     connect(): Promise<void> {
-        if (this.isConnected) return Promise.resolve();
         if (this.connectPromise) return this.connectPromise;
+        if (this.isReady) return Promise.resolve();
+        if (this.isConnected) return this.restoreSession();
 
         this.allowInitialReconnect = true;
         this.clearInitialReconnect();
@@ -84,7 +122,6 @@ export class ConnectHubService {
                 this.registeredConnectionId = null;
                 this.clearInitialReconnect();
                 this.store.setTransportError(null);
-                this.store.setTransportState('connected');
                 this.telemetry.emit('connect_transport_connected');
                 await this.restoreSession();
             })
@@ -104,6 +141,51 @@ export class ConnectHubService {
                 this.connectPromise = null;
             });
         return this.connectPromise;
+    }
+
+    async waitUntilReady(): Promise<void> {
+        if (this.disposed) throw new Error('connect_disposed');
+        if (this.isReady) return;
+
+        const state = this.store.transportState;
+        if (state === 'disconnected') {
+            await this.connect();
+            return;
+        }
+        if (state === 'unavailable') {
+            if (this.isConnected) {
+                await this.restoreSession();
+                if (this.isReady) return;
+            }
+            throw new Error(this.store.transportError ?? 'connect_server_unavailable');
+        }
+
+        const terminal = await firstValueFrom(
+            this.store.transportState$.pipe(
+                filter((value) =>
+                    value === 'ready' ||
+                    value === 'disconnected' ||
+                    value === 'unavailable',
+                ),
+                take(1),
+                takeUntil(this.destroy$),
+                timeout(READY_TIMEOUT_MS),
+            ),
+        ).catch((error: unknown) => {
+            if (this.disposed) throw new Error('connect_disposed');
+            if (error instanceof Error && error.name === 'TimeoutError') {
+                throw new Error('connect_server_unavailable');
+            }
+            throw error;
+        });
+        if (terminal !== 'ready') {
+            throw new Error(
+                this.store.transportError ??
+                    (terminal === 'unavailable'
+                        ? 'connect_server_unavailable'
+                        : 'connect_transport_disconnected'),
+            );
+        }
     }
 
     invoke<T>(method: string, payload?: unknown): Promise<T> {
@@ -199,9 +281,11 @@ export class ConnectHubService {
             this.telemetry.emit('connect_transport_reconnecting');
         });
         this.connection.onreconnected(() => {
-            this.store.setTransportState('connected');
             this.telemetry.emit('connect_transport_connected', { reconnected: true });
-            void this.restoreSession().catch(() => this.store.setSyncStatus('OutOfSync'));
+            void this.restoreSession().catch(() => {
+                this.store.setSyncStatus('OutOfSync');
+                this.store.setTransportState('unavailable');
+            });
         });
         this.connection.onclose(() => {
             this.registeredConnectionId = null;
@@ -231,11 +315,38 @@ export class ConnectHubService {
     }
 
     private async restoreSession(): Promise<void> {
-        await this.refreshSnapshot();
-        await this.registerConnection();
-        // Registration establishes a new connection membership and may change ownership.
-        // Reconcile again before the media projection is allowed to act on Presence.
-        await this.refreshSnapshot();
+        if (this.restorePromise) return this.restorePromise;
+        this.restorePromise = (async () => {
+            this.store.setTransportState('recovering');
+            if (!(await this.requestSnapshot())) {
+                throw new Error('connect_snapshot_recovery_failed');
+            }
+            this.store.setTransportState('registering');
+            await this.registerConnection();
+            // Registration establishes a new connection membership and may change ownership.
+            // Reconcile again before commands or media projection are allowed to proceed.
+            this.store.setTransportState('recovering');
+            if (!(await this.requestSnapshot())) {
+                throw new Error('connect_snapshot_recovery_failed');
+            }
+            this.store.setTransportError(null);
+            this.store.setTransportState('ready');
+        })()
+            .catch((error: unknown) => {
+                this.store.setTransportState(
+                    this.isConnected ? 'unavailable' : 'disconnected',
+                );
+                this.store.setTransportError(
+                    error instanceof Error
+                        ? error.message
+                        : 'connect_snapshot_recovery_failed',
+                );
+                throw error;
+            })
+            .finally(() => {
+                this.restorePromise = null;
+            });
+        return this.restorePromise;
     }
 
     private requestSnapshot(): Promise<boolean> {
@@ -247,7 +358,10 @@ export class ConnectHubService {
                 if (snapshot.status === 'Applied') {
                     const applied = this.store.applySnapshot(snapshot);
                     console.info('[Connect v2] snapshot queue', snapshot.queue);
-                    return applied;
+                    // A realtime event can overtake GetSnapshot. The version guard must keep
+                    // rejecting that older payload, but an already-newer complete local state
+                    // still satisfies the recovery barrier.
+                    return applied || this.store.isSnapshotSuperseded(snapshot);
                 }
                 this.store.setSyncStatus(
                     snapshot.status === 'Unavailable' ? 'Unavailable' : 'OutOfSync',
@@ -262,6 +376,19 @@ export class ConnectHubService {
                 this.snapshotPromise = null;
             });
         return this.snapshotPromise;
+    }
+
+    private getUnavailableReason(): string | null {
+        if (this.disposed) return 'service_disposed';
+        if (!this.isConnected) return 'connection_not_connected';
+        if (this.restorePromise !== null || this.snapshotPromise !== null) {
+            return 'recovery_in_progress';
+        }
+        if (this.store.transportState !== 'ready') return 'lifecycle_not_ready';
+        if (this.registeredConnectionId === null) return 'registration_missing';
+        const { player, queue, presence } = this.store.value;
+        if (!player || !queue || !presence) return 'snapshot_missing';
+        return null;
     }
 
     private startHeartbeat(): void {
@@ -292,5 +419,14 @@ export class ConnectHubService {
         } catch {
             // Automatic reconnect owns transport recovery.
         }
+    }
+
+    ngOnDestroy(): void {
+        this.disposed = true;
+        this.allowInitialReconnect = false;
+        this.stopHeartbeat();
+        this.clearInitialReconnect();
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }

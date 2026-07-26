@@ -65,18 +65,6 @@ export class MediaPlayerEngineService implements OnDestroy {
                 }
             });
 
-        this.state.playbackIntentObs$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => {
-                this.log('local playback intent', {
-                    canAttemptImmediately:
-                        this.isAudioOwner && Boolean(this.state.currentTrack) && this.audio.paused,
-                });
-                if (this.isAudioOwner && this.state.currentTrack && this.audio.paused) {
-                    this.tryPlay('local-user-play-intent');
-                }
-            });
-
         this.state.playingObs$
             .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
             .subscribe((p) => {

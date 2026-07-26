@@ -27,4 +27,40 @@ describe('ConnectTransportErrorMapper', () => {
             code: 'connect_rate_limited',
         });
     });
+
+    it('ServerFailures_AreNotCollapsedIntoUnavailable', () => {
+        expect(mapper.map(new Error('HubException: connect_internal_error'))).toEqual({
+            kind: 'ServerInternalError',
+            code: 'connect_server_internal_error',
+        });
+        expect(mapper.map(new Error('Server timeout while invoking'))).toEqual({
+            kind: 'ServerTimeout',
+            code: 'connect_server_timeout',
+        });
+        expect(mapper.map(new Error('HubException: connect_identity_invalid'))).toEqual({
+            kind: 'ServerRejected',
+            code: 'connect_server_rejected',
+        });
+        expect(mapper.map(new Error('503 Service Unavailable'))).toEqual({
+            kind: 'ServerUnavailable',
+            code: 'connect_server_unavailable',
+        });
+        expect(mapper.map(new Error('JSON deserialization failed'))).toEqual({
+            kind: 'SerializationError',
+            code: 'connect_serialization_error',
+        });
+    });
+
+    it('DisconnectDuringInvoke_IsDeliveryUnconfirmed', () => {
+        expect(
+            mapper.map(
+                new Error(
+                    'Invocation canceled due to the underlying connection being closed.',
+                ),
+            ),
+        ).toEqual({
+            kind: 'DeliveryUnconfirmed',
+            code: 'connect_delivery_unconfirmed',
+        });
+    });
 });

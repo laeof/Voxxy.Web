@@ -19,37 +19,25 @@ export class ConnectEventApplierService {
     }
 
     applyPlayerEvent(event: PlayerStateChangedEvent): void {
-        const gap = this.store.hasGap(event.player.version, this.store.value.player?.version);
         this.store.applyPlayer(event.player);
-        if (gap) this.requestRecovery();
     }
 
     applyQueueEvent(event: QueueStateChangedEvent): void {
         console.info('[Connect v2] QueueStateChanged', event.queue);
-        const gap = this.store.hasGap(event.queue.version, this.store.value.queue?.version);
         this.store.applyQueue(event.queue);
-        if (gap) this.requestRecovery();
     }
 
     applyPresenceEvent(event: PresenceStateChangedEvent): void {
-        const gap = this.store.hasGap(event.presence.version, this.store.value.presence?.version);
         this.store.applyPresence(event.presence);
-        if (gap) this.requestRecovery();
     }
 
     applyPlayerQueueEvent(event: PlayerQueueStateChangedEvent): void {
         console.info('[Connect v2] PlayerQueueStateChanged queue', event.queue);
-        const gap =
-            this.store.hasGap(event.player.version, this.store.value.player?.version) ||
-            this.store.hasGap(event.queue.version, this.store.value.queue?.version);
-        if (!this.store.applyPlayerQueue(event.player, event.queue) || gap) this.requestRecovery();
+        if (!this.store.applyPlayerQueue(event.player, event.queue)) this.requestRecovery();
     }
 
     applyPlayerPresenceEvent(event: PlayerPresenceStateChangedEvent): void {
-        const gap =
-            this.store.hasGap(event.player.version, this.store.value.player?.version) ||
-            this.store.hasGap(event.presence.version, this.store.value.presence?.version);
-        if (!this.store.applyPlayerPresence(event.player, event.presence) || gap) {
+        if (!this.store.applyPlayerPresence(event.player, event.presence)) {
             this.requestRecovery();
         }
     }

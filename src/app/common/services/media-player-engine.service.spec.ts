@@ -77,7 +77,7 @@ describe('MediaPlayerEngineService', () => {
         expect(audio.pause).toHaveBeenCalled();
     });
 
-    it('LocalUserIntent_PlaysImmediatelyForAudioOwner', () => {
+    it('PausedAuthoritativeState_DoesNotPlayForAudioOwner', () => {
         const state = new MediaPlayerStateService();
         createEngine(state);
         const currentTrack = track();
@@ -92,9 +92,7 @@ describe('MediaPlayerEngineService', () => {
             isAudioOwner: true,
         });
 
-        state.requestPlaybackFromUserGesture();
-
-        expect(audio.play).toHaveBeenCalledOnce();
+        expect(audio.play).not.toHaveBeenCalled();
     });
 
     it('Ended_FromAudioOwner_SendsExactlyOneAuthoritativeCommand', async () => {

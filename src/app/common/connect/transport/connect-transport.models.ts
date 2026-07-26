@@ -1,7 +1,9 @@
 export type ConnectTransportState =
     | 'disconnected'
     | 'connecting'
-    | 'connected'
+    | 'registering'
+    | 'recovering'
+    | 'ready'
     | 'reconnecting'
     | 'unavailable';
 export type ConnectSyncStatus =
@@ -27,6 +29,13 @@ export type ConnectCommandAckStatus =
     | 'Unavailable';
 
 export type RepeatModeContract = 'None' | 'Queue' | 'Track';
+export type PlaybackSourceTypeContract =
+    | 'Playlist'
+    | 'Album'
+    | 'Release'
+    | 'LikedSongs'
+    | 'Search'
+    | 'Manual';
 
 export interface PlayerStateDto {
     isPlaying: boolean;
@@ -48,6 +57,8 @@ export interface QueueStateDto {
     repeatMode: RepeatModeContract;
     isShuffled: boolean;
     version: number;
+    sourceId?: string | null;
+    sourceType?: PlaybackSourceTypeContract | null;
 }
 
 export interface DeviceConnectionDto {

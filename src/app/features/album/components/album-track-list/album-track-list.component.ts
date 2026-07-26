@@ -8,7 +8,13 @@ import { AlbumTrackListService } from '../../services/album-track-list.service';
 @Component({
     selector: 'album-track-list',
     standalone: true,
-    template: ` <app-track-list [tracks]="dataSource$ | async" /> `,
+    template: `
+        <app-track-list
+            [tracks]="dataSource$ | async"
+            [sourceId]="albumId()"
+            sourceType="Album"
+        />
+    `,
     imports: [TrackListComponent, AsyncPipe],
     providers: [AlbumTrackListService],
 })

@@ -2,7 +2,7 @@ import { ConnectStateStore } from '../state/connect-state.store';
 import { ConnectEventApplierService } from './connect-event-applier.service';
 
 describe('ConnectEventApplierService', () => {
-    it('VersionGap_TriggersSnapshotRecovery', async () => {
+    it('VersionGap_AppliesNewerStateWithoutSnapshotRecovery', async () => {
         const store = new ConnectStateStore();
         const applier = new ConnectEventApplierService(store);
         const recover = vi.fn().mockResolvedValue(undefined);
@@ -11,7 +11,7 @@ describe('ConnectEventApplierService', () => {
         applier.applyPlayerEvent({ commandId: crypto.randomUUID(), player: player(5) });
 
         expect(store.value.player?.version).toBe(5);
-        expect(recover).toHaveBeenCalledOnce();
+        expect(recover).not.toHaveBeenCalled();
     });
 
     it('PlayerPresenceEvent_UpdatesOwnershipAfterBothStates', () => {

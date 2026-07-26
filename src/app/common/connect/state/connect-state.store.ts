@@ -50,6 +50,18 @@ export class ConnectStateStore {
         return this.stateSubject.value;
     }
 
+    get transportState(): ConnectTransportState {
+        return this.transportSubject.value;
+    }
+
+    get transportError(): string | null {
+        return this.transportErrorSubject.value;
+    }
+
+    get pendingCommandCount(): number {
+        return this.pendingSubject.value.size;
+    }
+
     getPositionMs(clientNow = Date.now()): number {
         const player = this.value.player;
         if (!player) return 0;
@@ -61,9 +73,12 @@ export class ConnectStateStore {
     setTransportState(state: ConnectTransportState): void {
         this.transportSubject.next(state);
         this.syncStatusSubject.next(
-            state === 'connected'
+            state === 'ready'
                 ? 'Connected'
-                : state === 'reconnecting'
+                : state === 'reconnecting' ||
+                    state === 'connecting' ||
+                    state === 'registering' ||
+                    state === 'recovering'
                   ? 'Reconnecting'
                   : state === 'unavailable'
                     ? 'Unavailable'
@@ -98,6 +113,21 @@ export class ConnectStateStore {
         });
         this.syncStatusSubject.next('Connected');
         return true;
+    }
+
+    isSnapshotSuperseded(snapshot: ConnectSnapshotResponse): boolean {
+        const { player, queue, presence } = this.value;
+        return (
+            snapshot.player !== null &&
+            snapshot.queue !== null &&
+            snapshot.presence !== null &&
+            player !== null &&
+            queue !== null &&
+            presence !== null &&
+            player.version >= snapshot.player.version &&
+            queue.version >= snapshot.queue.version &&
+            presence.version >= snapshot.presence.version
+        );
     }
 
     applyPlayer(player: PlayerStateDto): boolean {
