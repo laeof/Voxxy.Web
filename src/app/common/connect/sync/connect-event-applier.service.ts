@@ -25,6 +25,7 @@ export class ConnectEventApplierService {
     }
 
     applyQueueEvent(event: QueueStateChangedEvent): void {
+        console.info('[Connect v2] QueueStateChanged', event.queue);
         const gap = this.store.hasGap(event.queue.version, this.store.value.queue?.version);
         this.store.applyQueue(event.queue);
         if (gap) this.requestRecovery();
@@ -37,6 +38,7 @@ export class ConnectEventApplierService {
     }
 
     applyPlayerQueueEvent(event: PlayerQueueStateChangedEvent): void {
+        console.info('[Connect v2] PlayerQueueStateChanged queue', event.queue);
         const gap =
             this.store.hasGap(event.player.version, this.store.value.player?.version) ||
             this.store.hasGap(event.queue.version, this.store.value.queue?.version);

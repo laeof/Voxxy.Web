@@ -14,6 +14,7 @@ export interface ConnectState {
     queue: QueueStateDto | null;
     presence: PresenceStateDto | null;
     clockOffsetMs: number;
+    snapshotRevision: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,6 +24,7 @@ export class ConnectStateStore {
         queue: null,
         presence: null,
         clockOffsetMs: 0,
+        snapshotRevision: 0,
     });
     private readonly transportSubject = new BehaviorSubject<ConnectTransportState>('disconnected');
     private readonly syncStatusSubject = new BehaviorSubject<ConnectSyncStatus>('Disconnected');
@@ -41,16 +43,19 @@ export class ConnectStateStore {
         this.player$,
         interval(250).pipe(startWith(0)),
     ]).pipe(
-        map(([player]) => {
-            if (!player) return 0;
-            if (!player.isPlaying) return player.positionMs;
-            const serverNow = Date.now() + this.stateSubject.value.clockOffsetMs;
-            return player.positionMs + Math.max(0, serverNow - Date.parse(player.positionUpdatedAt));
-        }),
+        map(() => this.getPositionMs()),
     );
 
     get value(): ConnectState {
         return this.stateSubject.value;
+    }
+
+    getPositionMs(clientNow = Date.now()): number {
+        const player = this.value.player;
+        if (!player) return 0;
+        if (!player.isPlaying) return player.positionMs;
+        const serverNow = clientNow + this.value.clockOffsetMs;
+        return player.positionMs + Math.max(0, serverNow - Date.parse(player.positionUpdatedAt));
     }
 
     setTransportState(state: ConnectTransportState): void {
@@ -89,6 +94,7 @@ export class ConnectStateStore {
             queue: snapshot.queue,
             presence: snapshot.presence,
             clockOffsetMs: Date.parse(snapshot.serverTime) - receivedAt,
+            snapshotRevision: current.snapshotRevision + 1,
         });
         this.syncStatusSubject.next('Connected');
         return true;
@@ -141,7 +147,13 @@ export class ConnectStateStore {
     }
 
     clear(): void {
-        this.stateSubject.next({ player: null, queue: null, presence: null, clockOffsetMs: 0 });
+        this.stateSubject.next({
+            player: null,
+            queue: null,
+            presence: null,
+            clockOffsetMs: 0,
+            snapshotRevision: 0,
+        });
         this.pendingSubject.next(new Set());
         this.transportErrorSubject.next(null);
         this.setTransportState('disconnected');

@@ -25,14 +25,18 @@ import { ConnectTransportErrorMapper } from './connect-transport-error.mapper';
 import { ConnectTiming } from './connect-timing.service';
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
+const INITIAL_RECONNECT_DELAY_MS = 2_000;
 
 @Injectable({ providedIn: 'root' })
 export class ConnectHubService {
     private readonly connection: HubConnection;
     private connectPromise: Promise<void> | null = null;
     private heartbeatId: ReturnType<typeof setTimeout> | null = null;
+    private initialReconnectId: ReturnType<typeof setTimeout> | null = null;
     private registrationPromise: Promise<void> | null = null;
     private snapshotPromise: Promise<boolean> | null = null;
+    private allowInitialReconnect = true;
+    private registeredConnectionId: string | null = null;
 
     constructor(
         private readonly store: ConnectStateStore,
@@ -64,17 +68,21 @@ export class ConnectHubService {
     }
 
     get connectionId(): string | null {
-        return this.connection.connectionId;
+        return this.registeredConnectionId;
     }
 
     connect(): Promise<void> {
         if (this.isConnected) return Promise.resolve();
         if (this.connectPromise) return this.connectPromise;
 
+        this.allowInitialReconnect = true;
+        this.clearInitialReconnect();
         this.store.setTransportState('connecting');
         this.connectPromise = this.connection
             .start()
             .then(async () => {
+                this.registeredConnectionId = null;
+                this.clearInitialReconnect();
                 this.store.setTransportError(null);
                 this.store.setTransportState('connected');
                 this.telemetry.emit('connect_transport_connected');
@@ -87,6 +95,9 @@ export class ConnectHubService {
                     mapped.kind === 'WebSocketUnavailable' ? 'unavailable' : 'disconnected',
                 );
                 this.store.setTransportError(mapped.code);
+                if (mapped.kind !== 'AuthenticationFailed') {
+                    this.scheduleInitialReconnect();
+                }
                 throw new Error(mapped.code);
             })
             .finally(() => {
@@ -133,9 +144,13 @@ export class ConnectHubService {
         };
         this.registrationPromise = this.invoke<ConnectCommandAck>('RegisterConnection', request)
             .then((ack) => {
-                if (ack.status !== 'Applied' && ack.status !== 'Duplicate') {
+                if (!['Applied', 'NoChanges', 'Duplicate'].includes(ack.status)) {
                     throw new Error(ack.errorCode ?? `connect_registration_${ack.status}`);
                 }
+                if (!ack.outcome?.connectionId) {
+                    throw new Error('connect_registration_connection_id_missing');
+                }
+                this.registeredConnectionId = ack.outcome.connectionId;
                 this.startHeartbeat();
             })
             .finally(() => {
@@ -145,6 +160,8 @@ export class ConnectHubService {
     }
 
     async disconnectGracefully(): Promise<void> {
+        this.allowInitialReconnect = false;
+        this.clearInitialReconnect();
         this.stopHeartbeat();
         if (this.isConnected) {
             const timeout = new Promise<void>((resolve) => setTimeout(resolve, 2_000));
@@ -154,6 +171,7 @@ export class ConnectHubService {
             await Promise.race([disconnect, timeout]).catch(() => undefined);
         }
         await this.connection.stop();
+        this.registeredConnectionId = null;
         this.store.clear();
     }
 
@@ -174,6 +192,7 @@ export class ConnectHubService {
             this.applier.applyPlayerPresenceEvent(event),
         );
         this.connection.onreconnecting(() => {
+            this.registeredConnectionId = null;
             this.stopHeartbeat();
             this.playerState.pause();
             this.store.setTransportState('reconnecting');
@@ -185,11 +204,30 @@ export class ConnectHubService {
             void this.restoreSession().catch(() => this.store.setSyncStatus('OutOfSync'));
         });
         this.connection.onclose(() => {
+            this.registeredConnectionId = null;
             this.stopHeartbeat();
             this.playerState.pause();
             this.store.setTransportState('disconnected');
             this.telemetry.emit('connect_transport_disconnected');
+            this.scheduleInitialReconnect();
         });
+    }
+
+    private scheduleInitialReconnect(): void {
+        if (!this.allowInitialReconnect || this.initialReconnectId !== null || this.isConnected) {
+            return;
+        }
+
+        this.initialReconnectId = setTimeout(() => {
+            this.initialReconnectId = null;
+            void this.connect().catch(() => undefined);
+        }, INITIAL_RECONNECT_DELAY_MS);
+    }
+
+    private clearInitialReconnect(): void {
+        if (this.initialReconnectId === null) return;
+        clearTimeout(this.initialReconnectId);
+        this.initialReconnectId = null;
     }
 
     private async restoreSession(): Promise<void> {
@@ -207,7 +245,9 @@ export class ConnectHubService {
         this.snapshotPromise = this.invoke<ConnectSnapshotResponse>('GetSnapshot')
             .then((snapshot) => {
                 if (snapshot.status === 'Applied') {
-                    return this.store.applySnapshot(snapshot);
+                    const applied = this.store.applySnapshot(snapshot);
+                    console.info('[Connect v2] snapshot queue', snapshot.queue);
+                    return applied;
                 }
                 this.store.setSyncStatus(
                     snapshot.status === 'Unavailable' ? 'Unavailable' : 'OutOfSync',

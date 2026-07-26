@@ -17,13 +17,15 @@ export class DeviceService extends EntityManagerService<Device> {
         connectStore.presence$.subscribe((presence) => {
             if (!presence) return;
             this.setDevices(
-                presence.devices.map((device) => ({
-                    id: device.deviceId,
-                    name: device.name,
-                    isOnline: device.isOnline,
-                    isActive: device.deviceId === presence.activeDeviceId,
-                    isLocal: device.deviceId === identity.deviceId,
-                })),
+                presence.devices
+                    .filter((device) => device.isOnline)
+                    .map((device) => ({
+                        id: device.deviceId,
+                        name: device.name,
+                        isOnline: true,
+                        isActive: device.deviceId === presence.activeDeviceId,
+                        isLocal: device.deviceId === identity.deviceId,
+                    })),
             );
             this.setActiveDeviceId(presence.activeDeviceId ?? '');
         });

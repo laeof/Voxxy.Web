@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import { Subject, distinctUntilChanged, takeUntil, combineLatest } from 'rxjs';
+import { Subject, distinctUntilChanged, finalize, takeUntil } from 'rxjs';
 import { Track } from '../../features/track/models/track';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { environment } from '../../../environments/environment';
@@ -12,7 +12,13 @@ export class MediaPlayerEngineService implements OnDestroy {
     private readonly audio = new Audio();
     private readonly destroy$ = new Subject<void>();
     private loadingKey: string | null = null;
-    private activeDevice: boolean = false;
+    private loadedKey: string | null = null;
+    private isAudioOwner: boolean = false;
+    private readonly retryPlayback = () => {
+        if (this.state.playing && this.isAudioOwner && this.audio.paused) {
+            this.tryPlay('user-interaction-retry');
+        }
+    };
 
     constructor(
         private readonly state: MediaPlayerStateService,
@@ -20,6 +26,7 @@ export class MediaPlayerEngineService implements OnDestroy {
     ) {
         this.bindState();
         this.bindAudio();
+        globalThis.addEventListener?.('pointerdown', this.retryPlayback);
     }
 
     get currentTime(): number {
@@ -39,30 +46,52 @@ export class MediaPlayerEngineService implements OnDestroy {
     }
 
     private bindState() {
-        this.state.deviceObs$.pipe(takeUntil(this.destroy$)).subscribe((value: boolean) => {
-            console.log('device state changed:', value);
-            this.activeDevice = value;
+        this.state.audioOwnerObs$
+            .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
+            .subscribe((value: boolean) => {
+                this.isAudioOwner = value;
+                this.log('ownership changed', { isAudioOwner: value });
 
-            if (value) {
-                if (this.state.currentTrack) this.loadTrack(this.state.currentTrack);
-                this.audio.currentTime = this.state.position;
-                if (this.state.playing) {
-                    this.audio.play().catch(() => {});
+                if (value) {
+                    if (this.state.currentTrack) this.loadTrack(this.state.currentTrack);
+                } else if (!this.audio.paused) {
+                    this.log('pause requested', { reason: 'ownership-lost' });
+                    this.audio.pause();
                 }
-            } else {
-                this.audio.pause();
-            }
-        });
+            });
+
+        this.state.playbackIntentObs$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.log('local playback intent', {
+                    canAttemptImmediately:
+                        this.isAudioOwner && Boolean(this.state.currentTrack) && this.audio.paused,
+                });
+                if (this.isAudioOwner && this.state.currentTrack && this.audio.paused) {
+                    this.tryPlay('local-user-play-intent');
+                }
+            });
 
         this.state.playingObs$
             .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
             .subscribe((p) => {
-                p && this.activeDevice ? this.audio.play().catch(() => {}) : this.audio.pause();
+                this.log('authoritative playing changed', { isPlaying: p });
+                if (p && this.isAudioOwner) {
+                    if (this.audio.paused) this.tryPlay('authoritative-playing-state');
+                } else if (!this.audio.paused) {
+                    this.log('pause requested', {
+                        reason: p ? 'not-audio-owner' : 'authoritative-paused',
+                    });
+                    this.audio.pause();
+                }
             });
 
         this.state.volumeObs$
             .pipe(takeUntil(this.destroy$))
-            .subscribe((v) => (this.audio.volume = v / 100));
+            .subscribe((v) => {
+                this.audio.volume = v / 100;
+                this.log('volume applied', { volumePercent: v });
+            });
 
         this.state.positionObs$.pipe(takeUntil(this.destroy$)).subscribe((p) => {
             if (Math.abs(this.audio.currentTime - p) > 1) {
@@ -70,19 +99,46 @@ export class MediaPlayerEngineService implements OnDestroy {
             }
         });
 
-        combineLatest([this.state.queueObs$, this.state.indexObs$])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(([queue, index]) => {
-                if (!queue.length || index < 0) return;
-                this.loadTrack(queue[index]);
+        this.state.currentTrackObs$
+            .pipe(
+                distinctUntilChanged(
+                    (previous, current) => previous?.audioKey === current?.audioKey,
+                ),
+                takeUntil(this.destroy$),
+            )
+            .subscribe((track) => {
+                this.log('current track changed', {
+                    trackId: track?.id ?? null,
+                    audioKey: track?.audioKey ?? null,
+                });
+                if (!track) {
+                    this.audio.pause();
+                    this.audio.removeAttribute('src');
+                    this.audio.load();
+                    this.loadedKey = null;
+                    return;
+                }
+                this.loadTrack(track);
             });
     }
 
     private loadTrack(track: Track) {
-        if (!track.audioKey) return;
+        if (!track.audioKey) {
+            this.log('track load skipped', { reason: 'missing-audio-key', trackId: track.id });
+            return;
+        }
 
-        if (this.loadingKey === track.audioKey) return;
+        if (this.loadedKey === track.audioKey) {
+            this.log('track source reused', { trackId: track.id, audioKey: track.audioKey });
+            this.applyPlaybackState();
+            return;
+        }
+        if (this.loadingKey === track.audioKey) {
+            this.log('track load skipped', { reason: 'already-loading', trackId: track.id });
+            return;
+        }
         this.loadingKey = track.audioKey;
+        this.log('stream URL requested', { trackId: track.id, audioKey: track.audioKey });
 
         this.http
             .get<string>(
@@ -92,18 +148,61 @@ export class MediaPlayerEngineService implements OnDestroy {
                     track.id,
                 )}`,
             )
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((url) => {
-                if (this.state.currentTrack?.audioKey !== track.audioKey) return;
+            .pipe(
+                finalize(() => {
+                    if (this.loadingKey === track.audioKey) this.loadingKey = null;
+                }),
+                takeUntil(this.destroy$),
+            )
+            .subscribe({
+                next: (url) => {
+                    if (this.state.currentTrack?.audioKey !== track.audioKey) {
+                        this.log('stream URL ignored', {
+                            reason: 'track-changed-during-request',
+                            requestedTrackId: track.id,
+                            currentTrackId: this.state.currentTrack?.id ?? null,
+                        });
+                        return;
+                    }
 
-                this.audio.src = url;
-                this.audio.currentTime = 0;
+                    this.audio.src = url;
+                    this.loadedKey = track.audioKey;
+                    this.log('stream URL applied', {
+                        trackId: track.id,
+                        source: this.safeSource(url),
+                    });
+                    this.applyPlaybackState();
+                },
+                error: (error: unknown) => {
+                    console.error('[Connect v2][MediaEngine] stream URL request failed', {
+                        trackId: track.id,
+                        audioKey: track.audioKey,
+                        error,
+                    });
+                },
+            });
+    }
 
-                console.log(this.state.playing, this.activeDevice);
+    private applyPlaybackState(): void {
+        this.audio.currentTime = this.state.position;
+        if (this.state.playing && this.isAudioOwner) {
+            if (this.audio.paused) this.tryPlay('track-stream-ready');
+        } else if (!this.audio.paused) {
+            this.audio.pause();
+        }
+    }
 
-                if (this.state.playing && this.activeDevice) this.audio.play().catch(() => {});
-
-                this.loadingKey = null;
+    private tryPlay(reason: string): void {
+        this.log('play requested', { reason });
+        void this.audio
+            .play()
+            .then(() => this.log('play promise resolved', { reason }))
+            .catch((error: unknown) => {
+                console.error('[Connect v2][MediaEngine] play promise rejected', {
+                    reason,
+                    error,
+                    snapshot: this.engineSnapshot(),
+                });
             });
     }
 
@@ -112,17 +211,53 @@ export class MediaPlayerEngineService implements OnDestroy {
             this.state.setPosition(this.audio.currentTime);
         });
 
-        // this.audio.addEventListener('playing', () => {
-        //     if (!this.activeDevice) {
-        //         this.state.pause();
-        //     }
-        // });
+        this.audio.addEventListener('error', () => {
+            console.error('[Connect v2][MediaEngine] audio event: error', {
+                mediaErrorCode: this.audio.error?.code ?? null,
+                mediaErrorMessage: this.audio.error?.message ?? null,
+                snapshot: this.engineSnapshot(),
+            });
+        });
 
         // Playback completion is a user-agent observation, not authoritative state. The Connect
         // coordinator advances the queue through an explicit command owned by the UI workflow.
     }
 
+    private log(message: string, details: Record<string, unknown> = {}): void {
+        void message;
+        void details;
+    }
+
+    private engineSnapshot(): Record<string, unknown> {
+        return {
+            authoritativePlaying: this.state.playing,
+            isAudioOwner: this.isAudioOwner,
+            currentTrackId: this.state.currentTrack?.id ?? null,
+            loadedKey: this.loadedKey,
+            loadingKey: this.loadingKey,
+            source: this.safeSource(this.audio.currentSrc || this.audio.src),
+            paused: this.audio.paused,
+            currentTime: this.audio.currentTime,
+            duration: Number.isFinite(this.audio.duration) ? this.audio.duration : null,
+            readyState: this.audio.readyState,
+            networkState: this.audio.networkState,
+            volume: this.audio.volume,
+            muted: this.audio.muted,
+        };
+    }
+
+    private safeSource(value: string): string | null {
+        if (!value) return null;
+        try {
+            const url = new URL(value, globalThis.location?.origin);
+            return `${url.origin}${url.pathname}`;
+        } catch {
+            return value.split('?')[0];
+        }
+    }
+
     ngOnDestroy() {
+        globalThis.removeEventListener?.('pointerdown', this.retryPlayback);
         this.destroy$.next();
         this.destroy$.complete();
     }

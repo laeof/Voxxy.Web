@@ -5,6 +5,7 @@ import { Track } from '../models/track';
 import { environment } from '@environments/environment';
 import { ApiRoutes } from '@common/constants/api.routes.constant';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { finalize } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -21,13 +22,22 @@ export class TrackService extends EntityManagerService<Track> {
         const url = `${environment.apiUrl}${ApiRoutes.Track.batch}`;
         this.httpClient
 
-            .post<Track[]>(url, {
-                headers: new HttpHeaders({ 'x-skeleton-loader': 'true' }),
-                trackIds: trackIds,
-            })
-            .subscribe((data: Track[]) => {
-                this.onEntitiesChanged.next(data);
-                this.onEntitiesLoading.next(false);
+            .post<Track[]>(
+                url,
+                { trackIds },
+                { headers: new HttpHeaders({ 'x-skeleton-loader': 'true' }) },
+            )
+            .pipe(finalize(() => this.onEntitiesLoading.next(false)))
+            .subscribe({
+                next: (data: Track[]) => {
+                    this.onEntitiesChanged.next(data);
+                },
+                error: (error: unknown) => {
+                    console.warn('[Connect v2] queue track metadata load failed', {
+                        trackIds,
+                        error,
+                    });
+                },
             });
     }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ClientPlayerState } from '@common/entities/PlayerState';
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -17,7 +17,8 @@ export class MediaPlayerStateService {
     private readonly currentTrack$ = new BehaviorSubject<Track | null>(null);
     private readonly repeat$ = new BehaviorSubject<RepeatMode>(RepeatMode.None);
 
-    private readonly device$ = new BehaviorSubject<boolean>(true);
+    private readonly audioOwner$ = new BehaviorSubject<boolean>(false);
+    private readonly playbackIntent$ = new Subject<void>();
 
     readonly playingObs$ = this.playing$.asObservable();
     readonly positionObs$ = this.position$.asObservable();
@@ -26,7 +27,8 @@ export class MediaPlayerStateService {
     readonly indexObs$ = this.index$.asObservable();
     readonly currentTrackObs$ = this.currentTrack$.asObservable();
     readonly repeatObs$ = this.repeat$.asObservable();
-    readonly deviceObs$ = this.device$.asObservable();
+    readonly audioOwnerObs$ = this.audioOwner$.asObservable();
+    readonly playbackIntentObs$ = this.playbackIntent$.asObservable();
 
     get playing(): boolean {
         return this.playing$.value;
@@ -56,9 +58,13 @@ export class MediaPlayerStateService {
         return this.repeat$.value;
     }
 
+    requestPlaybackFromUserGesture(): void {
+        this.playbackIntent$.next();
+    }
+
     applyAuthoritativeState(value: {
         isPlaying: boolean;
-        positionSec: number;
+        positionSec?: number;
         volumePercent: number;
         queue: Track[];
         index: number;
@@ -69,10 +75,12 @@ export class MediaPlayerStateService {
         this.queue$.next(value.queue);
         this.index$.next(value.index);
         this.currentTrack$.next(value.currentTrack);
-        this.position$.next(value.positionSec);
+        if (value.positionSec !== undefined) {
+            this.position$.next(value.positionSec);
+        }
         this.volume$.next(value.volumePercent);
         this.repeat$.next(value.repeat);
-        this.device$.next(value.isAudioOwner);
+        this.audioOwner$.next(value.isAudioOwner);
         this.playing$.next(value.isPlaying);
     }
 
@@ -90,7 +98,7 @@ export class MediaPlayerStateService {
     }
 
     applyDeviceState(isActive: boolean): void {
-        this.device$.next(isActive);
+        this.audioOwner$.next(isActive);
     }
 
     play(): void {

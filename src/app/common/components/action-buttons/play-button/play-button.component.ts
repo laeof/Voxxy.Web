@@ -12,23 +12,21 @@ import { Track } from '@features/track/models/track';
     imports: [MatIcon, AsyncPipe],
 })
 export class PlayButtonComponent {
-    constructor(public readonly mediaPlayerStateService: MediaPlayerStateService,
-        private readonly mediaPlayerSyncService: MediaPlayerSyncService
+    constructor(
+        public readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService,
     ) {}
 
     @Input() trackList: Track[] | undefined = [];
     @Input() trackListId: string | undefined = undefined;
 
     togglePlayButton(): void {
-        if (!this.trackList || !this.trackListId || this.trackList.length === 0) return;
+        if (!this.trackList || this.trackList.length === 0) return;
 
-        console.log('togglePlayButton', this.mediaPlayerStateService.playing);
-
-        if (this.mediaPlayerStateService.currentTrack?.fromPlaylist === this.trackListId) {
-            console.log('togglePlayButton', this.mediaPlayerStateService.position);
+        if (this.mediaPlayerStateService.currentTrack?.id === this.trackList[0].id) {
             this.mediaPlayerStateService.playing
                 ? this.mediaPlayerSyncService.pause()
-                : this.mediaPlayerSyncService.play(undefined, this.mediaPlayerStateService.position * 1000);
+                : this.mediaPlayerSyncService.play();
             return;
         }
 

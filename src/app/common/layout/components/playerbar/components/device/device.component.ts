@@ -16,18 +16,11 @@ import { PlayerHubService } from '@common/services/player-hub.service';
     imports: [MatIcon, MatMenu, AsyncPipe, DeviceCardComponent, MatMenuTrigger, TranslatePipe],
 })
 export class DeviceComponent extends ListEntitiesFacade<Device> {
-    constructor(private readonly deviceService: DeviceService,
-        private readonly playerHubService: PlayerHubService
+    constructor(
+        deviceService: DeviceService,
+        private readonly playerHubService: PlayerHubService,
     ) {
         super(deviceService);
-
-        this.deviceService.onEntitySelected$.subscribe((selectedId) => {
-
-        });
-
-        this.deviceService.onEntitiesChanged$.subscribe((devices) => {
-            console.log('Devices list updated:', devices);
-        });
     }
 
     selectDevice(device: Device) {

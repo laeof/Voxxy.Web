@@ -6,7 +6,7 @@ import { RepeatModeContract } from '@common/connect/transport/connect-transport.
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
 import { TrackService } from '@features/track/services/track.service';
-import { Subject, distinctUntilChanged, filter, map, takeUntil } from 'rxjs';
+import { Subject, distinctUntilChanged, filter, map, switchMap, takeUntil } from 'rxjs';
 import { MediaPlayerStateService } from './media-player-state.service';
 import { PlayerHubService } from './player-hub.service';
 import { ConnectCommandCoalescer } from '@common/connect/commands/connect-command-coalescer.service';
@@ -15,6 +15,10 @@ import { ConnectCommandCoalescer } from '@common/connect/commands/connect-comman
 export class MediaPlayerSyncService implements OnDestroy {
     private readonly destroy$ = new Subject<void>();
     private readonly tracks = new Map<string, Track>();
+    private lastPositionAnchor: string | null = null;
+    private lastTrackId: string | null = null;
+    private lastIsAudioOwner = false;
+    private lastSnapshotRevision = -1;
     readonly viewPosition$;
 
     constructor(
@@ -26,8 +30,13 @@ export class MediaPlayerSyncService implements OnDestroy {
         private readonly coalescer: ConnectCommandCoalescer,
         trackService: TrackService,
     ) {
-        this.viewPosition$ = this.connectStore.positionMs$.pipe(
-            map((position) => position / 1000),
+        this.viewPosition$ = this.state.audioOwnerObs$.pipe(
+            switchMap((isAudioOwner) =>
+                isAudioOwner
+                    ? this.state.positionObs$
+                    : this.connectStore.positionMs$.pipe(map((position) => position / 1000)),
+            ),
+            distinctUntilChanged(),
         );
         trackService.onEntitiesChanged$
             .pipe(takeUntil(this.destroy$))
@@ -50,17 +59,30 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     play(trackId?: string, positionMs?: number): void {
-        if (!trackId) {
-            void this.commands.play();
-            return;
+        if (!trackId || this.state.currentTrack?.id === trackId) {
+            this.state.requestPlaybackFromUserGesture();
         }
-        void this.commands.addQueueItem(trackId).then(async (ack) => {
+        void this.startPlayback(trackId, positionMs);
+    }
+
+    private async startPlayback(trackId?: string, positionMs?: number): Promise<void> {
+        if (trackId) {
+            const ack = await this.commands.addQueueItem(trackId);
             const queueItemId = ack.outcome?.queueItemId;
             if (!queueItemId) return;
             await this.commands.selectQueueItem(queueItemId);
             if (positionMs !== undefined) await this.commands.changePosition(positionMs);
-            await this.commands.play();
-        });
+        }
+
+        const presence = this.connectStore.value.presence;
+        const localDeviceIsUnowned =
+            presence?.activeDeviceId === this.identity.deviceId &&
+            presence.audioOwnerConnectionId !== this.hub.connectionId;
+        if (presence?.activeDeviceId === null || localDeviceIsUnowned) {
+            await this.commands.selectDevice(this.identity.deviceId);
+        }
+
+        await this.commands.play();
     }
 
     pause(): void {
@@ -108,6 +130,32 @@ export class MediaPlayerSyncService implements OnDestroy {
         );
         const currentItem = index >= 0 ? queue.items[index] : null;
         const currentTrack = currentItem ? (this.tracks.get(currentItem.trackId) ?? null) : null;
+        const isAudioOwner =
+            presence.activeDeviceId === this.identity.deviceId &&
+            presence.audioOwnerConnectionId === this.hub.connectionId;
+        const authoritativeTrackId = currentItem?.trackId ?? null;
+        const positionAnchor = `${player.positionMs}:${player.positionUpdatedAt}`;
+        const positionReason =
+            this.lastSnapshotRevision !== this.connectStore.value.snapshotRevision
+                ? 'snapshot_recovery'
+                : this.lastTrackId !== authoritativeTrackId
+                  ? 'track_changed'
+                  : !this.lastIsAudioOwner && isAudioOwner
+                    ? 'became_audio_owner'
+                    : this.lastPositionAnchor !== positionAnchor
+                      ? 'authoritative_position_changed'
+                      : null;
+        const positionSec =
+            positionReason === null ? undefined : this.connectStore.getPositionMs() / 1000;
+        if (positionReason !== null) {
+            console.info('[Connect v2] authoritative position applied', {
+                reason: positionReason,
+                positionSec,
+                playerVersion: player.version,
+                trackId: authoritativeTrackId,
+                isAudioOwner,
+            });
+        }
         const repeat: Record<RepeatModeContract, RepeatMode> = {
             None: RepeatMode.None,
             Queue: RepeatMode.All,
@@ -116,16 +164,18 @@ export class MediaPlayerSyncService implements OnDestroy {
 
         this.state.applyAuthoritativeState({
             isPlaying: player.isPlaying,
-            positionSec: player.positionMs / 1000,
+            positionSec,
             volumePercent: player.volumePercent,
             queue: orderedTracks,
             index,
             currentTrack,
             repeat: repeat[queue.repeatMode],
-            isAudioOwner:
-                presence.activeDeviceId === this.identity.deviceId &&
-                presence.audioOwnerConnectionId === this.hub.connectionId,
+            isAudioOwner,
         });
+        this.lastPositionAnchor = positionAnchor;
+        this.lastTrackId = authoritativeTrackId;
+        this.lastIsAudioOwner = isAudioOwner;
+        this.lastSnapshotRevision = this.connectStore.value.snapshotRevision;
     }
 
     ngOnDestroy(): void {

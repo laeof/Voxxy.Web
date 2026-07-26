@@ -6,6 +6,8 @@ describe('ConnectCommandService delivery recovery', () => {
     it('DeliveryUnconfirmed_RequestsSnapshot_DoesNotRetry_AndClearsPending', async () => {
         const store = new ConnectStateStore();
         const hub = {
+            isConnected: true,
+            connect: vi.fn().mockResolvedValue(undefined),
             invoke: vi.fn().mockRejectedValue(new Error('connect_delivery_unconfirmed')),
             recoverFromUnconfirmedDelivery: vi.fn().mockResolvedValue(undefined),
         };
@@ -28,6 +30,8 @@ describe('ConnectCommandService delivery recovery', () => {
     it('DeliveryUnconfirmed_SetsOutOfSyncWhenSnapshotFails', async () => {
         const store = new ConnectStateStore();
         const hub = {
+            isConnected: true,
+            connect: vi.fn().mockResolvedValue(undefined),
             invoke: vi.fn().mockRejectedValue(new Error('connect_delivery_unconfirmed')),
             recoverFromUnconfirmedDelivery: vi.fn().mockImplementation(async () => {
                 store.setSyncStatus('OutOfSync');
@@ -48,6 +52,36 @@ describe('ConnectCommandService delivery recovery', () => {
         store.syncStatus$.subscribe((value) => (status = value));
         expect(status).toBe('OutOfSync');
         expect(hub.invoke).toHaveBeenCalledOnce();
+    });
+
+    it('DisconnectedCommand_RestoresSessionBeforeInvocation', async () => {
+        const store = new ConnectStateStore();
+        const hub = {
+            isConnected: false,
+            connect: vi.fn().mockImplementation(async () => {
+                hub.isConnected = true;
+            }),
+            invoke: vi.fn().mockResolvedValue({
+                commandId: 'command-1',
+                status: 'Applied',
+                errorCode: null,
+                outcome: null,
+            }),
+            refreshSnapshot: vi.fn(),
+        };
+        const service = new ConnectCommandService(
+            hub as never,
+            { create: () => 'command-1' } as never,
+            store,
+            new ConnectTransportErrorMapper(),
+        );
+
+        await service.play();
+
+        expect(hub.connect).toHaveBeenCalledOnce();
+        expect(hub.connect.mock.invocationCallOrder[0]).toBeLessThan(
+            hub.invoke.mock.invocationCallOrder[0],
+        );
     });
 });
 

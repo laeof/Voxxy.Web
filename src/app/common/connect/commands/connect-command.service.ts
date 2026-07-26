@@ -64,6 +64,10 @@ export class ConnectCommandService {
         method: string,
         payload: Record<string, unknown> = {},
     ): Promise<ConnectCommandAck> {
+        if (!this.hub.isConnected) {
+            await this.hub.connect();
+        }
+
         const commandId = this.ids.create();
         this.store.addPending(commandId);
         try {
