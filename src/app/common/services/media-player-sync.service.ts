@@ -262,6 +262,7 @@ export class MediaPlayerSyncService implements OnDestroy {
             currentTrack,
             repeat: repeat[queue.repeatMode],
             isAudioOwner,
+            playerVersion: player.version,
             currentQueueItemId: queue.currentQueueItemId,
         });
         this.lastPositionAnchor = positionAnchor;
