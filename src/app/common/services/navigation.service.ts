@@ -7,7 +7,6 @@ import { FollowType } from '@common/layout/components/librarybar/enums/follow-ty
 import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
 import { filter, Subject, takeUntil } from 'rxjs';
-import { GlobalSearchResult } from '@common/entities/GlobalSearchResult';
 import { SearchEntityType } from '@common/enums/search-entity-type.enum';
 
 @Injectable({

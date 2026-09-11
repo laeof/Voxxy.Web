@@ -7,23 +7,44 @@ import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { DurationTranslatePipe } from '@common/pipes/duration-translation.pipe';
 import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { Track } from '@features/track/models/track';
-import { TrackService } from '@features/track/services/track.service';
+import { DeviceComponent } from './components/device/device.component';
+import { locale as english } from './i18n/en';
+import { locale as russian } from './i18n/ru';
+import { TranslationLoaderService } from '@common/services/translation-loader.service';
+import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
+import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     selector: 'layout-playerbar',
     standalone: true,
     templateUrl: './playerbar.component.html',
     styleUrl: './playerbar.component.scss',
-    imports: [MatIcon, MatSlider, MatSliderThumb, DurationTranslatePipe, AsyncPipe],
-    providers: [TrackService],
+    imports: [
+        MatIcon,
+        MatSlider,
+        MatSliderThumb,
+        DurationTranslatePipe,
+        AsyncPipe,
+        DeviceComponent,
+        TranslatePipe,
+    ],
 })
 export class PlayerBarComponent {
-    constructor(private readonly mediaPlayerStateService: MediaPlayerStateService) {
-        this.currentTime$ = this.mediaPlayerStateService.positionObs$;
+    constructor(
+        private readonly mediaPlayerStateService: MediaPlayerStateService,
+        private readonly translationLoaderService: TranslationLoaderService,
+        private readonly mediaPlayerSyncService: MediaPlayerSyncService,
+        connectStore: ConnectStateStore,
+    ) {
+        this.currentTime$ = this.mediaPlayerSyncService.viewPosition$;
         this.currentVolume$ = this.mediaPlayerStateService.volumeObs$;
         this.currentTrack$ = this.mediaPlayerStateService.currentTrackObs$;
         this.isPlaying$ = this.mediaPlayerStateService.playingObs$;
         this.repeatState$ = this.mediaPlayerStateService.repeatObs$;
+        this.transportErrorCode$ = connectStore.transportErrorCode$;
+
+        this.translationLoaderService.loadTranslations(english, russian);
     }
 
     protected readonly RepeatMode = RepeatMode;
@@ -33,22 +54,28 @@ export class PlayerBarComponent {
     currentTrack$: Observable<Track | null | undefined>;
     isPlaying$: Observable<boolean>;
     repeatState$: Observable<RepeatMode>;
+    transportErrorCode$: Observable<string | null>;
 
     volumeChange($event: Event) {
         const value = ($event.target as HTMLInputElement).valueAsNumber;
-        this.mediaPlayerStateService.setVolume(value);
+        this.mediaPlayerSyncService.setVolume(value);
     }
 
-    trackPositionChange($event: Event) {
-        const value = ($event.target as HTMLInputElement).valueAsNumber;
-        this.mediaPlayerStateService.setPosition(value);
+    trackPositionChange(position: number | string) {
+        this.mediaPlayerSyncService.seek(Number(position));
+    }
+
+    trackPositionPreview($event: Event) {
+        this.mediaPlayerSyncService.previewSeek(
+            ($event.target as HTMLInputElement).valueAsNumber,
+        );
     }
 
     togglePlayPause() {
         if (this.mediaPlayerStateService.playing) {
-            this.mediaPlayerStateService.pause();
+            this.mediaPlayerSyncService.pause();
         } else {
-            this.mediaPlayerStateService.play();
+            this.mediaPlayerSyncService.play();
         }
     }
 
@@ -59,15 +86,15 @@ export class PlayerBarComponent {
             one: RepeatMode.None,
         }[this.mediaPlayerStateService.repeat];
 
-        this.mediaPlayerStateService.setRepeat(next);
+        this.mediaPlayerSyncService.setRepeat(next);
     }
 
     togglePrev() {
-        this.mediaPlayerStateService.prev();
+        this.mediaPlayerSyncService.previous();
     }
 
     toggleNext() {
-        this.mediaPlayerStateService.next();
+        this.mediaPlayerSyncService.next();
     }
 
     toggleShuffle() {

@@ -1,0 +1,400 @@
+import { HubConnectionState } from '@microsoft/signalr';
+import { ConnectStateStore } from '../state/connect-state.store';
+import { ConnectHubService } from './connect-hub.service';
+import { ConnectTransportErrorMapper } from './connect-transport-error.mapper';
+
+describe('ConnectHubService transport failure and reconnect', () => {
+    it('InitialStartFailure_DoesNotStartHeartbeat_OrRegisterConnectionBeforeRetry', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.start.mockRejectedValue(new Error('WebSocket is not supported'));
+        const { service, store } = createService(connection);
+
+        await expect(service.connect()).rejects.toThrow('connect_websocket_unavailable');
+
+        expect(connection.invoke).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(1);
+        let errorCode: string | null = null;
+        store.transportErrorCode$.subscribe((value) => (errorCode = value));
+        expect(errorCode).toBe('connect_websocket_unavailable');
+        vi.useRealTimers();
+    });
+
+    it('InitialStartFailure_RetriesAndRestoresAuthoritativeSession', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.start
+            .mockRejectedValueOnce(new Error('Failed to start the connection'))
+            .mockImplementationOnce(async () => {
+                connection.state = HubConnectionState.Connected;
+                connection.connectionId = 'recovered-connection';
+            });
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'GetSnapshot') return Promise.resolve(snapshot());
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('recovered-connection'),
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const { service } = createService(connection);
+
+        await expect(service.connect()).rejects.toThrow('connect_websocket_unavailable');
+        await vi.advanceTimersByTimeAsync(2_000);
+        await vi.waitFor(() => expect(connection.start).toHaveBeenCalledTimes(2));
+        await vi.waitFor(() =>
+            expect(connection.invoke).toHaveBeenCalledWith(
+                'RegisterConnection',
+                expect.objectContaining({ deviceId: 'stable-device' }),
+            ),
+        );
+
+        expect(
+            connection.invoke.mock.calls.filter(([method]) => method === 'GetSnapshot'),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
+
+    it('Reconnect_StopsHeartbeat_AndPausesEngineWithoutPauseCommand', () => {
+        const connection = fakeConnection();
+        const playerState = { pause: vi.fn() };
+        createService(connection, playerState);
+
+        connection.reconnecting?.();
+
+        expect(playerState.pause).toHaveBeenCalledOnce();
+        expect(connection.invoke).not.toHaveBeenCalledWith('Pause', expect.anything());
+    });
+
+    it('Reconnect_UsesSameDeviceId_AndWaitsForAuthoritativeOwnershipBeforePlaying', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.connectionId = 'new-connection';
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'GetSnapshot') return Promise.resolve(snapshot());
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('new-connection'),
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const playerState = { pause: vi.fn(), play: vi.fn() };
+        createService(connection, playerState);
+
+        connection.reconnected?.();
+        await vi.waitFor(() =>
+            expect(connection.invoke).toHaveBeenCalledWith(
+                'RegisterConnection',
+                expect.objectContaining({ deviceId: 'stable-device' }),
+            ),
+        );
+
+        expect(playerState.play).not.toHaveBeenCalled();
+        expect(
+            connection.invoke.mock.calls.filter(([method]) => method === 'GetSnapshot'),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
+
+    it('Offline_PausesEngineWithoutPauseCommand', () => {
+        const connection = fakeConnection();
+        const playerState = { pause: vi.fn() };
+        createService(connection, playerState);
+
+        globalThis.dispatchEvent(new Event('offline'));
+
+        expect(playerState.pause).toHaveBeenCalled();
+        expect(connection.invoke).not.toHaveBeenCalledWith('Pause', expect.anything());
+    });
+
+    it('SuspendedTab_ReregistersAfterLeaseExpiry', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('connection'),
+                });
+            }
+            if (method === 'RefreshConnectionLease') {
+                return Promise.resolve({
+                    commandId: null,
+                    status: 'ConnectionNotFound',
+                    errorCode: null,
+                    outcome: null,
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const { service } = createService(connection);
+        await service.registerConnection();
+
+        await vi.advanceTimersByTimeAsync(15_000);
+
+        expect(
+            connection.invoke.mock.calls.filter(([method]) => method === 'RegisterConnection'),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
+
+    it('IdempotentRegistration_StartsHeartbeatAndAllowsSessionRestore', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.invoke.mockResolvedValue({
+            commandId: 'command',
+            status: 'NoChanges',
+            errorCode: null,
+            outcome: outcome('connection'),
+        });
+        const { service } = createService(connection);
+
+        await expect(service.registerConnection()).resolves.toBeUndefined();
+        expect(vi.getTimerCount()).toBe(1);
+        vi.useRealTimers();
+    });
+
+    it.each(['connecting', 'registering', 'recovering', 'reconnecting'] as const)(
+        'WaitUntilReady_From%s_ResolvesOnlyAfterReady',
+        async (state) => {
+            const connection = fakeConnection();
+            connection.state = HubConnectionState.Connected;
+            const { service, store } = createService(connection);
+            store.setTransportState(state);
+            let resolved = false;
+
+            const waiting = service.waitUntilReady().then(() => (resolved = true));
+            await Promise.resolve();
+            expect(resolved).toBe(false);
+
+            store.setTransportState('ready');
+            await waiting;
+            expect(resolved).toBe(true);
+        },
+    );
+
+    it('WaitUntilReady_TerminalDisconnectReturnsNormalizedError', async () => {
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        const { service, store } = createService(connection);
+        store.setTransportState('reconnecting');
+
+        const waiting = service.waitUntilReady();
+        store.setTransportState('disconnected');
+
+        await expect(waiting).rejects.toThrow('connect_transport_disconnected');
+    });
+
+    it('WaitUntilReady_DisposeCancelsWaitingSubscriber', async () => {
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        const { service, store } = createService(connection);
+        store.setTransportState('recovering');
+
+        const waiting = service.waitUntilReady();
+        service.ngOnDestroy();
+
+        await expect(waiting).rejects.toThrow('connect_disposed');
+    });
+
+    it('RestoreSession_SucceedsWhenRealtimeStateOvertakesSnapshot', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.start.mockImplementation(async () => {
+            connection.state = HubConnectionState.Connected;
+            connection.connectionId = 'connection';
+        });
+        const { service, store } = createService(connection);
+        let snapshotCalls = 0;
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'GetSnapshot') {
+                snapshotCalls++;
+                return Promise.resolve(snapshot());
+            }
+            if (method === 'RegisterConnection') {
+                store.applyPlayer({
+                    ...snapshot().player,
+                    version: 2,
+                });
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('connection'),
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+
+        await expect(service.connect()).resolves.toBeUndefined();
+
+        expect(snapshotCalls).toBe(2);
+        expect(store.value.player?.version).toBe(2);
+        expect(store.transportState).toBe('ready');
+        vi.useRealTimers();
+    });
+
+    it('WaitUntilReady_RetriesRecoveryWhenConnectionIsStillConnected', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.connectionId = 'connection';
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'GetSnapshot') return Promise.resolve(snapshot());
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('connection'),
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const { service, store } = createService(connection);
+        store.setTransportState('unavailable');
+        store.setTransportError('connect_server_unavailable');
+
+        await expect(service.waitUntilReady()).resolves.toBeUndefined();
+
+        expect(store.transportState).toBe('ready');
+        expect(service.isReady).toBe(true);
+        vi.useRealTimers();
+    });
+
+    it('FailedRecoveryCycle_DoesNotPoisonTheNextCycle', async () => {
+        vi.useFakeTimers();
+        const connection = fakeConnection();
+        connection.state = HubConnectionState.Connected;
+        connection.connectionId = 'connection';
+        let snapshotCalls = 0;
+        connection.invoke.mockImplementation((method: string) => {
+            if (method === 'GetSnapshot') {
+                snapshotCalls++;
+                return Promise.resolve(
+                    snapshotCalls === 1
+                        ? { ...snapshot(), status: 'Unavailable' }
+                        : snapshot(),
+                );
+            }
+            if (method === 'RegisterConnection') {
+                return Promise.resolve({
+                    commandId: 'command',
+                    status: 'Applied',
+                    errorCode: null,
+                    outcome: outcome('connection'),
+                });
+            }
+            return Promise.reject(new Error('unexpected invocation'));
+        });
+        const { service, store } = createService(connection);
+        store.setTransportState('unavailable');
+
+        await expect(service.waitUntilReady()).rejects.toThrow(
+            'connect_snapshot_recovery_failed',
+        );
+        expect(store.transportState).toBe('unavailable');
+
+        await expect(service.waitUntilReady()).resolves.toBeUndefined();
+        expect(store.transportState).toBe('ready');
+        vi.useRealTimers();
+    });
+});
+
+function createService(
+    connection: ReturnType<typeof fakeConnection>,
+    playerState = { pause: vi.fn() },
+) {
+    const store = new ConnectStateStore();
+    const applier = { setSnapshotRecovery: vi.fn() };
+    const telemetry = { emit: vi.fn() };
+    const service = new ConnectHubService(
+        store,
+        applier as never,
+        { deviceId: 'stable-device', deviceName: 'Browser' } as never,
+        { create: () => 'command' } as never,
+        { create: () => connection } as never,
+        new ConnectTransportErrorMapper(),
+        telemetry as never,
+        playerState as never,
+        { heartbeatDelay: () => 15_000 } as never,
+    );
+    return { service, store };
+}
+
+function fakeConnection() {
+    const connection = {
+        state: HubConnectionState.Disconnected,
+        connectionId: null as string | null,
+        start: vi.fn(),
+        stop: vi.fn(),
+        invoke: vi.fn(),
+        on: vi.fn(),
+        onreconnecting: vi.fn((callback: () => void) => {
+            connection.reconnecting = callback;
+        }),
+        onreconnected: vi.fn((callback: () => void) => {
+            connection.reconnected = callback;
+        }),
+        onclose: vi.fn((callback: () => void) => {
+            connection.closed = callback;
+        }),
+        reconnecting: undefined as (() => void) | undefined,
+        reconnected: undefined as (() => void) | undefined,
+        closed: undefined as (() => void) | undefined,
+    };
+    return connection;
+}
+
+function snapshot() {
+    return {
+        status: 'Applied',
+        player: {
+            isPlaying: true,
+            positionMs: 0,
+            positionUpdatedAt: '2026-01-01T00:00:00Z',
+            volumePercent: 50,
+            version: 1,
+        },
+        queue: {
+            items: [],
+            currentQueueItemId: null,
+            repeatMode: 'None',
+            isShuffled: false,
+            version: 1,
+        },
+        presence: {
+            devices: [],
+            activeDeviceId: 'stable-device',
+            audioOwnerConnectionId: null,
+            version: 1,
+        },
+        serverTime: '2026-01-01T00:00:00Z',
+        errorCode: null,
+    };
+}
+
+function outcome(connectionId: string) {
+    return {
+        deviceId: 'stable-device',
+        connectionId,
+        queueItemId: null,
+        playerVersion: null,
+        queueVersion: null,
+        presenceVersion: 1,
+        removedConnectionCount: null,
+    };
+}

@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, HostListener, forwardRef } from
 import { MatIcon } from '@angular/material/icon';
 import { SeparatorComponent } from '../separator/separator.component';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 export interface SubjectSelectOption {
     id: string;
@@ -32,7 +33,7 @@ export class SubjectSelectComponent implements ControlValueAccessor {
     @Input() readonlyInput: boolean = false;
     @Input() readonly: boolean = false;
     @Input() disabled: boolean = false;
-    @Input() id = `subject-select-${crypto.randomUUID()}`;
+    @Input() id = `subject-select-${createUuid()}`;
 
     @Output() searchChange = new EventEmitter<string>();
 

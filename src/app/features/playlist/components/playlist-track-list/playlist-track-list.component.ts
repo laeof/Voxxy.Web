@@ -8,7 +8,13 @@ import { ListEntitiesFacade } from '@common/facades/list-entities.facade';
 @Component({
     selector: 'playlist-track-list',
     standalone: true,
-    template: ` <app-track-list [tracks]="dataSource$ | async" /> `,
+    template: `
+        <app-track-list
+            [tracks]="dataSource$ | async"
+            [sourceId]="playlistId()"
+            sourceType="Playlist"
+        />
+    `,
     imports: [TrackListComponent, AsyncPipe],
     providers: [PlaylistTrackListService],
 })

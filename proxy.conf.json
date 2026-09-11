@@ -1,0 +1,25 @@
+{
+    "/api/hubs": {
+        "target": "http://localhost:5001",
+        "secure": false,
+        "changeOrigin": true,
+        "ws": true
+    },
+    "/api": {
+        "target": "http://localhost:5001",
+        "secure": false,
+        "changeOrigin": true,
+        "ws": true,
+        "pathRewrite": {
+            "^/api": ""
+        }
+    },
+    "/blob": {
+        "target": "http://127.0.0.1:10000",
+        "secure": false,
+        "changeOrigin": false,
+        "pathRewrite": {
+            "^/blob": "/devstoreaccount1"
+        }
+    }
+}

@@ -22,6 +22,7 @@ import { UserStateService } from '@common/services/user-state.service';
 import { SnowComponent } from '@common/components/snow/snow.component';
 import { LogoComponent } from '@common/layout/components/topbar/components/logo/logo.component';
 import { first } from 'rxjs';
+import { PlayerHubService } from '@common/services/player-hub.service';
 
 @Component({
     selector: 'auth-login',
@@ -48,6 +49,7 @@ export class LoginComponent {
         private readonly authService: AuthService,
         private readonly router: Router,
         private readonly userStateService: UserStateService,
+        private readonly hubService: PlayerHubService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian);
 
@@ -64,6 +66,7 @@ export class LoginComponent {
             this.authService.login(loginData).subscribe((user) => {
                 this.loading = false;
                 this.authenticateUser(user);
+                void this.hubService.connect();
                 this.authService.xsrfToken().pipe(first()).subscribe();
             });
         } else {

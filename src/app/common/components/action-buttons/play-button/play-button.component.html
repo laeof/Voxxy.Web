@@ -1,14 +1,14 @@
-<span
-    class="action-play-button hover-scale"
-    (click)="togglePlayButton()"
-    (keydown.enter)="togglePlayButton()"
->
-    @if (
-        (this.mediaPlayerStateService.playingObs$ | async) &&
-        (this.mediaPlayerStateService.currentTrackObs$ | async)?.fromPlaylist === trackListId
-    ) {
-        <mat-icon class="play pause" svgIcon="pause"></mat-icon>
-    } @else {
-        <mat-icon class="play" svgIcon="play"></mat-icon>
-    }
-</span>
+@if ({ value: viewModel$ | async }; as vm) {
+    <span
+        class="action-play-button hover-scale"
+        [attr.aria-disabled]="vm.value?.disabled ? 'true' : 'false'"
+        (click)="togglePlayButton()"
+        (keydown.enter)="togglePlayButton()"
+    >
+        @if (vm.value?.showPause) {
+            <mat-icon class="play pause" svgIcon="pause"></mat-icon>
+        } @else {
+            <mat-icon class="play" svgIcon="play"></mat-icon>
+        }
+    </span>
+}

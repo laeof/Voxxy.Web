@@ -15,6 +15,8 @@ import { ArtistPopularTrackService } from '@features/artist/services/artist-popu
             [allowHeader]="false"
             [displayedColumns]="['Number', 'Name', 'Duration']"
             [showArtist]="false"
+            [sourceId]="artist?.id"
+            sourceType="Search"
         />
     `,
     imports: [TrackListComponent, AsyncPipe],

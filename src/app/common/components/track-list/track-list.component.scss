@@ -50,6 +50,28 @@
                 }
             }
 
+            &.playing {
+                .play-button {
+                    .number {
+                        display: none;
+                    }
+                    .pause {
+                        display: block;
+                    }
+                }
+            }
+
+            &.paused {
+                .play-button {
+                    .number {
+                        display: none;
+                    }
+                    .play {
+                        display: block;
+                    }
+                }
+            }
+
             &:hover {
                 .play-button {
                     .number,
@@ -61,7 +83,7 @@
                     }
                 }
 
-                &.playing.same_playlist {
+                &.playing {
                     .play-button {
                         .play,
                         .number {
@@ -73,7 +95,7 @@
                     }
                 }
 
-                &.paused.same_playlist {
+                &.paused {
                     .play-button {
                         .number,
                         .pause {

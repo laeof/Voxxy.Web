@@ -2,6 +2,7 @@ import { NgClass } from '@angular/common';
 import { Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 @Component({
     selector: 'app-subject-date',
@@ -22,7 +23,7 @@ export class SubjectDateComponent implements ControlValueAccessor {
     @Input() readonly: boolean = false;
     @Input() minDate: string = new Date().toISOString().split('T')[0];
     @Input() disabled: boolean = false;
-    @Input() id = `subject-date-${crypto.randomUUID()}`;
+    @Input() id = `subject-date-${createUuid()}`;
 
     @ViewChild('dateInput') dateInput!: ElementRef<HTMLInputElement>;
 

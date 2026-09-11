@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { PlayerHubService } from './player-hub.service';
 
 export interface LocalTrack {
     id: string;

@@ -172,5 +172,9 @@ export class MatIconsService {
             'stop',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/stop.svg'),
         );
+        this.matIconRegistry.addSvgIcon(
+            'device',
+            this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/device.svg'),
+        );
     }
 }

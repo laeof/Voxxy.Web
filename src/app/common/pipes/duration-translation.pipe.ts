@@ -7,7 +7,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class DurationTranslatePipe implements PipeTransform {
     transform(value: number | null | undefined): string {
         if (value == null || value < 0) {
-            return '';
+            return '0:00';
         }
 
         const totalSeconds = Math.floor(value);

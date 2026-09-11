@@ -1,18 +1,41 @@
 import { Injectable } from '@angular/core';
+import { ClientPlayerState } from '@common/entities/PlayerState';
+import { RepeatMode } from '@common/enums/repeat-mode.enum';
+import { Track } from '@features/track/models/track';
 import { BehaviorSubject } from 'rxjs';
-import { Track } from '../../features/track/models/track';
-import { RepeatMode } from '../enums/repeat-mode.enum';
 
-@Injectable({ providedIn: 'root' })
+export interface AuthoritativePlaybackTarget {
+    track: Track | null;
+    positionSec: number;
+    isPlaying: boolean;
+    isAudioOwner: boolean;
+    playerVersion: number;
+}
+
+@Injectable({
+    providedIn: 'root',
+})
 export class MediaPlayerStateService {
     private readonly playing$ = new BehaviorSubject(false);
-    private readonly position$ = new BehaviorSubject(0);
-    private readonly volume$ = new BehaviorSubject(50);
+    private readonly position$ = new BehaviorSubject<number>(0);
+    private readonly volume$ = new BehaviorSubject<number>(50);
 
     private readonly queue$ = new BehaviorSubject<Track[]>([]);
     private readonly index$ = new BehaviorSubject<number>(-1);
     private readonly currentTrack$ = new BehaviorSubject<Track | null>(null);
     private readonly repeat$ = new BehaviorSubject<RepeatMode>(RepeatMode.None);
+
+    private readonly audioOwner$ = new BehaviorSubject<boolean>(false);
+    private readonly authoritativePlayback$ =
+        new BehaviorSubject<AuthoritativePlaybackTarget>({
+            track: null,
+            positionSec: 0,
+            isPlaying: false,
+            isAudioOwner: false,
+            playerVersion: 0,
+        });
+    private authoritativeQueueItemId: string | null = null;
+    private authoritativePlayerVersion = 0;
 
     readonly playingObs$ = this.playing$.asObservable();
     readonly positionObs$ = this.position$.asObservable();
@@ -21,69 +44,175 @@ export class MediaPlayerStateService {
     readonly indexObs$ = this.index$.asObservable();
     readonly currentTrackObs$ = this.currentTrack$.asObservable();
     readonly repeatObs$ = this.repeat$.asObservable();
+    readonly audioOwnerObs$ = this.audioOwner$.asObservable();
+    readonly authoritativePlaybackObs$ = this.authoritativePlayback$.asObservable();
 
-    get playing() {
+    get playing(): boolean {
         return this.playing$.value;
     }
-    get queue() {
+
+    get position(): number {
+        return this.position$.value;
+    }
+
+    get volume(): number {
+        return this.volume$.value;
+    }
+
+    get queue(): Track[] {
         return this.queue$.value;
     }
-    get index() {
+
+    get index(): number {
         return this.index$.value;
     }
-    get currentTrack() {
+
+    get currentTrack(): Track | null {
         return this.currentTrack$.value;
     }
-    get repeat() {
+
+    get repeat(): RepeatMode {
         return this.repeat$.value;
     }
 
-    play() {
-        this.playing$.next(true);
-    }
-    pause() {
-        this.playing$.next(false);
+    get currentQueueItemId(): string | null {
+        return this.authoritativeQueueItemId;
     }
 
-    playQueue(queue: Track[], index = 0) {
+    applyAuthoritativeState(value: {
+        isPlaying: boolean;
+        positionSec?: number;
+        volumePercent: number;
+        queue: Track[];
+        index: number;
+        currentTrack: Track | null;
+        repeat: RepeatMode;
+        isAudioOwner: boolean;
+        playerVersion?: number;
+        currentQueueItemId?: string | null;
+    }): void {
+        const incomingPlayerVersion =
+            value.playerVersion ?? this.authoritativePlayerVersion;
+        const acceptsPlayerState =
+            incomingPlayerVersion >= this.authoritativePlayerVersion;
+        this.queue$.next(value.queue);
+        this.index$.next(value.index);
+        this.currentTrack$.next(value.currentTrack);
+        if (value.positionSec !== undefined && acceptsPlayerState) {
+            this.position$.next(value.positionSec);
+        }
+        this.volume$.next(value.volumePercent);
+        this.repeat$.next(value.repeat);
+        if (value.currentQueueItemId !== undefined) {
+            this.authoritativeQueueItemId = value.currentQueueItemId;
+        }
+        this.audioOwner$.next(value.isAudioOwner);
+        if (acceptsPlayerState) {
+            this.playing$.next(value.isPlaying);
+            this.authoritativePlayerVersion = incomingPlayerVersion;
+        }
+        this.authoritativePlayback$.next({
+            track: value.currentTrack,
+            positionSec: this.position,
+            isPlaying: this.playing,
+            isAudioOwner: value.isAudioOwner,
+            playerVersion: this.authoritativePlayerVersion,
+        });
+    }
+
+    applyServerState(playerState: ClientPlayerState): void {
+        this.volume$.next(playerState.volumePercent);
+        this.playing$.next(playerState.isPlaying);
+        this.currentTrack$.next(playerState.track);
+        this.queue$.next(playerState.track ? [playerState.track] : []);
+        this.index$.next(playerState.track ? 0 : -1);
+        this.publishPlaybackTarget();
+    }
+
+    applyQueueState(queue: Track[], index: number): void {
+        this.queue$.next(queue);
+        this.index$.next(index);
+    }
+
+    applyDeviceState(isActive: boolean): void {
+        this.audioOwner$.next(isActive);
+        this.publishPlaybackTarget();
+    }
+
+    play(): void {
+        this.playing$.next(true);
+        this.publishPlaybackTarget();
+    }
+
+    pause(): void {
+        this.playing$.next(false);
+        this.publishPlaybackTarget();
+    }
+
+    playQueue(queue: Track[], index = 0): void {
         this.queue$.next(queue);
         this.index$.next(index);
         this.currentTrack$.next(queue[index] ?? null);
-        this.playing$.next(true);
+        this.position$.next(0);
+        this.publishPlaybackTarget();
+
+        console.log('playQueue', queue, index);
     }
 
-    next() {
+    next(): void {
         if (!this.queue.length) return;
 
         let i = this.index + 1;
 
-        if (this.repeat === RepeatMode.One) i = this.index;
+        if (this.repeat === RepeatMode.One) {
+            i = this.index;
+        }
 
         if (i >= this.queue.length) {
-            if (this.repeat === RepeatMode.All) i = 0;
-            else return this.pause();
+            if (this.repeat === RepeatMode.All) {
+                i = 0;
+            } else {
+                this.pause();
+                return;
+            }
         }
 
         this.index$.next(i);
         this.currentTrack$.next(this.queue[i]);
+        this.position$.next(0);
+        this.publishPlaybackTarget();
     }
 
-    prev() {
+    prev(): void {
         if (this.index <= 0) return;
+
         const i = this.index - 1;
+
         this.index$.next(i);
         this.currentTrack$.next(this.queue[i]);
+        this.position$.next(0);
+        this.publishPlaybackTarget();
     }
 
-    setPosition(sec: number) {
+    setPosition(sec: number): void {
         this.position$.next(sec);
     }
 
-    setVolume(v: number) {
-        this.volume$.next(v);
+    setVolume(volume: number): void {
+        this.volume$.next(volume);
     }
 
-    setRepeat(mode: RepeatMode) {
+    setRepeat(mode: RepeatMode): void {
         this.repeat$.next(mode);
+    }
+
+    private publishPlaybackTarget(): void {
+        this.authoritativePlayback$.next({
+            track: this.currentTrack,
+            positionSec: this.position,
+            isPlaying: this.playing,
+            isAudioOwner: this.audioOwner$.value,
+            playerVersion: this.authoritativePlayerVersion,
+        });
     }
 }

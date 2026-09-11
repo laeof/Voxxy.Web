@@ -2,24 +2,15 @@ import { Component, signal } from '@angular/core';
 import { MatIconsService } from './common/services/mat-icons.service';
 import { TranslateService } from '@ngx-translate/core';
 import { RouterOutlet } from '@angular/router';
-import { MediaPlayerStateService } from './common/services/media-player-state.service';
 import { MediaPlayerEngineService } from './common/services/media-player-engine.service';
 import { PlayerTitleService } from './common/services/player-title.service';
-import { NavigationService } from '@common/services/navigation.service';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.html',
     styleUrl: './app.scss',
     imports: [RouterOutlet],
-    providers: [
-        MatIconsService,
-        TranslateService,
-        MediaPlayerStateService,
-        MediaPlayerEngineService,
-        PlayerTitleService,
-        NavigationService
-    ],
+    providers: [TranslateService],
 })
 export class App {
     protected readonly title = signal('Voxxy');
@@ -31,7 +22,7 @@ export class App {
         private readonly matIconsService: MatIconsService,
         private readonly mediaPlayerEngineService: MediaPlayerEngineService,
         private readonly playerTitleService: PlayerTitleService,
-        private readonly translateService: TranslateService
+        private readonly translateService: TranslateService,
     ) {
         this.translateService.addLangs(['en', 'ru', 'ua']);
         this.translateService.use('en');

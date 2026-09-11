@@ -35,4 +35,30 @@
             }
         }
     }
+
+    playerbar-device-card {
+        .device-card {
+            &:hover {
+                mat-icon {
+                    color: var(--primary-font-color);
+                }
+
+                .device-name {
+                    color: var(--primary-font-color) !important;
+                }
+            }
+
+            &.selected {
+                background-color: var(--secondary-container-color) !important;
+
+                mat-icon {
+                    color: var(--theme-primary);
+                }
+
+                .device-name {
+                    color: var(--theme-primary) !important;
+                }
+            }
+        }
+    }
 }

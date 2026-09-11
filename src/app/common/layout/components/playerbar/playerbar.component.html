@@ -1,4 +1,9 @@
 <div class="wrap">
+    @if ((transportErrorCode$ | async) === 'connect_websocket_unavailable') {
+        <div class="transport-warning" role="status">
+            {{ 'PLAYER.CONNECT_WEBSOCKET_UNAVAILABLE' | translate }}
+        </div>
+    }
     @if (!(currentTrack$ | async)) {
         <div class="overlay"></div>
     }
@@ -67,23 +72,30 @@
         </div>
         <div class="bottom-wrap">
             <div class="bottom">
-                <span class="time subcolor">{{ currentTime$ | async | durationTranslate }}</span>
+                <label for="slider" class="time subcolor">{{ currentTime$ | async | durationTranslate }}</label>
                 <mat-slider
                     class="song-slider"
                     [min]="0"
                     [max]="(currentTrack$ | async)?.duration"
                     [step]="1"
-                    (input)="trackPositionChange($event)"
                 >
-                    <input matSliderThumb #slider [value]="currentTime$ | async" />
+                    <input
+                        id="slider"
+                        matSliderThumb
+                        #slider
+                        [value]="(currentTime$ | async) || 0"
+                        (input)="trackPositionPreview($event)"
+                        (change)="trackPositionChange(slider.value)"
+                    />
                 </mat-slider>
-                <span class="time subcolor">{{
+                <label for="slider" class="time subcolor">{{
                     (currentTrack$ | async)?.duration | durationTranslate
-                }}</span>
+                }}</label>
             </div>
         </div>
     </div>
     <div class="additional section">
+        <playerbar-device></playerbar-device>
         <mat-icon svgIcon="lyrics"></mat-icon>
         <mat-icon svgIcon="queue"></mat-icon>
         <div class="volume wrapped-icon-hover">

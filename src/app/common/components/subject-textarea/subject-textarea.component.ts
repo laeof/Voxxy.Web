@@ -1,5 +1,6 @@
 import { Component, forwardRef, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { createUuid } from '@common/helpers/uuid.helper';
 
 @Component({
     selector: 'app-subject-textarea',
@@ -19,7 +20,7 @@ export class SubjectTextareaComponent implements ControlValueAccessor {
     @Input() content: string = '';
     @Input() readonly: boolean = false;
     @Input() disabled: boolean = false;
-    @Input() id = `subject-textarea-${crypto.randomUUID()}`;
+    @Input() id = `subject-textarea-${createUuid()}`;
 
     private onChange: (value: string) => void = () => {};
     private onTouched: () => void = () => {};

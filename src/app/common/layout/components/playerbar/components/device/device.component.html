@@ -1,0 +1,26 @@
+<div class="mat-icon-wrapper" [matMenuTriggerFor]="devicemenu">
+    <mat-icon svgIcon="device"></mat-icon>
+</div>
+<mat-menu #devicemenu="matMenu" [overlapTrigger]="false">
+    <span
+        class="titlecolor content-spacing-horizontal vertical-small horizontal-small"
+        style="font-size: 18px"
+        >Voxxy Connect</span
+    >
+    @for (device of dataSource$ | async; track device.id) {
+        <playerbar-device-card
+            [activeDeviceId]="selected$ | async"
+            [device]="device"
+            (click)="selectDevice(device)"
+            (keydown.enter)="selectDevice(device)"
+        >
+        </playerbar-device-card>
+    }
+    @if ((dataSource$ | async)?.length === 1) {
+        <span
+            class="subcolor content-spacing-horizontal vertical-small horizontal-small"
+            style="font-size: 14px"
+            >{{ 'DEVICES.NO_DEVICES_FOUND' | translate }}</span
+        >
+    }
+</mat-menu>

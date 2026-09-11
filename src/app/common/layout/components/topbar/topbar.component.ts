@@ -20,6 +20,7 @@ import { UserStateService } from '@common/services/user-state.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { GlobalSearchService } from '@common/services/global-search.service';
 import { GlobalSearchComponent } from './components/global-search/global-search.component';
+import { ConnectHubService } from '@common/connect/transport/connect-hub.service';
 
 @Component({
     selector: 'layout-topbar',
@@ -52,6 +53,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
         private readonly route: ActivatedRoute,
         private readonly authService: AuthService,
         private readonly globalSearchService: GlobalSearchService,
+        private readonly connectHub: ConnectHubService,
         public userStateService: UserStateService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian, ukrainian);
@@ -90,10 +92,12 @@ export class TopBarComponent implements OnInit, OnDestroy {
     }
 
     logout() {
-        this.authService
-            .logout()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => this.userStateService.clear());
+        void this.connectHub.disconnectGracefully().finally(() => {
+            this.authService
+                .logout()
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => this.userStateService.clear());
+        });
     }
 
     navigateUserProfile() {

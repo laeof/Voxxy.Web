@@ -10,7 +10,7 @@
         {
             "label": "Launch Web App",
             "type": "shell",
-            "command": "ng serve --poll=2500 --host=0.0.0.0",
+            "command": "ng serve --poll=2500 --proxy-config proxy.conf.json",
             "problemMatcher": []
         },
         {
