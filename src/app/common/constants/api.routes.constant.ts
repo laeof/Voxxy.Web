@@ -16,14 +16,15 @@ export class ApiRoutes {
     };
 
     public static readonly Auth = {
-        login: '/users/login',
-        logout: '/users/logout',
-        refresh: '/users/refresh',
+        login: '/auth/login',
+        logout: '/auth/logout',
+        refresh: '/auth/refresh',
+        register: '/auth/register',
         xsrf: '/users/xsrf-token',
     };
 
     public static readonly Users = {
-        me: '/users/me',
+        me: '/auth/me',
         getById: '/users/:id',
     };
 
