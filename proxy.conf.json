@@ -1,17 +1,20 @@
 {
     "/api/hubs": {
-        "target": "http://localhost:5001",
-        "secure": false,
-        "changeOrigin": true,
-        "ws": true
-    },
-    "/api": {
-        "target": "http://localhost:5001",
+        "target": "http://localhost:5209",
         "secure": false,
         "changeOrigin": true,
         "ws": true,
         "pathRewrite": {
-            "^/api": ""
+            "^/api/hubs": "/api/v1/hubs"
+        }
+    },
+    "/api": {
+        "target": "http://localhost:5209",
+        "secure": false,
+        "changeOrigin": true,
+        "ws": true,
+        "pathRewrite": {
+            "^/api": "/api/v1"
         }
     },
     "/blob": {
