@@ -4,7 +4,6 @@ import {
     HubConnectionState,
 } from '@microsoft/signalr';
 import { environment } from '@environments/environment';
-import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { CommandIdService } from '../commands/command-id.service';
 import { DeviceIdentityService } from '../device/device-identity.service';
 import { ConnectStateStore } from '../state/connect-state.store';
@@ -27,6 +26,7 @@ import { Subject, filter, firstValueFrom, take, takeUntil, timeout } from 'rxjs'
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const INITIAL_RECONNECT_DELAY_MS = 2_000;
+const RECOVERY_DELAYS_MS = [2_000, 5_000, 10_000, 30_000] as const;
 const READY_TIMEOUT_MS = 15_000;
 
 @Injectable({ providedIn: 'root' })
@@ -34,13 +34,23 @@ export class ConnectHubService implements OnDestroy {
     private readonly connection: HubConnection;
     private connectPromise: Promise<void> | null = null;
     private heartbeatId: ReturnType<typeof setTimeout> | null = null;
+    private heartbeatGeneration = 0;
+    private heartbeatInFlight = false;
     private initialReconnectId: ReturnType<typeof setTimeout> | null = null;
+    private recoveryAttempt = 0;
     private registrationPromise: Promise<void> | null = null;
     private snapshotPromise: Promise<boolean> | null = null;
     private allowInitialReconnect = true;
     private registeredConnectionId: string | null = null;
     private restorePromise: Promise<void> | null = null;
     private readonly destroy$ = new Subject<void>();
+    private readonly offlineHandler = () => {
+        if (this.disposed) return;
+        this.stopHeartbeat();
+        this.store.setTransportState('unavailable');
+    };
+    private lifecycleGeneration = 0;
+    private disposePromise: Promise<void> | null = null;
     private disposed = false;
 
     constructor(
@@ -51,7 +61,6 @@ export class ConnectHubService implements OnDestroy {
         private readonly connectionFactory: ConnectHubConnectionFactory,
         private readonly errors: ConnectTransportErrorMapper,
         private readonly telemetry: ConnectClientTelemetry,
-        private readonly playerState: MediaPlayerStateService,
         private readonly timing: ConnectTiming,
     ) {
         this.connection = this.connectionFactory.create(
@@ -62,10 +71,7 @@ export class ConnectHubService implements OnDestroy {
         );
         this.registerHandlers();
         this.applier.setSnapshotRecovery(() => this.refreshSnapshot());
-        globalThis.addEventListener?.('offline', () => {
-            this.stopHeartbeat();
-            this.playerState.pause();
-        });
+        globalThis.addEventListener?.('offline', this.offlineHandler);
     }
 
     get isConnected(): boolean {
@@ -109,6 +115,7 @@ export class ConnectHubService implements OnDestroy {
     }
 
     connect(): Promise<void> {
+        if (this.disposed) return Promise.reject(new Error('connect_disposed'));
         if (this.connectPromise) return this.connectPromise;
         if (this.isReady) return Promise.resolve();
         if (this.isConnected) return this.restoreSession();
@@ -223,6 +230,7 @@ export class ConnectHubService implements OnDestroy {
             commandId: this.commandIds.create(),
             deviceId: this.identity.deviceId,
             deviceName: this.identity.deviceName,
+            runtimeSessionId: this.identity.runtimeSessionId,
         };
         this.registrationPromise = this.invoke<ConnectCommandAck>('RegisterConnection', request)
             .then((ack) => {
@@ -233,7 +241,6 @@ export class ConnectHubService implements OnDestroy {
                     throw new Error('connect_registration_connection_id_missing');
                 }
                 this.registeredConnectionId = ack.outcome.connectionId;
-                this.startHeartbeat();
             })
             .finally(() => {
                 this.registrationPromise = null;
@@ -247,9 +254,11 @@ export class ConnectHubService implements OnDestroy {
         this.stopHeartbeat();
         if (this.isConnected) {
             const timeout = new Promise<void>((resolve) => setTimeout(resolve, 2_000));
-            const disconnect = this.invoke<ConnectCommandAck>('DisconnectConnection', {
-                commandId: this.commandIds.create(),
-            }).then(() => undefined);
+            const disconnect = Promise.resolve(
+                this.invoke<ConnectCommandAck>('DisconnectConnection', {
+                    commandId: this.commandIds.create(),
+                }),
+            ).then(() => undefined);
             await Promise.race([disconnect, timeout]).catch(() => undefined);
         }
         await this.connection.stop();
@@ -258,29 +267,32 @@ export class ConnectHubService implements OnDestroy {
     }
 
     private registerHandlers(): void {
-        this.connection.on('PlayerStateChanged', (event: PlayerStateChangedEvent) =>
-            this.applier.applyPlayerEvent(event),
-        );
-        this.connection.on('QueueStateChanged', (event: QueueStateChangedEvent) =>
-            this.applier.applyQueueEvent(event),
-        );
-        this.connection.on('PresenceStateChanged', (event: PresenceStateChangedEvent) =>
-            this.applier.applyPresenceEvent(event),
-        );
-        this.connection.on('PlayerQueueStateChanged', (event: PlayerQueueStateChangedEvent) =>
-            this.applier.applyPlayerQueueEvent(event),
-        );
-        this.connection.on('PlayerPresenceStateChanged', (event: PlayerPresenceStateChangedEvent) =>
-            this.applier.applyPlayerPresenceEvent(event),
-        );
+        this.connection.on('PlayerStateChanged', (event: PlayerStateChangedEvent) => {
+            if (!this.disposed) this.applier.applyPlayerEvent(event);
+        });
+        this.connection.on('QueueStateChanged', (event: QueueStateChangedEvent) => {
+            if (!this.disposed) this.applier.applyQueueEvent(event);
+        });
+        this.connection.on('PresenceStateChanged', (event: PresenceStateChangedEvent) => {
+            if (!this.disposed) this.applier.applyPresenceEvent(event);
+        });
+        this.connection.on('PlayerQueueStateChanged', (event: PlayerQueueStateChangedEvent) => {
+            if (!this.disposed) this.applier.applyPlayerQueueEvent(event);
+        });
+        this.connection.on('PlayerPresenceStateChanged', (event: PlayerPresenceStateChangedEvent) => {
+            if (!this.disposed) this.applier.applyPlayerPresenceEvent(event);
+        });
         this.connection.onreconnecting(() => {
+            if (this.disposed) return;
+            this.lifecycleGeneration++;
+            this.restorePromise = null;
             this.registeredConnectionId = null;
             this.stopHeartbeat();
-            this.playerState.pause();
             this.store.setTransportState('reconnecting');
             this.telemetry.emit('connect_transport_reconnecting');
         });
         this.connection.onreconnected(() => {
+            if (this.disposed) return;
             this.telemetry.emit('connect_transport_connected', { reconnected: true });
             void this.restoreSession().catch(() => {
                 this.store.setSyncStatus('OutOfSync');
@@ -288,9 +300,10 @@ export class ConnectHubService implements OnDestroy {
             });
         });
         this.connection.onclose(() => {
+            if (this.disposed) return;
+            this.lifecycleGeneration++;
             this.registeredConnectionId = null;
             this.stopHeartbeat();
-            this.playerState.pause();
             this.store.setTransportState('disconnected');
             this.telemetry.emit('connect_transport_disconnected');
             this.scheduleInitialReconnect();
@@ -298,14 +311,17 @@ export class ConnectHubService implements OnDestroy {
     }
 
     private scheduleInitialReconnect(): void {
-        if (!this.allowInitialReconnect || this.initialReconnectId !== null || this.isConnected) {
+        if (this.disposed || !this.allowInitialReconnect || this.initialReconnectId !== null || this.isReady) {
             return;
         }
 
+        const delay = RECOVERY_DELAYS_MS[Math.min(this.recoveryAttempt, RECOVERY_DELAYS_MS.length - 1)];
+        this.recoveryAttempt++;
         this.initialReconnectId = setTimeout(() => {
             this.initialReconnectId = null;
-            void this.connect().catch(() => undefined);
-        }, INITIAL_RECONNECT_DELAY_MS);
+            const recovery = this.isConnected ? this.restoreSession() : this.connect();
+            void recovery.catch(() => this.scheduleInitialReconnect());
+        }, this.recoveryAttempt === 1 ? INITIAL_RECONNECT_DELAY_MS : delay);
     }
 
     private clearInitialReconnect(): void {
@@ -316,21 +332,27 @@ export class ConnectHubService implements OnDestroy {
 
     private async restoreSession(): Promise<void> {
         if (this.restorePromise) return this.restorePromise;
-        this.restorePromise = (async () => {
+        const generation = this.lifecycleGeneration;
+        const restore = (async () => {
             this.store.setTransportState('recovering');
             if (!(await this.requestSnapshot())) {
                 throw new Error('connect_snapshot_recovery_failed');
             }
+            this.ensureCurrent(generation);
             this.store.setTransportState('registering');
             await this.registerConnection();
+            this.ensureCurrent(generation);
             // Registration establishes a new connection membership and may change ownership.
             // Reconcile again before commands or media projection are allowed to proceed.
             this.store.setTransportState('recovering');
             if (!(await this.requestSnapshot())) {
                 throw new Error('connect_snapshot_recovery_failed');
             }
+            this.ensureCurrent(generation);
             this.store.setTransportError(null);
             this.store.setTransportState('ready');
+            this.recoveryAttempt = 0;
+            this.startHeartbeat();
         })()
             .catch((error: unknown) => {
                 this.store.setTransportState(
@@ -344,9 +366,13 @@ export class ConnectHubService implements OnDestroy {
                 throw error;
             })
             .finally(() => {
-                this.restorePromise = null;
+                if (this.restorePromise === restore) this.restorePromise = null;
+                if (this.store.transportState === 'unavailable') {
+                    this.scheduleInitialReconnect();
+                }
             });
-        return this.restorePromise;
+        this.restorePromise = restore;
+        return restore;
     }
 
     private requestSnapshot(): Promise<boolean> {
@@ -393,20 +419,31 @@ export class ConnectHubService implements OnDestroy {
 
     private startHeartbeat(): void {
         if (this.heartbeatId !== null) return;
-        this.scheduleHeartbeat();
+        const generation = ++this.heartbeatGeneration;
+        this.scheduleHeartbeat(generation);
     }
 
     private stopHeartbeat(): void {
+        this.heartbeatGeneration++;
         if (this.heartbeatId === null) return;
         clearTimeout(this.heartbeatId);
         this.heartbeatId = null;
     }
 
-    private scheduleHeartbeat(): void {
+    private scheduleHeartbeat(generation: number): void {
+        if (generation !== this.heartbeatGeneration || this.heartbeatId !== null) return;
         this.heartbeatId = setTimeout(async () => {
             this.heartbeatId = null;
-            await this.sendHeartbeat();
-            if (this.isConnected) this.scheduleHeartbeat();
+            if (generation !== this.heartbeatGeneration || this.heartbeatInFlight) return;
+            this.heartbeatInFlight = true;
+            try {
+                await this.sendHeartbeat();
+            } finally {
+                this.heartbeatInFlight = false;
+                if (generation === this.heartbeatGeneration && this.isReady) {
+                    this.scheduleHeartbeat(generation);
+                }
+            }
         }, this.timing.heartbeatDelay(HEARTBEAT_INTERVAL_MS));
     }
 
@@ -414,19 +451,40 @@ export class ConnectHubService implements OnDestroy {
         if (!this.isConnected) return;
         try {
             const ack = await this.invoke<ConnectCommandAck>('RefreshConnectionLease');
-            if (ack.status === 'ConnectionNotFound') await this.registerConnection();
-            if (ack.status === 'Unavailable') this.store.setSyncStatus('Unavailable');
+            if (ack.status === 'ConnectionNotFound') await this.restoreSession();
+            if (ack.status === 'Unavailable') {
+                this.store.setSyncStatus('Unavailable');
+                this.store.setTransportError(ack.errorCode ?? 'connect_unavailable');
+                this.store.setTransportState('unavailable');
+                this.stopHeartbeat();
+                this.scheduleInitialReconnect();
+            }
         } catch {
             // Automatic reconnect owns transport recovery.
         }
     }
 
     ngOnDestroy(): void {
+        void this.dispose();
+    }
+
+    dispose(): Promise<void> {
+        if (this.disposePromise) return this.disposePromise;
         this.disposed = true;
+        this.lifecycleGeneration++;
         this.allowInitialReconnect = false;
         this.stopHeartbeat();
         this.clearInitialReconnect();
+        globalThis.removeEventListener?.('offline', this.offlineHandler);
         this.destroy$.next();
         this.destroy$.complete();
+        this.disposePromise = this.disconnectGracefully();
+        return this.disposePromise;
+    }
+
+    private ensureCurrent(generation: number): void {
+        if (this.disposed || generation !== this.lifecycleGeneration) {
+            throw new Error('connect_lifecycle_superseded');
+        }
     }
 }

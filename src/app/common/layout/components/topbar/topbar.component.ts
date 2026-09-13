@@ -21,6 +21,7 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { GlobalSearchService } from '@common/services/global-search.service';
 import { GlobalSearchComponent } from './components/global-search/global-search.component';
 import { ConnectHubService } from '@common/connect/transport/connect-hub.service';
+import { AutumnLeavesComponent } from '@common/components/leaf/leaf.component';
 
 @Component({
     selector: 'layout-topbar',
@@ -32,6 +33,7 @@ import { ConnectHubService } from '@common/connect/transport/connect-hub.service
         MatIcon,
         TranslatePipe,
         SnowComponent,
+        AutumnLeavesComponent,
         AuthorizeDirective,
         AnonymousDirective,
         MatMenu,
@@ -45,6 +47,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
     readonly permissions = AppPermissions;
 
     private readonly destroy$ = new Subject<void>();
+
+    readonly isWinter =
+        new Date().getMonth() === 11 || new Date().getMonth() === 0 || new Date().getMonth() === 1;
 
     constructor(
         private readonly translationLoaderService: TranslationLoaderService,

@@ -10,6 +10,10 @@
         z-index: -1;
     }
 
+    app-autumn-leaves {
+        z-index: 0;
+    }
+
     .form {
         display: flex;
         flex-direction: column;
@@ -17,6 +21,7 @@
         justify-content: flex-start;
         flex: 1;
         gap: 10px;
+        z-index: 1;
 
         layout-logo {
             padding: 30px 0 0;

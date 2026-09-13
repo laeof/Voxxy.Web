@@ -1,11 +1,11 @@
 import { BehaviorSubject } from 'rxjs';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { TrackListComponent } from './track-list.component';
 import { Track } from '@features/track/models/track';
 
 describe('TrackListComponent playback state', () => {
     it('PlaybackState_FollowsCurrentQueueItemPlayerAndContext', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const component = createComponent(store);
         component.tracks = [track('track-1'), track('track-2')];
         component.sourceId = 'context-1';
@@ -19,7 +19,7 @@ describe('TrackListComponent playback state', () => {
         } | null = null;
         component.playbackState$.subscribe((value) => (playback = value));
 
-        store.applySnapshot(snapshot('context-1', 'Album', true, 'queue-1'));
+        applySnapshot(store, snapshot('context-1', 'Album', true, 'queue-1'));
         expect(playback).toMatchObject({
             isCurrentContext: true,
             currentTrackId: 'track-1',
@@ -28,10 +28,7 @@ describe('TrackListComponent playback state', () => {
             isPlaying: true,
         });
 
-        store.applyQueue({
-            ...snapshot('context-2', 'Playlist', true, 'queue-1').queue!,
-            version: 2,
-        });
+        applySnapshot(store, snapshot('context-2', 'Playlist', true, 'queue-1'));
         expect(playback).toMatchObject({
             isCurrentContext: false,
             currentTrackId: null,
@@ -41,29 +38,23 @@ describe('TrackListComponent playback state', () => {
     });
 
     it('PlaybackState_ReactsToInputChangesAndRemotePlayerChanges', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const component = createComponent(store);
         component.sourceId = 'context-2';
         component.sourceType = 'Album';
         const values: boolean[] = [];
         component.playbackState$.subscribe((value) => values.push(value.isPlaying));
 
-        store.applySnapshot(snapshot('context-1', 'Album', true, 'queue-1'));
+        applySnapshot(store, snapshot('context-1', 'Album', true, 'queue-1'));
         component.sourceId = 'context-1';
-        store.applyPlayer({
-            ...snapshot('context-1', 'Album', false, 'queue-1').player!,
-            version: 2,
-        });
-        store.applyPlayer({
-            ...snapshot('context-1', 'Album', true, 'queue-1').player!,
-            version: 3,
-        });
+        store.pause();
+        store.play();
 
         expect(values).toEqual([false, true, false, true]);
     });
 
     it('CurrentPlayingTrack_Pauses_AndCurrentPausedTrackPlays', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = {
             pause: vi.fn(),
             play: vi.fn(),
@@ -73,22 +64,19 @@ describe('TrackListComponent playback state', () => {
         component.tracks = [track('track-1'), track('track-2')];
         component.sourceId = 'context-1';
         component.sourceType = 'Album';
-        store.applySnapshot(snapshot('context-1', 'Album', true, 'queue-1'));
+        applySnapshot(store, snapshot('context-1', 'Album', true, 'queue-1'));
 
         component.togglePlayButton(component.tracks[0]);
         expect(sync.pause).toHaveBeenCalledOnce();
         expect(sync.playContextFromDisplayedTrack).not.toHaveBeenCalled();
 
-        store.applyPlayer({
-            ...snapshot('context-1', 'Album', false, 'queue-1').player!,
-            version: 2,
-        });
+        store.pause();
         component.togglePlayButton(component.tracks[0]);
         expect(sync.play).toHaveBeenCalledOnce();
     });
 
     it('OtherTrackOrContext_StartsSelectedContextWithoutGlobalPause', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = {
             pause: vi.fn(),
             play: vi.fn(),
@@ -98,7 +86,7 @@ describe('TrackListComponent playback state', () => {
         component.tracks = [track('track-1'), track('track-2')];
         component.sourceId = 'context-1';
         component.sourceType = 'Album';
-        store.applySnapshot(snapshot('context-1', 'Album', true, 'queue-1'));
+        applySnapshot(store, snapshot('context-1', 'Album', true, 'queue-1'));
 
         component.togglePlayButton(component.tracks[1]);
         expect(sync.playContextFromDisplayedTrack).toHaveBeenCalledWith(
@@ -121,7 +109,7 @@ describe('TrackListComponent playback state', () => {
 });
 
 function createComponent(
-    store: ConnectStateStore,
+    store: MediaPlayerStateService,
     sync: object = {
         playContextFromDisplayedTrack: vi.fn().mockResolvedValue(undefined),
     },
@@ -182,6 +170,25 @@ function snapshot(
         serverTime: '2026-01-01T00:00:00.000Z',
         errorCode: null,
     };
+}
+
+function applySnapshot(state: MediaPlayerStateService, value: ReturnType<typeof snapshot>): void {
+    const index = value.queue!.items.findIndex(
+        (item) => item.queueItemId === value.queue!.currentQueueItemId,
+    );
+    const queue = value.queue!.items.map((item) => track(item.trackId));
+    state.applyAuthoritativeState({
+        isPlaying: value.player!.isPlaying,
+        volumePercent: value.player!.volumePercent,
+        queue,
+        index,
+        currentTrack: queue[index] ?? null,
+        repeat: state.repeat,
+        isAudioOwner: false,
+        currentQueueItemId: value.queue!.currentQueueItemId,
+        sourceId: value.queue!.sourceId,
+        sourceType: value.queue!.sourceType,
+    });
 }
 
 function track(id: string): Track {

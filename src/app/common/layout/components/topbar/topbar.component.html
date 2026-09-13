@@ -1,4 +1,8 @@
-<app-snow [count]="50"></app-snow>
+@if (isWinter) {
+    <app-snow [count]="50"></app-snow>
+} @else {
+    <app-autumn-leaves [count]="50"></app-autumn-leaves>
+}
 <div class="start-section">
     <layout-logo></layout-logo>
 </div>

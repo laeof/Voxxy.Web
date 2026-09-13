@@ -21,6 +21,10 @@ export class PlayerHubService {
         return this.hub.connectionId;
     }
 
+    get isReady(): boolean {
+        return this.hub.isReady;
+    }
+
     connect(): Promise<void> {
         return this.hub.connect();
     }

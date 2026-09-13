@@ -35,6 +35,7 @@ export class MediaPlayerSyncService implements OnDestroy {
     private lastTrackId: string | null = null;
     private lastIsAudioOwner = false;
     private lastSnapshotRevision = -1;
+    private localMode = false;
     readonly viewPosition$;
 
     constructor(
@@ -67,6 +68,20 @@ export class MediaPlayerSyncService implements OnDestroy {
             });
 
         this.connectStore.state$.pipe(takeUntil(this.destroy$)).subscribe(() => this.applyProjection());
+        this.connectStore.transportState$.pipe(takeUntil(this.destroy$)).subscribe((transportState) => {
+            const unavailable = ['unavailable', 'disconnected', 'reconnecting'].includes(
+                transportState,
+            );
+            if (unavailable && !this.localMode) {
+                this.localMode = true;
+                // Only the former audio owner may continue automatically. Other devices keep
+                // the mirrored queue but are explicitly silent until a user presses play.
+                this.state.enterLocalMode(this.lastIsAudioOwner && this.state.playing);
+            } else if (transportState === 'ready') {
+                this.localMode = false;
+                this.applyProjection();
+            }
+        });
 
         this.connectStore.queue$
             .pipe(
@@ -77,6 +92,8 @@ export class MediaPlayerSyncService implements OnDestroy {
                 takeUntil(this.destroy$),
             )
             .subscribe((ids) => trackService.tracksBatch([...new Set(ids)]));
+
+        this.initializeMediaSession();
     }
 
     play(trackId?: string, positionMs?: number): void {
@@ -122,6 +139,23 @@ export class MediaPlayerSyncService implements OnDestroy {
         tracks: readonly Track[],
         startIndex?: number,
     ): Promise<void> {
+        if (this.localMode || !this.hub.isReady) {
+            const isCurrentContext =
+                this.state.sourceId === sourceId && this.state.sourceType === sourceType;
+            if (isCurrentContext && startIndex === undefined) {
+                if (this.state.playing) this.state.pause();
+                else {
+                    this.state.takeLocalAudioOwnership();
+                    this.state.play();
+                }
+                return;
+            }
+            const index = Math.min(Math.max(0, startIndex ?? 0), tracks.length - 1);
+            this.state.takeLocalAudioOwnership();
+            this.state.playQueue([...tracks], index, { sourceId, sourceType });
+            this.state.play();
+            return;
+        }
         const queue = this.connectStore.value.queue;
         const isCurrentContext = isSamePlaybackContext(queue, { sourceId, sourceType });
         if (isCurrentContext && queue) {
@@ -157,6 +191,18 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     private async startPlayback(trackId?: string, positionMs?: number): Promise<void> {
+        if (this.localMode || !this.hub.isReady) {
+            if (trackId) {
+                const track = this.tracks.get(trackId);
+                if (!track) return;
+                const queue = [...this.state.queue, track];
+                this.state.playQueue(queue, queue.length - 1);
+                if (positionMs !== undefined) this.state.setPosition(positionMs / 1000);
+            }
+            this.state.takeLocalAudioOwnership();
+            this.state.play();
+            return;
+        }
         if (trackId) {
             const ack = await this.commands.addQueueItem(trackId);
             const queueItemId = ack.outcome?.queueItemId;
@@ -177,30 +223,58 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     pause(): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.pause();
+            return;
+        }
         void this.commands.pause();
     }
 
     setVolume(volume: number): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.setVolume(volume);
+            return;
+        }
         this.coalescer.setVolume(volume);
     }
 
     seek(positionSec: number): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.seekLocal(positionSec);
+            return;
+        }
         this.coalescer.commitSeek(positionSec);
     }
 
     previewSeek(positionSec: number): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.seekLocal(positionSec);
+            return;
+        }
         this.coalescer.previewSeek(positionSec);
     }
 
     next(): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.next();
+            return;
+        }
         void this.commands.next();
     }
 
     previous(): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.prev();
+            return;
+        }
         void this.commands.previous();
     }
 
     setRepeat(mode: RepeatMode): void {
+        if (this.localMode || !this.hub.isReady) {
+            this.state.setRepeat(mode);
+            return;
+        }
         const contract: Record<RepeatMode, RepeatModeContract> = {
             [RepeatMode.None]: 'None',
             [RepeatMode.All]: 'Queue',
@@ -210,6 +284,7 @@ export class MediaPlayerSyncService implements OnDestroy {
     }
 
     private applyProjection(): void {
+        if (this.localMode) return;
         const { player, queue, presence } = this.connectStore.value;
         if (!player || !queue || !presence) return;
 
@@ -264,6 +339,8 @@ export class MediaPlayerSyncService implements OnDestroy {
             isAudioOwner,
             playerVersion: player.version,
             currentQueueItemId: queue.currentQueueItemId,
+            sourceId: queue.sourceId ?? null,
+            sourceType: queue.sourceType ?? null,
         });
         this.lastPositionAnchor = positionAnchor;
         this.lastTrackId = authoritativeTrackId;
@@ -271,7 +348,89 @@ export class MediaPlayerSyncService implements OnDestroy {
         this.lastSnapshotRevision = this.connectStore.value.snapshotRevision;
     }
 
+    private initializeMediaSession(): void {
+        if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+
+        this.setMediaSessionHandler('play', () => this.play());
+        this.setMediaSessionHandler('pause', () => this.pause());
+        this.setMediaSessionHandler('nexttrack', () => this.next());
+        this.setMediaSessionHandler('previoustrack', () => this.previous());
+        this.setMediaSessionHandler('seekto', (details) => {
+            if (details.seekTime !== undefined) this.seek(details.seekTime);
+        });
+        this.setMediaSessionHandler('seekforward', (details) => {
+            this.seek(this.mediaSessionPosition(details.seekOffset ?? 10));
+        });
+        this.setMediaSessionHandler('seekbackward', (details) => {
+            this.seek(this.mediaSessionPosition(-(details.seekOffset ?? 10)));
+        });
+
+        combineLatest([
+            this.state.currentTrackObs$,
+            this.state.playingObs$,
+            this.viewPosition$,
+        ])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(([track, playing, position]) => {
+                try {
+                    navigator.mediaSession.metadata = track
+                        ? new MediaMetadata({
+                              title: track.name,
+                              artist: track.artists.map((artist) => artist.name).join(', '),
+                              album: track.album?.name ?? '',
+                              artwork: track.imageUrl ? [{ src: track.imageUrl }] : [],
+                          })
+                        : null;
+                    navigator.mediaSession.playbackState = track
+                        ? playing
+                            ? 'playing'
+                            : 'paused'
+                        : 'none';
+                    if (track?.duration && Number.isFinite(track.duration)) {
+                        navigator.mediaSession.setPositionState({
+                            duration: track.duration,
+                            playbackRate: 1,
+                            position: Math.min(Math.max(0, position), track.duration),
+                        });
+                    }
+                } catch {
+                    // Media Session support differs between browsers and OS integrations.
+                }
+            });
+    }
+
+    private setMediaSessionHandler(
+        action: MediaSessionAction,
+        handler: MediaSessionActionHandler | null,
+    ): void {
+        try {
+            navigator.mediaSession.setActionHandler(action, handler);
+        } catch {
+            // Unsupported actions must not affect regular in-page playback.
+        }
+    }
+
+    private mediaSessionPosition(offsetSec: number): number {
+        const duration = this.state.currentTrack?.duration ?? Number.MAX_SAFE_INTEGER;
+        return Math.min(Math.max(0, this.state.position + offsetSec), duration);
+    }
+
     ngOnDestroy(): void {
+        if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+            for (const action of [
+                'play',
+                'pause',
+                'nexttrack',
+                'previoustrack',
+                'seekto',
+                'seekforward',
+                'seekbackward',
+            ] as const) {
+                this.setMediaSessionHandler(action, null);
+            }
+            navigator.mediaSession.metadata = null;
+            navigator.mediaSession.playbackState = 'none';
+        }
         this.destroy$.next();
         this.destroy$.complete();
     }

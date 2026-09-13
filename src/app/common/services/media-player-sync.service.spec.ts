@@ -10,6 +10,38 @@ import { MediaPlayerStateService } from './media-player-state.service';
 import { MediaPlayerSyncService } from './media-player-sync.service';
 
 describe('MediaPlayerSyncService authoritative reconciliation', () => {
+    it('MediaSessionPlayPause_UseTheSameConnectCommandsAsThePlayerUi', async () => {
+        const handlers = new Map<string, MediaSessionActionHandler | null>();
+        const originalMediaSession = navigator.mediaSession;
+        Object.defineProperty(navigator, 'mediaSession', {
+            configurable: true,
+            value: {
+                metadata: null,
+                playbackState: 'none',
+                setActionHandler: vi.fn(
+                    (action: MediaSessionAction, handler: MediaSessionActionHandler | null) =>
+                        handlers.set(action, handler),
+                ),
+                setPositionState: vi.fn(),
+            },
+        });
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+
+        handlers.get('pause')?.({ action: 'pause' });
+        handlers.get('play')?.({ action: 'play' });
+
+        await vi.waitFor(() => {
+            expect(harness.commands.pause).toHaveBeenCalledOnce();
+            expect(harness.commands.play).toHaveBeenCalledOnce();
+        });
+        harness.service.ngOnDestroy();
+        Object.defineProperty(navigator, 'mediaSession', {
+            configurable: true,
+            value: originalMediaSession,
+        });
+    });
+
     it('Snapshot_LoadsMetadataAndAppliesPlayerAndOwnership', () => {
         const harness = createHarness();
         let isAudioOwner = false;
@@ -426,6 +458,50 @@ describe('MediaPlayerSyncService authoritative reconciliation', () => {
         expect(harness.state.playing).toBe(false);
         expect(harness.state.currentTrack?.id).toBe('track-1');
     });
+
+    it('ConnectUnavailable_FormerOwnerContinuesWithMirroredQueue', () => {
+        const harness = createHarness();
+        harness.store.applySnapshot(snapshot());
+        harness.trackService.entities.next([track()]);
+
+        harness.store.setTransportState('unavailable');
+
+        expect(harness.state.playing).toBe(true);
+        expect(harness.state.currentTrack?.id).toBe('track-1');
+    });
+
+    it('ConnectUnavailable_NonOwnerStaysPausedUntilExplicitLocalPlay', () => {
+        const harness = createHarness();
+        harness.store.applySnapshot({
+            ...snapshot(),
+            presence: presence(1, 'another-connection'),
+        });
+        harness.trackService.entities.next([track()]);
+
+        harness.store.setTransportState('unavailable');
+        expect(harness.state.playing).toBe(false);
+
+        harness.service.play();
+        expect(harness.state.playing).toBe(true);
+        expect(harness.commands.play).not.toHaveBeenCalled();
+    });
+
+    it('LocalMode_LargePlayButtonTogglesCurrentContextWithoutRestartingQueue', async () => {
+        const harness = createHarness();
+        harness.store.setTransportState('unavailable');
+        const current = track();
+
+        await harness.service.playContext('album-1', 'Album', [current]);
+        harness.state.setPosition(37);
+        await harness.service.playContext('album-1', 'Album', [current]);
+
+        expect(harness.state.playing).toBe(false);
+        expect(harness.state.position).toBe(37);
+
+        await harness.service.playContext('album-1', 'Album', [current]);
+        expect(harness.state.playing).toBe(true);
+        expect(harness.state.position).toBe(37);
+    });
 });
 
 function createHarness() {
@@ -438,7 +514,7 @@ function createHarness() {
             return this.entities.asObservable();
         },
     };
-    const hub = { connectionId: 'connection-1' };
+    const hub = { connectionId: 'connection-1', isReady: true };
     const applied = {
         commandId: 'command',
         status: 'Applied',
@@ -466,6 +542,7 @@ function createHarness() {
         {} as never,
         trackService as never,
     );
+    store.setTransportState('ready');
     return { state, store, trackService, hub, commands, service };
 }
 

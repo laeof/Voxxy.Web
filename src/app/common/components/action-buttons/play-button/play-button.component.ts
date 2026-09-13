@@ -4,7 +4,6 @@ import { MatIcon } from '@angular/material/icon';
 import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 import { Track } from '@features/track/models/track';
 import { PlaybackSourceTypeContract } from '@common/connect/transport/connect-transport.models';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
 import {
     BehaviorSubject,
     combineLatest,
@@ -12,7 +11,7 @@ import {
     map,
     shareReplay,
 } from 'rxjs';
-import { isContextPlaying } from '@common/connect/state/playback-context';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 
 @Component({
     selector: 'action-play-button',
@@ -32,21 +31,24 @@ export class PlayButtonComponent {
 
     constructor(
         private readonly mediaPlayerSyncService: MediaPlayerSyncService,
-        connectStore: ConnectStateStore,
+        playerState: MediaPlayerStateService,
     ) {
         this.viewModel$ = combineLatest([
-            connectStore.queue$,
-            connectStore.player$,
+            playerState.playingObs$,
+            playerState.sourceIdObs$,
+            playerState.sourceTypeObs$,
             this.sourceIdSubject,
             this.sourceTypeSubject,
             this.tracksSubject,
             this.inFlightSubject,
         ]).pipe(
             map(
-                ([queue, player, sourceId, sourceType, tracks, inFlight]) => ({
+                ([playing, activeSourceId, activeSourceType, sourceId, sourceType, tracks, inFlight]) => ({
                     showPause:
                         sourceId !== null &&
-                        isContextPlaying(player, queue, { sourceId, sourceType }),
+                        activeSourceId === sourceId &&
+                        activeSourceType === sourceType &&
+                        playing,
                     disabled: inFlight || sourceId === null || tracks.length === 0,
                 }),
             ),

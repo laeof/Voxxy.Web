@@ -113,6 +113,7 @@ export interface CommandRequest {
 export interface RegisterConnectionRequest extends CommandRequest {
     deviceId: string;
     deviceName: string;
+    runtimeSessionId: string;
 }
 
 export interface PlayerStateChangedEvent {

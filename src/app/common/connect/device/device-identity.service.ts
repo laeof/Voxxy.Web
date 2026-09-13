@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createUuid } from '@common/helpers/uuid.helper';
 
 const DEVICE_ID_KEY = 'connect.v2.deviceId';
+const RUNTIME_SESSION_ID_KEY = 'connect.v2.runtimeSessionId';
 
 @Injectable({ providedIn: 'root' })
 export class DeviceIdentityService {
@@ -11,6 +12,15 @@ export class DeviceIdentityService {
 
         const id = createUuid();
         localStorage.setItem(DEVICE_ID_KEY, id);
+        return id;
+    }
+
+    get runtimeSessionId(): string {
+        const existing = sessionStorage.getItem(RUNTIME_SESSION_ID_KEY);
+        if (existing) return existing;
+
+        const id = createUuid();
+        sessionStorage.setItem(RUNTIME_SESSION_ID_KEY, id);
         return id;
     }
 

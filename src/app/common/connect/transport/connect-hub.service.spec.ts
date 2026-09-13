@@ -59,14 +59,14 @@ describe('ConnectHubService transport failure and reconnect', () => {
         vi.useRealTimers();
     });
 
-    it('Reconnect_StopsHeartbeat_AndPausesEngineWithoutPauseCommand', () => {
+    it('Reconnect_StopsHeartbeat_WithoutChangingLocalPlayback', () => {
         const connection = fakeConnection();
         const playerState = { pause: vi.fn() };
         createService(connection, playerState);
 
         connection.reconnecting?.();
 
-        expect(playerState.pause).toHaveBeenCalledOnce();
+        expect(playerState.pause).not.toHaveBeenCalled();
         expect(connection.invoke).not.toHaveBeenCalledWith('Pause', expect.anything());
     });
 
@@ -105,14 +105,14 @@ describe('ConnectHubService transport failure and reconnect', () => {
         vi.useRealTimers();
     });
 
-    it('Offline_PausesEngineWithoutPauseCommand', () => {
+    it('Offline_DoesNotChangeLocalPlayback', () => {
         const connection = fakeConnection();
         const playerState = { pause: vi.fn() };
         createService(connection, playerState);
 
         globalThis.dispatchEvent(new Event('offline'));
 
-        expect(playerState.pause).toHaveBeenCalled();
+        expect(playerState.pause).not.toHaveBeenCalled();
         expect(connection.invoke).not.toHaveBeenCalledWith('Pause', expect.anything());
     });
 
@@ -137,20 +137,22 @@ describe('ConnectHubService transport failure and reconnect', () => {
                     outcome: null,
                 });
             }
+            if (method === 'GetSnapshot') return Promise.resolve(snapshot());
             return Promise.reject(new Error('unexpected invocation'));
         });
         const { service } = createService(connection);
-        await service.registerConnection();
+        await service.connect();
 
         await vi.advanceTimersByTimeAsync(15_000);
 
         expect(
             connection.invoke.mock.calls.filter(([method]) => method === 'RegisterConnection'),
         ).toHaveLength(2);
+        expect(vi.getTimerCount()).toBe(1);
         vi.useRealTimers();
     });
 
-    it('IdempotentRegistration_StartsHeartbeatAndAllowsSessionRestore', async () => {
+    it('IdempotentRegistration_DoesNotOwnTheHeartbeatLifecycle', async () => {
         vi.useFakeTimers();
         const connection = fakeConnection();
         connection.state = HubConnectionState.Connected;
@@ -163,7 +165,7 @@ describe('ConnectHubService transport failure and reconnect', () => {
         const { service } = createService(connection);
 
         await expect(service.registerConnection()).resolves.toBeUndefined();
-        expect(vi.getTimerCount()).toBe(1);
+        expect(vi.getTimerCount()).toBe(0);
         vi.useRealTimers();
     });
 
@@ -329,7 +331,6 @@ function createService(
         { create: () => connection } as never,
         new ConnectTransportErrorMapper(),
         telemetry as never,
-        playerState as never,
         { heartbeatDelay: () => 15_000 } as never,
     );
     return { service, store };

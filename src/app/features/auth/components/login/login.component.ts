@@ -16,13 +16,13 @@ import { LoginModel } from '../../models/login';
 import { User } from '../../models/user';
 import { Router } from '@angular/router';
 import { AppRoutes } from '@common/constants/app.routes.constant';
-import { AppPermissions } from '@common/constants/permissions';
 import { TranslationLoaderService } from '@common/services/translation-loader.service';
 import { UserStateService } from '@common/services/user-state.service';
 import { SnowComponent } from '@common/components/snow/snow.component';
 import { LogoComponent } from '@common/layout/components/topbar/components/logo/logo.component';
 import { first } from 'rxjs';
 import { PlayerHubService } from '@common/services/player-hub.service';
+import { AutumnLeavesComponent } from '@common/components/leaf/leaf.component';
 
 @Component({
     selector: 'auth-login',
@@ -37,11 +37,15 @@ import { PlayerHubService } from '@common/services/player-hub.service';
         MatInputModule,
         ReactiveFormsModule,
         SnowComponent,
+        AutumnLeavesComponent,
     ],
 })
 export class LoginComponent {
     loginForm: FormGroup;
     loading: boolean = false;
+
+    readonly isWinter =
+        new Date().getMonth() === 11 || new Date().getMonth() === 0 || new Date().getMonth() === 1;
 
     constructor(
         private readonly formBuilder: FormBuilder,
