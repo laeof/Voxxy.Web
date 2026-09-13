@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ClientPlayerState } from '@common/entities/PlayerState';
 import { RepeatMode } from '@common/enums/repeat-mode.enum';
 import { Track } from '@features/track/models/track';
+import { PlaybackSourceTypeContract } from '@common/connect/transport/connect-transport.models';
 import { BehaviorSubject } from 'rxjs';
 
 export interface AuthoritativePlaybackTarget {
@@ -24,6 +25,8 @@ export class MediaPlayerStateService {
     private readonly index$ = new BehaviorSubject<number>(-1);
     private readonly currentTrack$ = new BehaviorSubject<Track | null>(null);
     private readonly repeat$ = new BehaviorSubject<RepeatMode>(RepeatMode.None);
+    private readonly sourceId$ = new BehaviorSubject<string | null>(null);
+    private readonly sourceType$ = new BehaviorSubject<PlaybackSourceTypeContract | null>(null);
 
     private readonly audioOwner$ = new BehaviorSubject<boolean>(false);
     private readonly authoritativePlayback$ =
@@ -44,6 +47,8 @@ export class MediaPlayerStateService {
     readonly indexObs$ = this.index$.asObservable();
     readonly currentTrackObs$ = this.currentTrack$.asObservable();
     readonly repeatObs$ = this.repeat$.asObservable();
+    readonly sourceIdObs$ = this.sourceId$.asObservable();
+    readonly sourceTypeObs$ = this.sourceType$.asObservable();
     readonly audioOwnerObs$ = this.audioOwner$.asObservable();
     readonly authoritativePlaybackObs$ = this.authoritativePlayback$.asObservable();
 
@@ -79,6 +84,14 @@ export class MediaPlayerStateService {
         return this.authoritativeQueueItemId;
     }
 
+    get sourceId(): string | null {
+        return this.sourceId$.value;
+    }
+
+    get sourceType(): PlaybackSourceTypeContract | null {
+        return this.sourceType$.value;
+    }
+
     applyAuthoritativeState(value: {
         isPlaying: boolean;
         positionSec?: number;
@@ -90,6 +103,8 @@ export class MediaPlayerStateService {
         isAudioOwner: boolean;
         playerVersion?: number;
         currentQueueItemId?: string | null;
+        sourceId?: string | null;
+        sourceType?: PlaybackSourceTypeContract | null;
     }): void {
         const incomingPlayerVersion =
             value.playerVersion ?? this.authoritativePlayerVersion;
@@ -106,6 +121,8 @@ export class MediaPlayerStateService {
         if (value.currentQueueItemId !== undefined) {
             this.authoritativeQueueItemId = value.currentQueueItemId;
         }
+        if (value.sourceId !== undefined) this.sourceId$.next(value.sourceId);
+        if (value.sourceType !== undefined) this.sourceType$.next(value.sourceType);
         this.audioOwner$.next(value.isAudioOwner);
         if (acceptsPlayerState) {
             this.playing$.next(value.isPlaying);
@@ -149,11 +166,20 @@ export class MediaPlayerStateService {
         this.publishPlaybackTarget();
     }
 
-    playQueue(queue: Track[], index = 0): void {
+    playQueue(
+        queue: Track[],
+        index = 0,
+        context?: { sourceId: string; sourceType: PlaybackSourceTypeContract },
+    ): void {
         this.queue$.next(queue);
         this.index$.next(index);
         this.currentTrack$.next(queue[index] ?? null);
         this.position$.next(0);
+        this.authoritativeQueueItemId = null;
+        if (context) {
+            this.sourceId$.next(context.sourceId);
+            this.sourceType$.next(context.sourceType);
+        }
         this.publishPlaybackTarget();
 
         console.log('playQueue', queue, index);
@@ -198,12 +224,28 @@ export class MediaPlayerStateService {
         this.position$.next(sec);
     }
 
+    seekLocal(sec: number): void {
+        this.position$.next(sec);
+        this.publishPlaybackTarget();
+    }
+
     setVolume(volume: number): void {
         this.volume$.next(volume);
     }
 
     setRepeat(mode: RepeatMode): void {
         this.repeat$.next(mode);
+    }
+
+    enterLocalMode(continuePlaying: boolean): void {
+        this.audioOwner$.next(continuePlaying);
+        if (!continuePlaying) this.playing$.next(false);
+        this.publishPlaybackTarget();
+    }
+
+    takeLocalAudioOwnership(): void {
+        this.audioOwner$.next(true);
+        this.publishPlaybackTarget();
     }
 
     private publishPlaybackTarget(): void {

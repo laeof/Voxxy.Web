@@ -6,7 +6,7 @@ import { UserStateService } from '@common/services/user-state.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { ForArtist } from '@features/for-artist/interfaces/for-artist.interface';
 import { ForArtistService } from '@features/for-artist/services/for-artist.service';
-import { catchError, first, firstValueFrom, from, of, switchMap, tap } from 'rxjs';
+import { catchError, first, firstValueFrom, of, switchMap, tap } from 'rxjs';
 
 export const provideAppStartupInitializer = provideAppInitializer(() => {
     const authService = inject(AuthService);
@@ -27,24 +27,20 @@ export const provideAppStartupInitializer = provideAppInitializer(() => {
                 }
 
                 userStateService.set(me);
-                return from(playerHubService.connect()).pipe(
-                    // Transport failure must not sign the user out. The store exposes the
-                    // connection error independently from the authenticated application session.
-                    catchError(() => of(null)),
+                // Connect is optional and must never hold Angular bootstrap behind a Redis
+                // timeout. It owns its recovery loop while the normal API initializes normally.
+                void playerHubService.connect().catch(() => undefined);
+                return authService.xsrfToken().pipe(
                     switchMap(() => {
-                        return authService.xsrfToken().pipe(
-                            switchMap(() => {
-                                return forArtistService.getArtistsOnAccount().pipe(
-                                    tap(
-                                        (forArtist: ForArtist) =>
-                                            forArtist.artists &&
-                                            artistStateService.set(forArtist.artists),
-                                    ),
-                                    catchError(() => {
-                                        artistStateService.clear();
-                                        return of(null);
-                                    }),
-                                );
+                        return forArtistService.getArtistsOnAccount().pipe(
+                            tap(
+                                (forArtist: ForArtist) =>
+                                    forArtist.artists &&
+                                    artistStateService.set(forArtist.artists),
+                            ),
+                            catchError(() => {
+                                artistStateService.clear();
+                                return of(null);
                             }),
                         );
                     }),

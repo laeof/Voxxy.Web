@@ -1,12 +1,12 @@
 import { BehaviorSubject, Subject } from 'rxjs';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 import { FollowType } from '../../enums/follow-type-enum';
 import { LibraryDto } from './dtos/library-dto';
 import { LibraryBarListComponent } from './librarybar-list.component';
 
 describe('LibraryBarListComponent playback context', () => {
     it('PlaylistItem_UsesPlaylistEntityIdAndAtomicContextCommand', async () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = { playContext: vi.fn().mockResolvedValue(undefined) };
         const { component } = createComponent(store, sync);
         const item = libraryItem('playlist-entity-id', FollowType.Playlist);
@@ -24,7 +24,7 @@ describe('LibraryBarListComponent playback context', () => {
     });
 
     it('ViewModels_ShowPauseOnlyForMatchingAuthoritativeContext', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const { component, entities } = createComponent(store);
         const playlistA = libraryItem('playlist-a', FollowType.Playlist);
         const playlistB = libraryItem('playlist-b', FollowType.Playlist);
@@ -41,26 +41,16 @@ describe('LibraryBarListComponent playback context', () => {
         });
         entities.next([playlistA, playlistB]);
 
-        store.applySnapshot(snapshot('playlist-a', 'Playlist', true));
+        applyState(store, 'playlist-a', 'Playlist', true);
         expect(values).toEqual([
             { id: 'playlist-a', showPause: true },
             { id: 'playlist-b', showPause: false },
         ]);
 
-        store.applyPlayer({
-            ...snapshot('playlist-a', 'Playlist', false).player!,
-            version: 2,
-        });
+        store.pause();
         expect(values[0].showPause).toBe(false);
 
-        store.applyQueue({
-            ...snapshot('playlist-b', 'Playlist', true).queue!,
-            version: 2,
-        });
-        store.applyPlayer({
-            ...snapshot('playlist-b', 'Playlist', true).player!,
-            version: 3,
-        });
+        applyState(store, 'playlist-b', 'Playlist', true);
         expect(values).toEqual([
             { id: 'playlist-a', showPause: false },
             { id: 'playlist-b', showPause: true },
@@ -68,7 +58,7 @@ describe('LibraryBarListComponent playback context', () => {
     });
 
     it('AlbumAndLikedSongs_MapToTheirAuthoritativeSourceTypes', async () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = { playContext: vi.fn().mockResolvedValue(undefined) };
         const { component } = createComponent(store, sync);
         const event = { stopPropagation: vi.fn() };
@@ -95,7 +85,7 @@ describe('LibraryBarListComponent playback context', () => {
 });
 
 function createComponent(
-    store: ConnectStateStore,
+    store: MediaPlayerStateService,
     sync: object = { playContext: vi.fn().mockResolvedValue(undefined) },
 ) {
     const entities = new BehaviorSubject<LibraryDto[]>([]);
@@ -134,36 +124,14 @@ function libraryItem(id: string, followType: FollowType): LibraryDto {
     };
 }
 
-function snapshot(
+function applyState(
+    state: MediaPlayerStateService,
     sourceId: string,
     sourceType: 'Playlist',
     isPlaying: boolean,
-) {
-    return {
-        status: 'Applied' as const,
-        player: {
-            isPlaying,
-            positionMs: 0,
-            positionUpdatedAt: '2026-01-01T00:00:00.000Z',
-            volumePercent: 50,
-            version: 1,
-        },
-        queue: {
-            items: [],
-            currentQueueItemId: null,
-            repeatMode: 'None' as const,
-            isShuffled: false,
-            version: 1,
-            sourceId,
-            sourceType,
-        },
-        presence: {
-            devices: [],
-            activeDeviceId: null,
-            audioOwnerConnectionId: null,
-            version: 1,
-        },
-        serverTime: '2026-01-01T00:00:00.000Z',
-        errorCode: null,
-    };
+): void {
+    state.applyAuthoritativeState({
+        isPlaying, volumePercent: 50, queue: [], index: -1, currentTrack: null,
+        repeat: state.repeat, isAudioOwner: false, sourceId, sourceType,
+    });
 }

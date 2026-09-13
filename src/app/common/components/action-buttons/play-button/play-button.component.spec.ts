@@ -1,10 +1,10 @@
 import { Track } from '@features/track/models/track';
 import { PlayButtonComponent } from './play-button.component';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 
 describe('PlayButtonComponent', () => {
     it('DelegatesPlaybackContextDecisionToSyncFacade', async () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = {
             playContext: vi.fn().mockResolvedValue(undefined),
         };
@@ -25,7 +25,7 @@ describe('PlayButtonComponent', () => {
     });
 
     it('EmptyTrackList_DoesNotStartContext', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const sync = {
             playContext: vi.fn(),
         };
@@ -39,44 +39,35 @@ describe('PlayButtonComponent', () => {
     });
 
     it('AuthoritativeIconState_IsPlayingOnlyForMatchingContext', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const component = new PlayButtonComponent({} as never, store);
         component.trackListId = 'context-1';
         component.sourceType = 'Album';
         let playing = false;
         component.isCurrentContextPlaying$.subscribe((value) => (playing = value));
 
-        store.applySnapshot(snapshot('context-1', 'Album', true));
+        applyState(store, 'context-1', 'Album', true);
         expect(playing).toBe(true);
 
-        store.applyPlayer({
-            ...snapshot('context-1', 'Album', false).player!,
-            version: 2,
-        });
+        store.pause();
         expect(playing).toBe(false);
 
-        store.applyPlayer({
-            ...snapshot('context-1', 'Album', true).player!,
-            version: 3,
-        });
+        store.play();
         expect(playing).toBe(true);
 
-        store.applyQueue({
-            ...snapshot('context-2', 'Playlist', true).queue!,
-            version: 2,
-        });
+        applyState(store, 'context-2', 'Playlist', true);
         expect(playing).toBe(false);
     });
 
     it('AuthoritativeIconState_ReactsToDynamicInputsAndSourceType', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const component = new PlayButtonComponent({} as never, store);
         component.trackListId = 'context-2';
         component.sourceType = 'Playlist';
         const values: boolean[] = [];
         component.isCurrentContextPlaying$.subscribe((value) => values.push(value));
 
-        store.applySnapshot(snapshot('context-1', 'Album', true));
+        applyState(store, 'context-1', 'Album', true);
         component.trackListId = 'context-1';
         component.sourceType = 'Album';
         component.sourceType = 'Playlist';
@@ -85,14 +76,14 @@ describe('PlayButtonComponent', () => {
     });
 
     it('AuthoritativeIconState_DoesNotEmitForEquivalentState', () => {
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         const component = new PlayButtonComponent({} as never, store);
         component.trackListId = 'context-1';
         component.sourceType = 'Album';
         const values: boolean[] = [];
         component.isCurrentContextPlaying$.subscribe((value) => values.push(value));
 
-        store.applySnapshot(snapshot('context-1', 'Album', true));
+        applyState(store, 'context-1', 'Album', true);
         component.trackListId = 'context-1';
         component.sourceType = 'Album';
 
@@ -101,7 +92,7 @@ describe('PlayButtonComponent', () => {
 
     it('InFlightGuard_BlocksDoubleClickAndResetsAfterFailure', async () => {
         vi.spyOn(console, 'error').mockImplementation(() => undefined);
-        const store = new ConnectStateStore();
+        const store = new MediaPlayerStateService();
         let reject!: (error: Error) => void;
         const pending = new Promise<void>((_, fail) => (reject = fail));
         const sync = { playContext: vi.fn(() => pending) };
@@ -121,34 +112,11 @@ describe('PlayButtonComponent', () => {
     });
 });
 
-function snapshot(sourceId: string, sourceType: 'Album' | 'Playlist', isPlaying: boolean) {
-    return {
-        status: 'Applied' as const,
-        player: {
-            isPlaying,
-            positionMs: 0,
-            positionUpdatedAt: '2026-01-01T00:00:00.000Z',
-            volumePercent: 50,
-            version: 1,
-        },
-        queue: {
-            items: [],
-            currentQueueItemId: null,
-            repeatMode: 'None' as const,
-            isShuffled: false,
-            version: 1,
-            sourceId,
-            sourceType,
-        },
-        presence: {
-            devices: [],
-            activeDeviceId: null,
-            audioOwnerConnectionId: null,
-            version: 1,
-        },
-        serverTime: '2026-01-01T00:00:00.000Z',
-        errorCode: null,
-    };
+function applyState(state: MediaPlayerStateService, sourceId: string, sourceType: 'Album' | 'Playlist', isPlaying: boolean) {
+    state.applyAuthoritativeState({
+        isPlaying, volumePercent: 50, queue: [], index: -1, currentTrack: null,
+        repeat: state.repeat, isAudioOwner: false, sourceId, sourceType,
+    });
 }
 
 function track(): Track {

@@ -1,9 +1,13 @@
-<app-snow [count]="200"></app-snow>
+@if (isWinter) {
+    <app-snow [count]="200"></app-snow>
+} @else {
+    <app-autumn-leaves [count]="100"></app-autumn-leaves>
+}
 <form [formGroup]="loginForm" class="form" (ngSubmit)="ngSubmit()">
     <layout-logo></layout-logo>
     <h1 class="title">{{ 'LOGIN.TITLE' | translate }}</h1>
     <mat-form-field class="field">
-        <mat-label>{{ 'LOGIN.EMAIL' | translate }}</mat-label>
+        <mat-label> {{ 'LOGIN.EMAIL' | translate }}</mat-label>
         <input
             matInput
             required="true"
@@ -11,15 +15,18 @@
             placeholder="Example@example.com"
             formControlName="email"
         />
-        @if (loginForm.get('email')?.hasError('email') &&
-        !loginForm.get('email')?.hasError('required')) {
-        <mat-error>{{ 'LOGIN.EMAIL_VALID_ERROR' | translate }}</mat-error>
-        } @if (loginForm.get('email')?.hasError('required')) {
-        <mat-error>{{ 'LOGIN.REQUIRED' | translate }}</mat-error>
+        @if (
+            loginForm.get('email')?.hasError('email') &&
+            !loginForm.get('email')?.hasError('required')
+        ) {
+            <mat-error>{{ 'LOGIN.EMAIL_VALID_ERROR' | translate }}</mat-error>
+        }
+        @if (loginForm.get('email')?.hasError('required')) {
+            <mat-error>{{ 'LOGIN.REQUIRED' | translate }}</mat-error>
         }
     </mat-form-field>
     <mat-form-field class="field">
-        <mat-label>{{ 'LOGIN.PASSWORD' | translate }}</mat-label>
+        <mat-label> {{ 'LOGIN.PASSWORD' | translate }}</mat-label>
         <input
             matInput
             required="true"
@@ -28,7 +35,7 @@
             formControlName="password"
         />
         @if (loginForm.get('password')?.hasError('required')) {
-        <mat-error>{{ 'LOGIN.REQUIRED' | translate }}</mat-error>
+            <mat-error>{{ 'LOGIN.REQUIRED' | translate }}</mat-error>
         }
     </mat-form-field>
     <button class="common-button login-button" type="submit">

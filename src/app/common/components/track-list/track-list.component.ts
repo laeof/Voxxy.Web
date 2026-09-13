@@ -18,13 +18,7 @@ import { NavigationService } from '@common/services/navigation.service';
 import { Track } from '@features/track/models/track';
 import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
 import { PlaybackSourceTypeContract } from '@common/connect/transport/connect-transport.models';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
-import {
-    currentQueueItem,
-    displayedIndexForQueueItem,
-    isSamePlaybackContext,
-    queueItemForDisplayedTrack,
-} from '@common/connect/state/playback-context';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 
 interface TrackListPlaybackState {
     isCurrentContext: boolean;
@@ -47,7 +41,6 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
     private readonly sourceIdSubject = new BehaviorSubject<string | null>(null);
     private readonly sourceTypeSubject =
         new BehaviorSubject<PlaybackSourceTypeContract>('Manual');
-    private readonly tracksSubject = new BehaviorSubject<readonly Track[]>([]);
     private tracksValue: Track[] | undefined | null = [];
     private sourceIdValue: string | undefined;
     private sourceTypeValue: PlaybackSourceTypeContract = 'Manual';
@@ -55,7 +48,6 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
     @Input()
     set tracks(value: Track[] | undefined | null) {
         this.tracksValue = value;
-        this.tracksSubject.next(value ?? []);
     }
     get tracks(): Track[] | undefined | null {
         return this.tracksValue;
@@ -88,35 +80,28 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
         private readonly mediaPlayerSyncService: MediaPlayerSyncService,
         private readonly elRef: ElementRef,
         private readonly navigationService: NavigationService,
-        private readonly connectStore: ConnectStateStore,
+        private readonly playerState: MediaPlayerStateService,
     ) {
         super(trackListService);
         this.playbackState$ = combineLatest([
-            this.connectStore.queue$,
-            this.connectStore.player$,
+            this.playerState.currentTrackObs$,
+            this.playerState.playingObs$,
+            this.playerState.indexObs$,
+            this.playerState.sourceIdObs$,
+            this.playerState.sourceTypeObs$,
             this.sourceIdSubject,
             this.sourceTypeSubject,
-            this.tracksSubject,
         ]).pipe(
-            map(([queue, player, sourceId, sourceType, tracks]): TrackListPlaybackState => {
+            map(([currentTrack, playing, index, activeSourceId, activeSourceType, sourceId, sourceType]): TrackListPlaybackState => {
                 const isCurrentContext =
                     sourceId !== null &&
-                    isSamePlaybackContext(queue, { sourceId, sourceType });
-                const selectedQueueItem = isCurrentContext
-                    ? currentQueueItem(queue)
-                    : null;
-                const currentIndex =
-                    queue && selectedQueueItem
-                        ? displayedIndexForQueueItem(queue, tracks, selectedQueueItem)
-                        : -1;
+                    activeSourceId === sourceId && activeSourceType === sourceType;
                 return {
                     isCurrentContext,
-                    currentTrackId: selectedQueueItem?.trackId ?? null,
-                    currentQueueItemId: isCurrentContext
-                        ? (queue?.currentQueueItemId ?? null)
-                        : null,
-                    currentIndex,
-                    isPlaying: isCurrentContext && player?.isPlaying === true,
+                    currentTrackId: isCurrentContext ? (currentTrack?.id ?? null) : null,
+                    currentQueueItemId: isCurrentContext ? this.playerState.currentQueueItemId : null,
+                    currentIndex: isCurrentContext ? index : -1,
+                    isPlaying: isCurrentContext && playing,
                 };
             }),
             distinctUntilChanged(
@@ -158,23 +143,14 @@ export class TrackListComponent extends ListEntitiesFacade<Track> implements OnD
 
         if (!this.sourceId) return;
         const startIndex = this.tracks.indexOf(track);
-        const { queue, player } = this.connectStore.value;
         const isCurrentContext =
-            queue !== null &&
-            isSamePlaybackContext(queue, {
-                sourceId: this.sourceId,
-                sourceType: this.sourceType,
-            });
-        const clickedQueueItem =
-            isCurrentContext && queue
-                ? queueItemForDisplayedTrack(queue, this.tracks, startIndex)
-                : null;
-        const isCurrentItem =
-            clickedQueueItem !== null &&
-            clickedQueueItem.queueItemId === queue?.currentQueueItemId;
+            this.playerState.sourceId === this.sourceId &&
+            this.playerState.sourceType === this.sourceType &&
+            this.playerState.currentTrack?.id === track.id &&
+            this.playerState.index === startIndex;
 
-        if (isCurrentItem) {
-            if (player?.isPlaying) {
+        if (isCurrentContext) {
+            if (this.playerState.playing) {
                 this.mediaPlayerSyncService.pause();
             } else {
                 this.mediaPlayerSyncService.play();

@@ -23,12 +23,8 @@ import { NavigationService } from '@common/services/navigation.service';
 import { FollowService } from '@common/services/follow-service';
 import { ManagerSubjectNameComponent } from '@common/components/manager/manager-subject-info/subject-name/subject-name.component';
 import { MediaPlayerSyncService } from '@common/services/media-player-sync.service';
-import { ConnectStateStore } from '@common/connect/state/connect-state.store';
-import {
-    isContextPlaying,
-    isSamePlaybackContext,
-    PlaybackContext,
-} from '@common/connect/state/playback-context';
+import { PlaybackContext } from '@common/connect/state/playback-context';
+import { MediaPlayerStateService } from '@common/services/media-player-state.service';
 
 @Component({
     selector: 'librarybar-list',
@@ -65,25 +61,28 @@ export class LibraryBarListComponent extends ListEntitiesFacade<LibraryDto> impl
         private readonly router: Router,
         private readonly mediaPlayerSyncService: MediaPlayerSyncService,
         private readonly followService: FollowService,
-        connectStore: ConnectStateStore,
+        playerState: MediaPlayerStateService,
     ) {
         super(libraryBarService);
         this.itemViewModels$ = combineLatest([
             this.dataSource$,
-            connectStore.queue$,
-            connectStore.player$,
+            playerState.playingObs$,
+            playerState.sourceIdObs$,
+            playerState.sourceTypeObs$,
         ]).pipe(
-            map(([items, queue, player]) =>
+            map(([items, playing, activeSourceId, activeSourceType]) =>
                 items.map((item) => {
                     const context = this.getPlaybackContext(item);
                     const isCurrentContext =
-                        context !== null && isSamePlaybackContext(queue, context);
+                        context !== null &&
+                        activeSourceId === context.sourceId &&
+                        activeSourceType === context.sourceType;
                     return {
                         item,
                         context,
                         isCurrentContext,
                         showPause:
-                            context !== null && isContextPlaying(player, queue, context),
+                            isCurrentContext && playing,
                     };
                 }),
             ),
