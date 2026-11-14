@@ -20,7 +20,19 @@
 </div>
 <div class="end-section">
     <ng-container *authorize>
-        <mat-icon svgIcon="notifications"></mat-icon>
+        <button class="icon-wrapper notification-button" (click)="navigateNotifications()">
+            <span class="notification-icon-wrapper">
+                <mat-icon
+                    [svgIcon]="isNotifications ? 'notifications_filled' : 'notifications'"
+                    class="notification-icon"
+                    [class.active]="isNotifications"
+                >
+                </mat-icon>
+                @if (hasUnreadNotifications()) {
+                    <span class="notification-indicator" aria-label="Unread notifications"></span>
+                }
+            </span>
+        </button>
         <button class="avatar-wrapper hover-scale" matIconButton [matMenuTriggerFor]="userMenu">
             <img
                 class="avatar-image"

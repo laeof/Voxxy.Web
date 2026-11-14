@@ -176,5 +176,11 @@ export class MatIconsService {
             'device',
             this.domSanitizer.bypassSecurityTrustResourceUrl('public/icons/svg/device.svg'),
         );
+        this.matIconRegistry.addSvgIcon(
+            'notifications_filled',
+            this.domSanitizer.bypassSecurityTrustResourceUrl(
+                'public/icons/svg/notifications_filled.svg',
+            ),
+        );
     }
 }

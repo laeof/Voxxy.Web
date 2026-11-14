@@ -34,4 +34,12 @@ export const layoutRoutes: Route[] = [
                 (x) => x.UserProfileComponent,
             ),
     },
+    {
+        path: AppRoutes.notifications,
+        loadComponent: () =>
+            import('@features/notification/notification.component').then(
+                (x) => x.NotificationsComponent,
+            ),
+        data: { page: AppRoutes.notifications },
+    },
 ];

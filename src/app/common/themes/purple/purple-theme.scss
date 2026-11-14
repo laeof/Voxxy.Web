@@ -15,6 +15,7 @@
 @use './common/title-section' as title-section;
 @use './for-artist/for-artist' as for-artist;
 @use './common/subject' as common-subject;
+@use 'notifications/notifications' as notifications;
 
 @include common-button.common-button();
 @include wrapped-icon.wrapped-icon-hover();

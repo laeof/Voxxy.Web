@@ -31,7 +31,7 @@
                             }
                         ],
                         "stylePreprocessorOptions": {
-                            "includePaths": ["src/app/common/styles"]
+                            "includePaths": ["src", "src/app", "src/app/common/themes/purple", "src/app/common/styles"]
                         },
                         "styles": ["src/styles.scss"]
                     },

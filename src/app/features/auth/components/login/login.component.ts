@@ -23,6 +23,7 @@ import { LogoComponent } from '@common/layout/components/topbar/components/logo/
 import { first } from 'rxjs';
 import { PlayerHubService } from '@common/services/player-hub.service';
 import { AutumnLeavesComponent } from '@common/components/leaf/leaf.component';
+import { NotificationHubService } from '@features/notification/services/notification-hub.service';
 
 @Component({
     selector: 'auth-login',
@@ -54,6 +55,7 @@ export class LoginComponent {
         private readonly router: Router,
         private readonly userStateService: UserStateService,
         private readonly hubService: PlayerHubService,
+        private readonly notificationHubService: NotificationHubService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian);
 
@@ -71,6 +73,7 @@ export class LoginComponent {
                 this.loading = false;
                 this.authenticateUser(user);
                 void this.hubService.connect();
+                void this.notificationHubService.initialize().catch(() => undefined);
                 this.authService.xsrfToken().pipe(first()).subscribe();
             });
         } else {

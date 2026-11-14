@@ -1,0 +1,26 @@
+.wrapper {
+    display: flex;
+    gap: 10px;
+    padding: 5px;
+    border-radius: 12px;
+    cursor: pointer;
+
+    &.unread {
+        background: rgb(111 91 211 / 8%);
+    }
+
+    .img-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+    .info {
+        .title {
+        }
+
+        .subtitle {
+        }
+    }
+}

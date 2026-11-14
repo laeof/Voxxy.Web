@@ -8,12 +8,15 @@ import { AppNavigationGroup } from '@common/interfaces/navigation.interface';
 import { forArtistNavigation } from '@common/constants/for-artist-navigation.constant';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { SearchEntityType } from '@common/enums/search-entity-type.enum';
+import { Location } from '@angular/common';
 
 @Injectable({
     providedIn: 'root',
 })
 export class NavigationService {
-    constructor(private readonly router: Router) {}
+
+
+    constructor(private readonly router: Router, private readonly location: Location) {}
 
     get currentUrl(): string {
         return this.router.url;
@@ -64,8 +67,8 @@ export class NavigationService {
         this.router.navigate([UrlHelper.transform(AppRoutes.track, ':id', id)]);
     }
 
-    navigateHome(): void {
-        this.router.navigate([AppRoutes.home]);
+    async navigateHome(): Promise<void> {
+        await this.router.navigate([AppRoutes.home]);
     }
 
     navigateLogin(): void {
@@ -74,6 +77,14 @@ export class NavigationService {
 
     navigateRegister(): void {
         this.router.navigate([AppRoutes.auth]);
+    }
+
+    async navigateNotifications(): Promise<void> {
+        await this.router.navigate([AppRoutes.notifications]);
+    }
+
+    navigateBack(): void {
+        this.location.back();
     }
 
     navigateForArtist(groupTitle: string): void {

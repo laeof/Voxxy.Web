@@ -25,5 +25,9 @@
         .register {
             background-color: transparent !important;
         }
+
+        .notification-indicator {
+            background-color: var(--mandatory-color);
+        }
     }
 }

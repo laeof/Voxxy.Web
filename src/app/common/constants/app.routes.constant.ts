@@ -8,6 +8,7 @@ export class AppRoutes {
     public static readonly auth = 'auth';
     public static readonly userProfile = 'user/:id';
     public static readonly track = 'track/:id';
+    public static readonly notifications = 'notifications';
 
     public static readonly forArtist = 'for-artist';
 

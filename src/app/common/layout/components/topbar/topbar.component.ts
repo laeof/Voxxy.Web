@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, OnDestroy, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { LogoComponent } from './components/logo/logo.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -22,6 +22,8 @@ import { GlobalSearchService } from '@common/services/global-search.service';
 import { GlobalSearchComponent } from './components/global-search/global-search.component';
 import { ConnectHubService } from '@common/connect/transport/connect-hub.service';
 import { AutumnLeavesComponent } from '@common/components/leaf/leaf.component';
+import { NotificationService } from '@features/notification/services/notification.service';
+import { NotificationHubService } from '@features/notification/services/notification-hub.service';
 
 @Component({
     selector: 'layout-topbar',
@@ -44,6 +46,9 @@ import { AutumnLeavesComponent } from '@common/components/leaf/leaf.component';
 })
 export class TopBarComponent implements OnInit, OnDestroy {
     isHome: boolean = false;
+    isNotifications: boolean = false;
+    hasUnreadNotifications = computed(() => this.notificationService.hasUnreadNotifications());
+
     readonly permissions = AppPermissions;
 
     private readonly destroy$ = new Subject<void>();
@@ -59,6 +64,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
         private readonly authService: AuthService,
         private readonly globalSearchService: GlobalSearchService,
         private readonly connectHub: ConnectHubService,
+        private readonly notificationService: NotificationService,
+        private readonly notificationHub: NotificationHubService,
         public userStateService: UserStateService,
     ) {
         this.translationLoaderService.loadTranslations(english, russian, ukrainian);
@@ -67,6 +74,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const child = this.route.firstChild;
         this.isHome = child?.snapshot.data['page'] === AppRoutes.home;
+        this.isNotifications = child?.snapshot.data['page'] === AppRoutes.notifications;
 
         this.router.events
             .pipe(
@@ -76,6 +84,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
             .subscribe(() => {
                 const child = this.route.firstChild;
                 this.isHome = child?.snapshot.data['page'] === AppRoutes.home;
+                this.isNotifications = child?.snapshot.data['page'] === AppRoutes.notifications;
             });
     }
 
@@ -84,8 +93,16 @@ export class TopBarComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    navigateHome(): void {
-        this.navigationService.navigateHome();
+    async navigateNotifications(): Promise<void> {
+        if (this.isNotifications) {
+            this.navigationService.navigateBack();
+        }
+
+        await this.navigationService.navigateNotifications();
+    }
+
+    async navigateHome(): Promise<void> {
+        await this.navigationService.navigateHome();
     }
 
     navigateLogin(): void {
@@ -97,7 +114,10 @@ export class TopBarComponent implements OnInit, OnDestroy {
     }
 
     logout() {
-        void this.connectHub.disconnectGracefully().finally(() => {
+        void Promise.allSettled([
+            this.connectHub.disconnectGracefully(),
+            this.notificationHub.disconnect(),
+        ]).finally(() => {
             this.authService
                 .logout()
                 .pipe(takeUntil(this.destroy$))

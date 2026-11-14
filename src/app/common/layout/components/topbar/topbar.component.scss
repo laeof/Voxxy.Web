@@ -35,6 +35,9 @@
                 width: 48px;
                 border-radius: var(--corner-full);
                 transition: background-color 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
     }
@@ -59,6 +62,29 @@
                 width: 32px;
                 height: 32px;
             }
+        }
+
+        .notification-icon {
+            height: 20px;
+            width: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-button {
+            .notification-icon-wrapper {
+                position: relative;
+                display: flex;
+            }
+        }
+
+        .notification-indicator {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .login {

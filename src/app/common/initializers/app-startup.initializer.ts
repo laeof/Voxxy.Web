@@ -7,12 +7,14 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { ForArtist } from '@features/for-artist/interfaces/for-artist.interface';
 import { ForArtistService } from '@features/for-artist/services/for-artist.service';
 import { catchError, first, firstValueFrom, of, switchMap, tap } from 'rxjs';
+import { NotificationHubService } from '@features/notification/services/notification-hub.service';
 
 export const provideAppStartupInitializer = provideAppInitializer(() => {
     const authService = inject(AuthService);
     const forArtistService = inject(ForArtistService);
     const userStateService = inject(UserStateService);
     const artistStateService = inject(ArtistStateService);
+    const notificationHubService = inject(NotificationHubService);
     // Reconciliation is application infrastructure, not a player UI side effect. Instantiate the
     // root service before SignalR can deliver a snapshot or realtime event.
     inject(MediaPlayerSyncService);
@@ -30,6 +32,7 @@ export const provideAppStartupInitializer = provideAppInitializer(() => {
                 // Connect is optional and must never hold Angular bootstrap behind a Redis
                 // timeout. It owns its recovery loop while the normal API initializes normally.
                 void playerHubService.connect().catch(() => undefined);
+                void notificationHubService.initialize().catch(() => undefined);
                 return authService.xsrfToken().pipe(
                     switchMap(() => {
                         return forArtistService.getArtistsOnAccount().pipe(

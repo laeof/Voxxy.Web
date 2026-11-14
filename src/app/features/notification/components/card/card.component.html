@@ -1,0 +1,28 @@
+<div
+    class="wrapper"
+    role="button"
+    tabindex="0"
+    [class.unread]="notification().readAt === null"
+    (click)="markAsRead()"
+    (keydown.enter)="markAsRead()"
+>
+    @if (notification().details.notificationImageUrl) {
+        <div class="img-wrapper">
+            <img
+                [src]="notification().details.notificationImageUrl"
+                [alt]="notification().title"
+                style="width: 40px; height: 40px; object-fit: cover; border-radius: 12px"
+            />
+        </div>
+    } @else {
+        <ng-container *ngComponentOutlet="dynamicPictureComponent()"></ng-container>
+    }
+    <div class="info">
+        <p class="title">
+            {{ notification().title }}
+        </p>
+        <p class="subtitle">
+            {{ notification().description }}
+        </p>
+    </div>
+</div>

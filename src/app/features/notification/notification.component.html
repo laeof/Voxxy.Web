@@ -1,0 +1,54 @@
+<div class="wrapper">
+    <div class="content">
+        <p class="title">
+            {{ 'NOTIFICATIONS.TITLE' | translate }}
+        </p>
+        <p class="subtitle">
+            {{ 'NOTIFICATIONS.SUBTITLE' | translate }}
+        </p>
+        @if (hasUnreadNotifications()) {
+            <button
+                type="button"
+                class="mark-all-read"
+                [disabled]="markingAllAsRead"
+                (click)="markAllAsRead()"
+            >
+                {{ 'NOTIFICATIONS.MARK_ALL_AS_READ' | translate }}
+            </button>
+        }
+        @if ((dataSource$ | async)?.length === 0) {
+            <div
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    flex: 1;
+                "
+            >
+                <p class="title">
+                    {{ 'NOTIFICATIONS.EMPTY.TITLE' | translate }}
+                </p>
+                <p class="subtitle">
+                    {{ 'NOTIFICATIONS.EMPTY.SUBTITLE' | translate }}
+                </p>
+            </div>
+        } @else {
+            <div class="notification-list">
+                @for (item of dataSource$ | async; track item.id) {
+                    <notification-card [notification]="item"></notification-card>
+                }
+                @if (hasMoreNotifications()) {
+                    <button
+                        type="button"
+                        class="load-more"
+                        [disabled]="loadingMoreNotifications()"
+                        (click)="loadMoreNotifications()"
+                    >
+                        {{ 'NOTIFICATIONS.LOAD_MORE' | translate }}
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>

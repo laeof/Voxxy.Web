@@ -1,4 +1,10 @@
 export class ApiRoutes {
+    public static readonly Notifications = {
+        getMyNotifications: '/notifications/my-notifications',
+        markAsRead: (notificationId: string) => `/notifications/${notificationId}/read`,
+        markAllAsRead: '/notifications/read-all',
+    }
+
     public static readonly Follows = {
         getByUser: '/followees',
         follow: '/followees',

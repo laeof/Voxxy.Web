@@ -33,6 +33,7 @@
             type="password"
             placeholder="••••••••"
             formControlName="password"
+            id="password"
         />
         @if (loginForm.get('password')?.hasError('required')) {
             <mat-error>{{ 'LOGIN.REQUIRED' | translate }}</mat-error>

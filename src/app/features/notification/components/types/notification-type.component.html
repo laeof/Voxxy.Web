@@ -1,0 +1,19 @@
+<div
+    style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 12px;
+        cursor: default;
+    "
+    [style.background-color]="backgroundColor()"
+    [style.width]="size() + 'px'"
+    [style.height]="size() + 'px'"
+>
+    <mat-icon
+        svgIcon="{{ icon() }}"
+        [style.color]="iconColor()"
+        [style.height]="iconSize() + 'px'"
+        [style.width]="iconSize() + 'px'"
+    ></mat-icon>
+</div>
